@@ -120,32 +120,50 @@ Theme defaults are scoped to package component roots. Override them with HSL-cha
 ## Build and pack
 
 ```bash
-pnpm --filter @asharca/ui build
-pnpm --dir packages/ui pack
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm build
+pnpm test
+pnpm test:package
+pnpm pack
 ```
+
+Development uses Node 24 and pnpm. Tests run without ToolPlane, Next.js,
+Postgres, or Docker. `test:package` installs the tarball into a temporary consumer
+with strict peer checking and verifies imports, rendering, CSS, and Tailwind
+source scanning.
 
 ## Release
 
-This package is versioned independently from the ToolPlane application. To
-release a new version, update `packages/ui/package.json`, commit and push the
-changes, then tag that release commit. Replace `X.Y.Z` with the package version:
+This package is maintained in `asharca/ui`, independently from ToolPlane.
+Changes go through a PR with required CI checks; merging to `main` does not
+repeat the full CI run. CI can also be started manually.
+
+To release, update `package.json` in a PR, merge it, and tag the merged commit
+on `main`. Replace `X.Y.Z` with the package version:
 
 ```bash
 git tag ui-vX.Y.Z
 git push origin ui-vX.Y.Z
 ```
 
-The `publish-ui.yml` workflow builds and tests the tagged commit, then publishes
-that exact version to npm with provenance. It does not merge branches or trigger
-the ToolPlane application's separate `vX.Y.Z` release workflow. Published npm
-versions are immutable; use a new version and tag for each release.
+The `publish-ui.yml` workflow checks that the tag matches the package version
+and belongs to `main`, builds and tests the tagged commit, verifies the tarball,
+then publishes that exact version to npm with provenance. Published npm versions
+are immutable; use a new version and tag for each release.
 
 Publishing requires access to the `@asharca` npm scope. Configure npm trusted
-publishing for `asharca/ToolPlane` and `publish-ui.yml`, allowing direct
+publishing for `asharca/ui` and `publish-ui.yml`, allowing direct
 publishing with `npm publish`. The workflow uses OIDC rather than a long-lived
 npm token. No `NPM_TOKEN` or `NODE_AUTH_TOKEN` repository secret is needed.
 
+Version `0.2.0` is the first release from this repository. It requires
+`@assistant-ui/react@0.15.18`; consumers upgrading from `0.1.x` must update that
+runtime peer as well. Component exports and CSS variables are unchanged by the
+repository migration. Consuming applications update their dependency and rebuild
+to adopt a release.
+
 ## License
 
-MIT. See [LICENSE](./LICENSE). This license applies only to `packages/ui`, not
-to the rest of the ToolPlane repository.
+MIT. See [LICENSE](./LICENSE). This repository preserves the history of the UI
+package extracted from ToolPlane; it does not license the rest of ToolPlane.
