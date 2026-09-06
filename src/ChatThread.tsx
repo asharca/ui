@@ -861,7 +861,7 @@ function ChatThreadContent({
         </ThreadPrimitive.ScrollToBottom>
       </ThreadPrimitive.Viewport>
 
-      <div className="shrink-0 bg-background pb-3 pt-4">
+      <div className="shrink-0 bg-background pb-3">
         <div className="mx-auto w-full max-w-[53rem] px-6">
           {error ? (
             <div role="alert" className="mb-2 rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">{error}</div>
