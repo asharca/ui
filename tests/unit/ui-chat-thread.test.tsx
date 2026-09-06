@@ -52,6 +52,9 @@ describe('ChatThread runtime compatibility', () => {
 
     const { rerender } = render(<Harness />);
     expect(await screen.findByText('Ready')).toHaveAttribute('data-streamdown', 'strong');
+    const composerRegion = document.querySelector('[data-ui="chat.composer"]')?.parentElement?.parentElement;
+    expect(composerRegion).toHaveClass('pb-3');
+    expect(composerRegion).not.toHaveClass('pt-4');
 
     await user.click(screen.getByRole('button', { name: 'Open tools' }));
     await user.click(screen.getByRole('button', { name: 'Add attachment' }));
