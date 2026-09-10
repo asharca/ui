@@ -14,9 +14,9 @@ import {
   useRef,
 } from 'react';
 import { ChevronDown, Loader2, Search, X } from 'lucide-react';
-import { Slot } from 'radix-ui';
+import { Slot, Switch as SwitchPrimitive } from 'radix-ui';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-secondary';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'danger-secondary';
 export type ControlSize = 'sm' | 'md' | 'lg';
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -26,6 +26,7 @@ function cx(...classes: Array<string | false | null | undefined>) {
 const buttonVariants: Record<ButtonVariant, string> = {
   primary: 'ui-button-primary',
   secondary: 'ui-button-secondary',
+  outline: 'ui-button-secondary ui-button-outline',
   ghost: 'ui-button-ghost',
   danger: 'ui-button-primary ui-button-danger',
   'danger-secondary': 'ui-button-secondary ui-button-danger-secondary',
@@ -212,6 +213,22 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
 export type NativeSelectProps = SelectProps;
 export const NativeSelect = Select;
+
+export type SwitchProps = ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>;
+
+export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch({ className, ...props }, ref) {
+  return (
+    <SwitchPrimitive.Root {...props} ref={ref} data-toolplane-ui="switch" className={cx('ui-switch', className)}>
+      <SwitchPrimitive.Thumb className="ui-switch-thumb" />
+    </SwitchPrimitive.Root>
+  );
+});
+
+export type SliderProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>;
+
+export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider({ className, ...props }, ref) {
+  return <input {...props} ref={ref} type="range" data-toolplane-ui="slider" className={cx('ui-slider', className)} />;
+});
 
 export type CheckboxProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>;
 

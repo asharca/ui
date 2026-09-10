@@ -1,7 +1,10 @@
+import { Children, cloneElement, isValidElement, useEffect, useRef } from 'react';
 import type {
   ComponentPropsWithoutRef,
   ComponentType,
   HTMLAttributes,
+  InputHTMLAttributes,
+  ReactElement,
   ReactNode,
 } from 'react';
 
@@ -212,8 +215,21 @@ export type DataTableProps = Omit<HTMLAttributes<HTMLDivElement>, 'children'> & 
   label?: string;
   minWidth?: string;
   panel?: boolean;
+  rowIds?: readonly string[];
+  rowLabels?: readonly ReactNode[];
+  selectedRowIds?: readonly string[];
+  onSelectedRowIdsChange?: (rowIds: string[]) => void;
+  selectable?: boolean;
   tableClassName?: string;
 };
+
+function SelectionCheckbox({ indeterminate = false, ...props }: InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = indeterminate;
+  }, [indeterminate]);
+  return <input {...props} ref={ref} type="checkbox" className={cx('ui-checkbox ui-table__checkbox', props.className)} />;
+}
 
 export function DataTable({
   children,
@@ -222,9 +238,48 @@ export function DataTable({
   label,
   minWidth = '40rem',
   panel = true,
+  rowIds,
+  rowLabels,
+  selectedRowIds = [],
+  onSelectedRowIdsChange,
+  selectable = false,
   tableClassName,
   ...props
 }: DataTableProps) {
+  const childList = Children.toArray(children);
+  const bodyChild = childList.length === 1 && isValidElement(childList[0]) && childList[0].type === 'tbody'
+    ? childList[0] as ReactElement<{ children?: ReactNode; className?: string }>
+    : undefined;
+  const rows = bodyChild ? bodyChild.props.children : children;
+  const selectableRows = selectable ? Children.toArray(rows).flatMap((child) => {
+    if (!isValidElement(child) || child.type !== 'tr') return [];
+    return [child as ReactElement<{ children?: ReactNode }>];
+  }) : [];
+  const ids = selectableRows.map((_, index) => rowIds?.[index] ?? String(index));
+  const selected = new Set(selectedRowIds);
+  const allSelected = ids.length > 0 && ids.every((id) => selected.has(id));
+  const someSelected = ids.some((id) => selected.has(id));
+  const toggle = (id: string) => onSelectedRowIdsChange?.(
+    selected.has(id) ? selectedRowIds.filter((value) => value !== id) : [...selectedRowIds, id],
+  );
+  const toggleAll = () => onSelectedRowIdsChange?.(
+    allSelected ? selectedRowIds.filter((id) => !ids.includes(id)) : [...new Set([...selectedRowIds, ...ids])],
+  );
+  let rowIndex = 0;
+  const tableChildren = selectable
+      ? Children.map(rows, (child) => {
+        if (!isValidElement(child) || child.type !== 'tr') return child;
+        const row = child as ReactElement<{ children?: ReactNode }>;
+        const id = ids[rowIndex];
+        const index = rowIndex++;
+        return cloneElement(row, {}, [
+          <td key="selection" className="ui-table__selection">
+            <SelectionCheckbox checked={selected.has(id)} onChange={() => toggle(id)} aria-label={`选择${rowLabels?.[index] ?? `第 ${index + 1} 行`}`} />
+          </td>,
+          ...Children.toArray(row.props.children),
+        ]);
+      })
+    : rows;
   return (
     <div
       {...props}
@@ -241,6 +296,11 @@ export function DataTable({
       <table className={cx('ui-table', tableClassName)} style={{ minWidth }}>
         <thead>
           <tr>
+            {selectable ? (
+              <th scope="col" className="ui-table__selection">
+                <SelectionCheckbox checked={allSelected} indeterminate={!allSelected && someSelected} onChange={toggleAll} aria-label="全选行" />
+              </th>
+            ) : null}
             {headers.map((header, index) => (
               <th
                 key={index}
@@ -257,7 +317,7 @@ export function DataTable({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">{children}</tbody>
+        <tbody className={cx('divide-y divide-border', bodyChild?.props.className)}>{tableChildren}</tbody>
       </table>
     </div>
   );

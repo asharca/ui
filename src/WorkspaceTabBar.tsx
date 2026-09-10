@@ -78,7 +78,7 @@ export function WorkspaceTabBar({
       data-toolplane-ui="workspace-tab-bar"
       className="flex h-11 shrink-0 bg-shell px-2"
     >
-      <ol className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1 [&::-webkit-scrollbar]:hidden">
+      <ol className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden py-1 [&::-webkit-scrollbar]:hidden">
         {tabs.map((tab) => (
           <WorkspaceTabButton
             key={tab.id}
@@ -177,11 +177,13 @@ function WorkspaceTabButton({
         aria-current={active ? 'page' : undefined}
         title={tab.label}
         onAuxClick={(event) => {
-          if (event.button === 1) onClose(tab.id);
+          if (event.button !== 1) return;
+          event.preventDefault();
+          if (canClose) onClose(tab.id);
         }}
         onClick={() => onSelect(tab.id)}
-        onDoubleClick={() => onClose(tab.id)}
-        className="flex min-w-0 flex-1 items-center gap-1.5 px-2 text-left text-xs"
+        onDoubleClick={() => { if (canClose) onClose(tab.id); }}
+        className="flex h-full min-w-0 flex-1 items-center gap-1.5 px-2 text-left text-xs"
       >
         <Icon className="size-3.5 shrink-0" />
         <span className="truncate">{tab.label}</span>

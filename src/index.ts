@@ -1,6 +1,9 @@
 export * from './Brand.tsx';
+export * from './Accordion.tsx';
+export * from './Avatar.tsx';
 export * from './ChatShell.tsx';
 export * from './ChatThread.tsx';
+export * from './ChatComposerToolbar.tsx';
 export * from './chat-markdown.ts';
 export * from './ContentPage.tsx';
 export * from './Controls.tsx';
@@ -15,3 +18,4 @@ export * from './RotatingHeadline.tsx';
 export * from './SafeStreamdown.tsx';
 export * from './Sidebar.tsx';
 export * from './WorkspaceTabBar.tsx';
+export * from './WorkspaceSidebar.tsx';

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createRef, useState } from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -299,6 +299,36 @@ describe('@asharca/ui', () => {
     for (const header of screen.getAllByRole('columnheader')) expect(header).toHaveAttribute('scope', 'col');
   });
 
+  it('supports controlled DataTable row selection and select-all state', async () => {
+    const user = userEvent.setup();
+    function SelectableTable() {
+      const [selected, setSelected] = useState<string[]>([]);
+      return (
+        <DataTable
+          label="Projects"
+          headers={[{ label: 'Name' }]}
+          selectable
+          rowIds={['design', 'workspace']}
+          rowLabels={['Design System', 'Workspace']}
+          selectedRowIds={selected}
+          onSelectedRowIdsChange={setSelected}
+        >
+          <tbody><tr><td>Design System</td></tr><tr><td>Workspace</td></tr></tbody>
+        </DataTable>
+      );
+    }
+
+    render(<SelectableTable />);
+    const selectAll = screen.getByRole('checkbox', { name: '全选行' });
+    await user.click(screen.getByRole('checkbox', { name: '选择Design System' }));
+    expect(selectAll).toHaveProperty('indeterminate', true);
+    await user.click(selectAll);
+    expect(screen.getByRole('checkbox', { name: '选择Design System' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: '选择Workspace' })).toBeChecked();
+    await user.click(selectAll);
+    expect(screen.getByRole('checkbox', { name: '选择Workspace' })).not.toBeChecked();
+  });
+
   it('keeps dialog focus management and dismissal in the package', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -344,6 +374,7 @@ describe('@asharca/ui', () => {
       />,
     );
 
+    expect(screen.getByRole('list')).toHaveClass('overflow-x-auto', 'overflow-y-hidden');
     await user.click(screen.getByRole('button', { name: 'Agents' }));
     await user.click(screen.getByRole('button', { name: 'Pin Agents' }));
     await user.click(screen.getByRole('button', { name: 'Open Agents in new window' }));
@@ -356,6 +387,15 @@ describe('@asharca/ui', () => {
     expect(onClose).toHaveBeenCalledWith('agents');
     expect(onNewTab).toHaveBeenCalledOnce();
     expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it('does not close the final workspace tab through alternate mouse actions', () => {
+    const onClose = vi.fn();
+    render(<WorkspaceTabBar activeTabId="only" tabs={[{ id: 'only', label: 'Only page', icon: () => <span />, pinned: false }]} onClose={onClose} onSelect={vi.fn()} onNewTab={vi.fn()} onOpenInNewWindow={vi.fn()} onReorder={vi.fn()} onTogglePinned={vi.fn()} />);
+    const tab = screen.getByRole('button', { name: 'Only page' });
+    fireEvent.doubleClick(tab);
+    fireEvent(tab, new MouseEvent('auxclick', { bubbles: true, button: 1 }));
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('keeps package source independent from ToolPlane and Next.js', () => {

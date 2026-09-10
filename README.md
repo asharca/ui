@@ -1,13 +1,29 @@
 # @asharca/ui
 
+`ChatComposerToolbar` (`@asharca/ui/chat-composer-toolbar`) provides a unified
+tool menu and configurable, ordered shortcuts. Pass `tools`, `pinnedIds`, and
+`onPinnedIdsChange`; the consuming app owns actions and preference persistence.
+Use it in `ChatThread.composerTools` with `showAttachmentPicker={false}` to
+replace the default attachment button. The default remains unchanged.
+
 Reusable React controls, chat thread, conversation sidebar, and responsive shell extracted from ToolPlane. Routing, persistence, authentication, and API handlers stay in the host application.
 
 ## Install
 
 ```bash
-pnpm add @asharca/ui @assistant-ui/react@0.15.18
-# or: npm install @asharca/ui @assistant-ui/react@0.15.18
+pnpm add @asharca/ui
+# or: npm install @asharca/ui
 ```
+
+pnpm installs missing peer dependencies by default. If automatic peer installation
+is disabled or your package manager leaves peers missing, install them explicitly:
+
+```bash
+pnpm add @asharca/ui @assistant-ui/react@0.15.18 react@^19 react-dom@^19 tailwindcss@^4
+```
+
+For version conflicts, first check that your application and other dependencies
+support these versions. Installing the package does not configure your CSS build.
 
 The package uses React 19 and Tailwind CSS 4. `ChatThread` additionally accepts an assistant-ui `AssistantRuntime`, so transport and persistence stay in the host application.
 
@@ -55,9 +71,24 @@ export function Toolbar() {
 
 ## Modules
 
+- `@asharca/ui/workspace-sidebar` provides `WorkspaceSidebar`: controlled `collapsed`
+  and `mobileOpen` states, `items`, `activeId`, `onSelect`, brand/workspace content
+  and a `footer` slot. Items accept `icon`, `label`, `badge`, and `disabled`.
+  Widths use `--workspace-sidebar-width` and `--workspace-sidebar-collapsed-width`.
+  The mobile breakpoint is 850px. Hosts own routing, persistence, the open trigger,
+  scrim, focus trapping/restoration, and background inertness for modal drawers;
+  `mobileCloseRef` exposes the built-in close button for focus management.
+
 - `@asharca/ui/controls` — buttons and native form controls.
+- `@asharca/ui/controls` also provides `Switch`, native `Slider`, and an additive `outline` button variant.
+- `@asharca/ui/avatar` — `Avatar`, `AvatarImage`, and `AvatarFallback`.
+- `@asharca/ui/workspace-tab-bar` — ToolPlane's `WorkspaceTabBar` with host-controlled selection, closing, pinning, drag reordering, and new-window callbacks. The showcase wires these actions to its sidebar and pages; route state stays in the host application.
+- `@asharca/ui/accordion` — `Accordion`, `AccordionItem`, `AccordionTrigger`, and `AccordionContent`.
+- `@asharca/ui/navigation` also provides Radix-backed `Tabs`, `TabsList`, `TabsTrigger`, and `TabsContent` with keyboard navigation. Existing `Tab` / `TabList` exports are unchanged.
+- `@asharca/ui/feedback` also provides native `Progress` and decorative `Skeleton`. Give progress bars and sliders an accessible label; label switches via `htmlFor` or `aria-label`.
+- `@asharca/ui/overlays` also provides `DropdownMenu`, its trigger, portal, content, item, group, label, and separator.
 - `@asharca/ui/forms` — submit, confirm-submit, and copy actions.
-- `@asharca/ui/layout` — page, header, toolbar, section, panel, card, empty state, entity, and data table.
+- `@asharca/ui/layout` — page, header, toolbar, section, panel, card, empty state, entity, and data table. `DataTable` supports controlled multi-select with `selectable`, `rowIds`, `selectedRowIds`, and `onSelectedRowIdsChange`.
 - `@asharca/ui/navigation` — tabs, chips, and pagination layout.
 - `@asharca/ui/feedback` — badges, status, alerts, and spinners.
 - `@asharca/ui/dialog` and `@asharca/ui/overlays` — Dialog, Popover, Tooltip, Context Menu, and Hover Card primitives.
@@ -115,7 +146,27 @@ Build the runtime with AI SDK, assistant-ui local runtime, or another adapter in
 
 `ConversationSidebar` conversations may also provide optional `meta` content and a `deleting` state, so hosts can keep domain badges and show async delete progress without replacing the list layout.
 
+Pass `onConversationOrderChange(groupId, conversationIds)` to enable same-group
+conversation drag ordering and accessible move-up/down buttons. The callback
+returns the full group order, including items hidden by search. Hosts own the
+reordered state and persistence; selection is unchanged. Disabled/deleting
+conversations cannot be moved. Omitting the callback preserves the default list.
+
 Theme defaults are scoped to package component roots. Override them with HSL-channel variables such as `--toolplane-ui-background`, `--toolplane-ui-foreground`, and `--toolplane-ui-brand`. The older `--chat-ui-*` variables remain supported; `--chat-ui-sidebar-width` and `--chat-ui-right-panel-width` still control chat layout. Add a `.dark` class to an ancestor, or `data-theme="dark"` to a component, to use the dark defaults.
+
+## Component workbench
+
+Run `pnpm dev` and open the local URL printed by Vite. The standalone showcase
+includes interactive controls, forms, tables, overlays, light/dark themes, and
+a local chat demo (no AI service or credentials required). Demo data is kept in
+memory and resets on reload.
+
+`pnpm build:showcase` type-checks and builds the site into `showcase-dist/`.
+The showcase is development-only and is not included in the npm package.
+It includes nine interactive examples with copyable code snippets. Profile photos
+in `showcase/public/avatars` are demo assets from Unsplash (photo IDs
+`1494790108377-be9c29b29330`, `1506794778202-cad84cf45f1d`, and
+`1534528741775-53994a69daeb`); member names and emails are fictional.
 
 ## Build and pack
 
