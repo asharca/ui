@@ -5,6 +5,18 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
+export type ProgressProps = ComponentPropsWithoutRef<'progress'>;
+
+export function Progress({ className, max = 100, ...props }: ProgressProps) {
+  return <progress {...props} max={max} data-toolplane-ui="progress" className={cx('ui-progress', className)} />;
+}
+
+export type SkeletonProps = ComponentPropsWithoutRef<'div'>;
+
+export function Skeleton({ className, ...props }: SkeletonProps) {
+  return <div {...props} aria-hidden="true" data-toolplane-ui="skeleton" className={cx('ui-skeleton', className)} />;
+}
+
 export type FeedbackTone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger';
 
 const badgeTones: Record<FeedbackTone, string> = {

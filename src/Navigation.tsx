@@ -1,15 +1,37 @@
 'use client';
 
-import { Slot } from 'radix-ui';
+import { Slot, Tabs as TabsPrimitive } from 'radix-ui';
+import { forwardRef } from 'react';
 import type {
   ButtonHTMLAttributes,
   ComponentPropsWithoutRef,
+  ComponentRef,
   ReactNode,
 } from 'react';
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
+
+export const Tabs = TabsPrimitive.Root;
+
+export const TabsList = forwardRef<ComponentRef<typeof TabsPrimitive.List>, ComponentPropsWithoutRef<typeof TabsPrimitive.List>>(
+  function TabsList({ className, ...props }, ref) {
+    return <TabsPrimitive.List {...props} ref={ref} data-toolplane-ui="tabs-list" className={cx('ui-tabs-list', className)} />;
+  },
+);
+
+export const TabsTrigger = forwardRef<ComponentRef<typeof TabsPrimitive.Trigger>, ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>>(
+  function TabsTrigger({ className, ...props }, ref) {
+    return <TabsPrimitive.Trigger {...props} ref={ref} data-toolplane-ui="tabs-trigger" className={cx('ui-tabs-trigger', className)} />;
+  },
+);
+
+export const TabsContent = forwardRef<ComponentRef<typeof TabsPrimitive.Content>, ComponentPropsWithoutRef<typeof TabsPrimitive.Content>>(
+  function TabsContent({ className, ...props }, ref) {
+    return <TabsPrimitive.Content {...props} ref={ref} data-toolplane-ui="tabs-content" className={cx('ui-tabs-content', className)} />;
+  },
+);
 
 export type ChipProps = ComponentPropsWithoutRef<'span'> & {
   active?: boolean;

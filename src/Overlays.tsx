@@ -7,10 +7,40 @@ import {
 } from 'react';
 import {
   ContextMenu as ContextMenuPrimitive,
+  DropdownMenu as DropdownMenuPrimitive,
   HoverCard as HoverCardPrimitive,
   Popover as PopoverPrimitive,
   Tooltip as TooltipPrimitive,
 } from 'radix-ui';
+
+export const DropdownMenu = DropdownMenuPrimitive.Root;
+export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+
+export const DropdownMenuContent = forwardRef<ComponentRef<typeof DropdownMenuPrimitive.Content>, ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>>(
+  function DropdownMenuContent({ className, sideOffset = 6, collisionPadding = 8, ...props }, ref) {
+    return <DropdownMenuPrimitive.Content {...props} ref={ref} sideOffset={sideOffset} collisionPadding={collisionPadding} data-toolplane-ui="dropdown-menu" className={`ui-dropdown-menu ${className ?? ''}`.trim()} />;
+  },
+);
+
+export const DropdownMenuItem = forwardRef<ComponentRef<typeof DropdownMenuPrimitive.Item>, ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>>(
+  function DropdownMenuItem({ className, ...props }, ref) {
+    return <DropdownMenuPrimitive.Item {...props} ref={ref} className={`ui-dropdown-item ${className ?? ''}`.trim()} />;
+  },
+);
+
+export const DropdownMenuLabel = forwardRef<ComponentRef<typeof DropdownMenuPrimitive.Label>, ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label>>(
+  function DropdownMenuLabel({ className, ...props }, ref) {
+    return <DropdownMenuPrimitive.Label {...props} ref={ref} className={`ui-dropdown-label ${className ?? ''}`.trim()} />;
+  },
+);
+
+export const DropdownMenuSeparator = forwardRef<ComponentRef<typeof DropdownMenuPrimitive.Separator>, ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>>(
+  function DropdownMenuSeparator({ className, ...props }, ref) {
+    return <DropdownMenuPrimitive.Separator {...props} ref={ref} className={`ui-dropdown-separator ${className ?? ''}`.trim()} />;
+  },
+);
 
 export const Popover = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;

@@ -46,6 +46,7 @@ import {
   CircleAlert,
   CirclePause,
   Copy,
+  ArrowUp,
   Globe2,
   Loader2,
   Maximize2,
@@ -55,7 +56,6 @@ import {
   Plug,
   Plus,
   RefreshCw,
-  Send,
   Split,
   UserRound,
   Wrench,
@@ -185,6 +185,7 @@ export type ChatThreadProps = {
   composerEnd?: ReactNode;
   composerStatus?: ReactNode;
   composerTools?: ReactNode;
+  showAttachmentPicker?: boolean;
   disabled?: boolean;
   emptyState?: ReactNode;
   error?: ReactNode;
@@ -776,6 +777,7 @@ function ChatThreadContent({
   composerEnd,
   composerStatus,
   composerTools,
+  showAttachmentPicker = true,
   components,
   disabled,
   emptyState,
@@ -887,15 +889,15 @@ function ChatThreadContent({
                 />
                 <div className="relative z-[2] flex min-h-10 items-center justify-between gap-4 px-2 py-[5px]">
                   <div className="flex min-w-0 items-center gap-1.5">
-                    <AttachmentPicker disabled={blocked} enabled={allowAttachments} />
+                    {showAttachmentPicker && <AttachmentPicker disabled={blocked} enabled={allowAttachments} />}
                     {composerTools}
                     {composerStatus ? <div className="min-w-0 text-[11px] text-muted-foreground">{composerStatus}</div> : null}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {composerEnd}
                     <ThreadPrimitive.If running={false}>
-                      <ComposerPrimitive.Send disabled={blocked || attachmentUploading} aria-label={labels.send} title={attachmentUploading ? labels.processing : labels.send} className="mr-0.5 mt-px flex size-[30px] shrink-0 items-center justify-center text-brand transition-all duration-200 disabled:cursor-not-allowed disabled:text-muted-foreground/50">
-                        <Send className="size-[22px]" />
+                      <ComposerPrimitive.Send disabled={blocked || attachmentUploading} aria-label={labels.send} title={attachmentUploading ? labels.processing : labels.send} className="mr-0.5 mt-px flex size-[30px] shrink-0 items-center justify-center rounded-full bg-brand text-brand-foreground transition-all duration-200 hover:bg-brand/85 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground/50">
+                        <ArrowUp className="size-[17px]" strokeWidth={2.5} />
                       </ComposerPrimitive.Send>
                     </ThreadPrimitive.If>
                     <ThreadPrimitive.If running>

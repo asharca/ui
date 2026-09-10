@@ -1,10 +1,9 @@
 'use client';
 
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import {
   Bot,
   ChevronRight,
-  MessageSquare,
   Pencil,
   Plus,
   Trash2,
@@ -40,6 +39,8 @@ export type ConversationSidebarLabels = {
   deleteConversation: string;
   showConversations: string;
   hideConversations: string;
+  moveUp?: string;
+  moveDown?: string;
 };
 
 export const conversationSidebarDefaultLabels: ConversationSidebarLabels = {
@@ -56,6 +57,8 @@ export const conversationSidebarDefaultLabels: ConversationSidebarLabels = {
   deleteConversation: 'Delete conversation',
   showConversations: 'Show conversations',
   hideConversations: 'Hide conversations',
+  moveUp: 'Move up',
+  moveDown: 'Move down',
 };
 
 export type ConversationSidebarProps = {
@@ -64,6 +67,7 @@ export type ConversationSidebarProps = {
   activeConversationId?: string | null;
   labels?: Partial<ConversationSidebarLabels>;
   className?: string;
+  onConversationOrderChange?: (groupId: string, conversationIds: string[]) => void;
   onSelectGroup?: (group: ConversationSidebarGroup) => void;
   onSelectConversation: (
     conversation: ConversationSidebarConversation,
@@ -97,10 +101,25 @@ export function ConversationSidebar({
   onCreateConversation,
   onRenameConversation,
   onDeleteConversation,
+  onConversationOrderChange,
 }: ConversationSidebarProps) {
   const labels = { ...conversationSidebarDefaultLabels, ...labelsOverride };
   const controlsId = useId();
   const [query, setQuery] = useState('');
+  const dragging = useRef<{ id: string; groupId: string } | null>(null);
+  const [dropRow, setDropRow] = useState<{ id: string; groupId: string; edge: 'before' | 'after' } | null>(null);
+  function edgeFor(event: DragEvent<HTMLElement>): 'before' | 'after' {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return event.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+  }
+  function move(sourceId: string, targetId: string, group: ConversationSidebarGroup, edge: 'before' | 'after') {
+    const source = group.conversations.find((item) => item.id === sourceId);
+    const target = group.conversations.find((item) => item.id === targetId);
+    if (!onConversationOrderChange || !source || !target || sourceId === targetId || source.disabled || source.deleting || target.disabled || target.deleting) return;
+    const ids = group.conversations.map((item) => item.id).filter((id) => id !== sourceId);
+    ids.splice(ids.indexOf(targetId) + (edge === 'after' ? 1 : 0), 0, sourceId);
+    if (ids.some((id, index) => group.conversations[index].id !== id)) onConversationOrderChange(group.id, ids);
+  }
   const [collapsedGroupIds, setCollapsedGroupIds] = useState<Set<string>>(() => new Set());
   const needle = query.trim().toLocaleLowerCase();
   const visibleGroups = useMemo(() => groups.flatMap((group) => {
@@ -240,11 +259,39 @@ export function ConversationSidebar({
                       const title = conversation.title || labels.untitledConversation;
                       const selected = conversation.id === activeConversationId;
                       const hasActions = Boolean(onRenameConversation || onDeleteConversation);
+                      const index = group.conversations.findIndex((item) => item.id === conversation.id);
+                      const canMove = Boolean(onConversationOrderChange && !conversation.disabled && !conversation.deleting);
                       return (
                         <li
                           key={conversation.id}
                           className="relative py-0.5"
                           data-chat-ui="sidebar-conversation"
+                          data-conversation-id={conversation.id}
+                          data-drop-edge={dropRow?.id === conversation.id && dropRow.groupId === group.id ? dropRow.edge : undefined}
+                          draggable={canMove}
+                          onDragStart={(event) => {
+                            if (!canMove) { event.preventDefault(); return; }
+                            event.stopPropagation();
+                            dragging.current = { id: conversation.id, groupId: group.id };
+                            event.dataTransfer.effectAllowed = 'move';
+                            event.dataTransfer.setData('text/plain', conversation.id);
+                          }}
+                          onDragEnd={() => { dragging.current = null; setDropRow(null); }}
+                          onDragOver={(event) => {
+                            if (!canMove || dragging.current?.groupId !== group.id || dragging.current.id === conversation.id) return;
+                            event.preventDefault(); event.stopPropagation();
+                            event.dataTransfer.dropEffect = 'move';
+                            setDropRow({ id: conversation.id, groupId: group.id, edge: edgeFor(event) });
+                          }}
+                          onDragLeave={(event) => {
+                            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropRow(null);
+                          }}
+                          onDrop={(event) => {
+                            event.preventDefault(); event.stopPropagation();
+                            const source = dragging.current;
+                            dragging.current = null; setDropRow(null);
+                            if (source?.groupId === group.id && canMove) move(source.id, conversation.id, group, edgeFor(event));
+                          }}
                         >
                           <div className={cx(
                             'group group/sidebar-conversation flex h-8 min-w-0 items-center gap-1.5 rounded-lg px-2 transition-colors',
@@ -252,15 +299,21 @@ export function ConversationSidebar({
                               ? 'bg-muted font-medium text-foreground'
                               : 'text-foreground/75 hover:bg-muted/60 hover:text-foreground',
                           )}>
-                            <button
-                              type="button"
-                              disabled={conversation.disabled}
-                              onClick={() => onSelectConversation(conversation, group)}
+                          <button
+                            type="button"
+                            disabled={conversation.disabled}
+                            onKeyDown={(event) => {
+                              if (!event.altKey || !['ArrowUp', 'ArrowDown'].includes(event.key) || !canMove) return;
+                              const target = group.conversations[index + (event.key === 'ArrowUp' ? -1 : 1)];
+                              if (!target || target.disabled || target.deleting) return;
+                              event.preventDefault();
+                              move(conversation.id, target.id, group, event.key === 'ArrowUp' ? 'before' : 'after');
+                            }}
+                            onClick={() => { if (!dragging.current) onSelectConversation(conversation, group); }}
                               aria-current={selected ? 'page' : undefined}
                               title={title}
                               className="flex h-full min-w-0 flex-1 items-center gap-1.5 text-left text-[13px] disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                              <MessageSquare className="size-3 shrink-0 text-muted-foreground" />
                               <span className="min-w-0 flex-1 truncate">{title}</span>
                               {conversation.meta ? (
                                 <span aria-hidden="true" className="shrink-0">
