@@ -58,6 +58,7 @@ try {
         await fits(page, `${style}/${mode}/${width} studio`);
         assert(ratios.foreground >= 4.5 && ratios.helper >= 4.5 && ratios.primary >= 4.5, `Insufficient sampled text contrast: ${JSON.stringify({ style, mode, ratios })}`);
         assert(sample.controlHeight >= 40, `Comfortable controls must be at least 40px: ${sample.controlHeight}`);
+        if (width === 1440) await page.locator('.design-console').screenshot({ path: join(output, `${mode}-${style}-workspace.png`) });
         await input.fill('保留我的编辑内容');
         const next = style === 'glass' ? 'minimal' : 'glass';
         await page.getByRole('combobox', { name: '视觉风格' }).selectOption(next);
@@ -70,6 +71,7 @@ try {
         await page.getByRole('button', { name: '工作区设置', exact: true }).click();
         const dialog = page.getByRole('dialog', { name: '预览工作区设置', exact: true });
         await dialog.waitFor();
+        await page.mouse.move(0, 0);
         const bounds = await dialog.boundingBox();
         assert(bounds && bounds.x >= -1 && bounds.x + bounds.width <= width + 1, 'Dialog does not fit the viewport');
         const dialogBrand = await dialog.getByRole('button', { name: '完成预览' }).evaluate((node) => getComputedStyle(node).backgroundColor);
@@ -83,8 +85,7 @@ try {
           await page.getByRole('button', { name: '停止演示', exact: true }).click();
           await page.waitForTimeout(1500);
           assert(await page.getByText('演示已停止', { exact: true }).isVisible(), 'Cancelled timer updated the state');
-          await page.locator('.design-console').scrollIntoViewIfNeeded();
-          await page.screenshot({ path: join(output, `${mode}-${style}-controls.png`) });
+          await page.locator('.design-console').screenshot({ path: join(output, `${mode}-${style}-controls.png`) });
         }
         await page.goto(`${base}#/components/button`);
         await page.getByRole('button', { name: '保存更改', exact: true }).waitFor();
@@ -97,17 +98,34 @@ try {
         assert.equal(await frame.locator('html').evaluate((node) => node.classList.contains('dark')), mode === 'dark');
         assert.equal(await page.evaluate(() => localStorage.getItem('asharca-ui-docs-density')), 'compact', 'Preview must not overwrite parent preferences');
         await page.goto(`${base}#/home`);
-        await page.getByRole('link', { name: '开始构建', exact: true }).waitFor();
+        const cta = page.getByRole('link', { name: '开始构建', exact: true });
+        await cta.waitFor();
+        await page.mouse.move(0, 0);
         await fits(page, `${style}/${mode}/${width} home`);
+        const linkColors = await cta.evaluate((node) => ({ text: getComputedStyle(node).color, background: getComputedStyle(node).backgroundColor }));
+        const linkContrast = contrast(rgb(linkColors.text), rgb(linkColors.background));
+        measurements[measurements.length - 1].linkContrast = linkContrast;
+        assert(linkContrast >= 4.5, `Link-style primary text contrast too low: ${style} ${mode} ${linkContrast}`);
         await page.screenshot({ path: join(output, `${width}-${mode}-${style}-home.png`) });
+        for (const id of ['checkbox', 'radio', 'chat-thread', 'tool-call-card']) {
+          await page.goto(`${base}#/components/${id}`);
+          const canvas = page.locator('.docs-demo-canvas');
+          await canvas.waitFor();
+          await page.waitForFunction(() => !document.querySelector('.docs-demo-canvas')?.textContent?.includes('加载组件示例'));
+          if (id === 'chat-thread') await page.locator('[data-ui="chat.composer"] textarea').waitFor();
+          if (id === 'tool-call-card') await page.locator('.ui-tool-call').first().waitFor();
+          if (id === 'checkbox' || id === 'radio') await page.locator('.ui-choice input').first().waitFor();
+          await fits(page, `${style}/${mode}/${width} ${id}`);
+          if (width === 1440) await canvas.screenshot({ path: join(output, `${mode}-${style}-${id}.png`) });
+        }
         assert.equal(errors.length, 0, errors.join('\n'));
         await context.close();
-        console.log(`PASS ${style} ${mode} ${width}px: studio/home, contrast samples, density, preserved edits, Portal and iframe.`);
+        console.log(`PASS ${style} ${mode} ${width}px: studio/home, four component pages, contrast samples, density, preserved edits, Portal and iframe.`);
       }
     }
   }
   assert.equal(new Set(measurements.filter((item) => item.width === 1440).map((item) => `${item.sample.page}/${item.sample.primary}`)).size, 6, 'The six palettes should be visually distinct');
-  console.log(`PASS ${measurements.length} style/mode/viewport combinations. Screenshots and sampled contrast ratios saved.`);
+  console.log(`PASS ${measurements.length} style/mode/viewport combinations and 72 component-page layouts. Screenshots and sampled contrast ratios saved.`);
 } catch (error) {
   failure = String(error.stack ?? error);
   console.error(error);
