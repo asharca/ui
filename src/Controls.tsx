@@ -1,14 +1,18 @@
 'use client';
 
 import {
+  cloneElement,
   forwardRef,
+  isValidElement,
   type ButtonHTMLAttributes,
   type ComponentPropsWithoutRef,
   type ForwardedRef,
   type InputHTMLAttributes,
+  type KeyboardEventHandler,
   type MouseEventHandler,
   type ReactNode,
   type SelectHTMLAttributes,
+  type SyntheticEvent,
   type TextareaHTMLAttributes,
   useImperativeHandle,
   useRef,
@@ -38,6 +42,46 @@ const buttonSizes: Record<ControlSize, string> = {
   lg: 'ui-button-lg',
 };
 
+function preventActivation(event: SyntheticEvent) {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+const preventKeyboardActivation: KeyboardEventHandler<HTMLElement> = (event) => {
+  if (event.key === 'Enter' || event.key === ' ') preventActivation(event);
+};
+
+// Slot runs a child's handlers before its own. Guard the child itself so a
+// disabled link cannot invoke a child callback before the Slot guard runs.
+// Custom asChild components must forward these props and their ref to the DOM.
+function disabledChild(children: ReactNode, loading: boolean) {
+  if (!isValidElement<ButtonHTMLAttributes<HTMLButtonElement>>(children)) return children;
+  return cloneElement(children, {
+    'aria-disabled': true,
+    'aria-busy': loading || children.props['aria-busy'] || undefined,
+    tabIndex: -1,
+    ...(children.type === 'button' ? { disabled: true } : {}),
+    onClick: preventActivation,
+    onClickCapture: preventActivation,
+    onAuxClick: preventActivation,
+    onAuxClickCapture: preventActivation,
+    onDoubleClick: preventActivation,
+    onDoubleClickCapture: preventActivation,
+    onPointerDown: preventActivation,
+    onPointerDownCapture: preventActivation,
+    onPointerUp: preventActivation,
+    onPointerUpCapture: preventActivation,
+    onMouseDown: preventActivation,
+    onMouseDownCapture: preventActivation,
+    onMouseUp: preventActivation,
+    onMouseUpCapture: preventActivation,
+    onKeyDown: preventKeyboardActivation,
+    onKeyDownCapture: preventKeyboardActivation,
+    onKeyUp: preventKeyboardActivation,
+    onKeyUpCapture: preventKeyboardActivation,
+  });
+}
+
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   asChild?: boolean;
   loading?: boolean;
@@ -61,16 +105,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   ...props
 }, ref) {
   const classes = cx(buttonVariants[variant], buttonSizes[size], className);
-  const busy = disabled || loading;
+  const busy = Boolean(disabled || loading);
 
   if (asChild) {
     const handleClick: MouseEventHandler<HTMLElement> = (event) => {
       if (busy) {
-        event.preventDefault();
-        event.stopPropagation();
+        preventActivation(event);
         return;
       }
-      (onClick as unknown as MouseEventHandler<HTMLElement> | undefined)?.(event);
+      if (!event.defaultPrevented) {
+        (onClick as unknown as MouseEventHandler<HTMLElement> | undefined)?.(event);
+      }
     };
 
     return (
@@ -83,8 +128,25 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         tabIndex={busy ? -1 : props.tabIndex}
         className={classes}
         onClick={handleClick}
+        onClickCapture={busy ? preventActivation : props.onClickCapture}
+        onAuxClick={busy ? preventActivation : props.onAuxClick}
+        onAuxClickCapture={busy ? preventActivation : props.onAuxClickCapture}
+        onDoubleClick={busy ? preventActivation : props.onDoubleClick}
+        onDoubleClickCapture={busy ? preventActivation : props.onDoubleClickCapture}
+        onPointerDown={busy ? preventActivation : props.onPointerDown}
+        onPointerDownCapture={busy ? preventActivation : props.onPointerDownCapture}
+        onPointerUp={busy ? preventActivation : props.onPointerUp}
+        onPointerUpCapture={busy ? preventActivation : props.onPointerUpCapture}
+        onMouseDown={busy ? preventActivation : props.onMouseDown}
+        onMouseDownCapture={busy ? preventActivation : props.onMouseDownCapture}
+        onMouseUp={busy ? preventActivation : props.onMouseUp}
+        onMouseUpCapture={busy ? preventActivation : props.onMouseUpCapture}
+        onKeyDown={busy ? preventKeyboardActivation : props.onKeyDown}
+        onKeyDownCapture={busy ? preventKeyboardActivation : props.onKeyDownCapture}
+        onKeyUp={busy ? preventKeyboardActivation : props.onKeyUp}
+        onKeyUpCapture={busy ? preventKeyboardActivation : props.onKeyUpCapture}
       >
-        {children}
+        {busy ? disabledChild(children, loading) : children}
       </Slot.Root>
     );
   }
@@ -294,8 +356,10 @@ export type SearchInputProps = Omit<
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(function SearchInput({
   clearLabel = 'Clear search',
   className,
+  disabled,
   label,
   onClear,
+  readOnly,
   value,
   wrapperClassName,
   ...props
@@ -311,6 +375,8 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(functi
         ref={inputRef}
         type="search"
         value={value}
+        disabled={disabled}
+        readOnly={readOnly}
         aria-label={label}
         className={cx('tp-search-input__control', className)}
       />
@@ -320,7 +386,9 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(functi
           label={clearLabel}
           size="sm"
           variant="ghost"
+          disabled={disabled || readOnly}
           onClick={() => {
+            if (disabled || readOnly || inputRef.current?.matches(':disabled')) return;
             onClear();
             inputRef.current?.focus();
           }}
