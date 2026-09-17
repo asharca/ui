@@ -4,8 +4,8 @@ import type {
   ReactNode,
 } from 'react';
 
-export { DataTable } from './DataTable.tsx';
-export type { DataTableHeader, DataTableProps, DataTableSelectionLabels } from './DataTable.tsx';
+export { DataTable } from './DataTable.js';
+export type { DataTableHeader, DataTableProps, DataTableSelectionLabels } from './DataTable.js';
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
