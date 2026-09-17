@@ -10,6 +10,9 @@ const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const publicRoot = join(root, 'showcase/public');
 const guide = readFileSync(join(root, 'docs/ai/README.md'), 'utf8');
 const patterns = readFileSync(join(root, 'docs/ai/PATTERNS.md'), 'utf8');
+// Keep machine-readable files BOM-free. HTTP servers must declare charset=utf-8;
+// adding an HTML meta tag to these Markdown/text files would not set the charset.
+const writeUtf8 = (path, text) => writeFileSync(path, text, 'utf8');
 assert.equal(new Set(catalogMetadata.map((doc) => doc.id)).size, catalogMetadata.length, 'Duplicate document IDs');
 const pages = catalogMetadata.map((doc) => {
   assert(/^[a-z0-9-]+$/.test(doc.id), `Unsafe document path: ${doc.id}`);
@@ -29,13 +32,13 @@ const full = [index('./'), guide, patterns, ...pages.map(({ markdown }) => markd
 for (const destination of [join(publicRoot, 'ai'), join(root, 'dist/ai')]) {
   rmSync(destination, { recursive: true, force: true });
   mkdirSync(join(destination, 'components'), { recursive: true });
-  writeFileSync(join(destination, 'README.md'), guide);
-  writeFileSync(join(destination, 'PATTERNS.md'), patterns);
-  writeFileSync(join(destination, 'llms.txt'), index('./'));
-  writeFileSync(join(destination, 'llms-full.txt'), full);
-  for (const { doc, markdown } of pages) writeFileSync(join(destination, 'components', `${doc.id}.md`), markdown);
+  writeUtf8(join(destination, 'README.md'), guide);
+  writeUtf8(join(destination, 'PATTERNS.md'), patterns);
+  writeUtf8(join(destination, 'llms.txt'), index('./'));
+  writeUtf8(join(destination, 'llms-full.txt'), full);
+  for (const { doc, markdown } of pages) writeUtf8(join(destination, 'components', `${doc.id}.md`), markdown);
 }
-writeFileSync(join(publicRoot, 'llms.txt'), index('./ai/'));
-writeFileSync(join(publicRoot, 'llms-full.txt'), full.replaceAll('](./components/', '](./ai/components/').replaceAll('](./README.md)', '](./ai/README.md)').replaceAll('](./PATTERNS.md)', '](./ai/PATTERNS.md)'));
+writeUtf8(join(publicRoot, 'llms.txt'), index('./ai/'));
+writeUtf8(join(publicRoot, 'llms-full.txt'), full.replaceAll('](./components/', '](./ai/components/').replaceAll('](./README.md)', '](./ai/README.md)').replaceAll('](./PATTERNS.md)', '](./ai/PATTERNS.md)'));
 for (const { doc } of pages) assert(existsSync(join(publicRoot, 'ai/components', `${doc.id}.md`)));
 console.log(`Generated AI docs for ${pages.length} components: llms.txt, llms-full.txt, public/ai and dist/ai.`);

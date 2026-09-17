@@ -65,6 +65,22 @@ Dialog、菜单、Tabs 保留 Radix 的焦点与键盘交互，不要覆盖成�
 
 组件页面的“复制给 AI”提供该组件的 Markdown 上下文；不要把复制整个项目或隐私数据当作使用文档的前提。文档本身不携带任何用户数据或凭据。
 
+### 直接打开文档时出现乱码
+
+生成文件始终使用无 BOM 的 UTF-8。Vite 的开发服务与构建预览通过 `showcase/ai-docs-plugin.ts`，仅为生成的 AI 文档返回 `Content-Type: text/plain; charset=utf-8` 与 `X-Content-Type-Options: nosniff`，不改动 HTML、JavaScript、CSS 或图片的 MIME 类型。Markdown 保留原始文本，不转成 HTML，也不添加 meta 标签。
+
+拉取修复后，停止旧的开发进程，执行 `pnpm docs:ai`，再执行 `pnpm dev`。检查实际启动端口；旧进程占用 5173 时，不要误访问旧服务。可以用以下命令核对响应头：
+
+```sh
+curl -I http://localhost:5173/llms.txt
+curl -I http://localhost:5173/llms-full.txt
+curl -I http://localhost:5173/ai/components/checkbox.md
+```
+
+部署 `showcase-dist` 到其他静态服务器或 CDN 时，Vite 插件不会在该服务器运行。需要为这些文本资源单独配置 UTF-8 Content-Type，并保留其他资源原本的 MIME 类型。修改响应头后清理代理/CDN 缓存，确认不存在文档返回 200 HTML 的 SPA 回退。不要把 `Content-Encoding` 设成 utf-8；该字段不是字符集声明。
+
+`node scripts/check-ai-docs-http.mjs` 在构建后检查真实 Vite dev/preview 的根路径与 `/ui/` 子路径，校验响应头和原始字节。CI 的浏览器任务额外使用 `--browser` 检查地址栏直接访问的 `document.characterSet` 与中文正文，而不是只依赖 fetch().text() 或带预设 UTF-8 响应头的测试服务器。
+
 ## 生成代码后的检查
 
 检查组件和属性存在；示例能够编译；导入了样式；受控值与回调匹配；控件有可访问名称；禁用项不能操作；长中文文字可以换行；在窄屏、深浅主题和键盘操作下验收。构建成功不等于视觉验收通过，也不等于服务端功能已经实现。

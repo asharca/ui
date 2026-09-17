@@ -27,4 +27,6 @@ jobs:
       - run: pnpm build:showcase
       - run: node scripts/check-showcase-examples.mjs
       - run: pnpm test
+      - name: Check real Vite AI document encoding
+        run: node scripts/check-ai-docs-http.mjs
       - run: pnpm test:package

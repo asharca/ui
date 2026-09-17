@@ -34,6 +34,8 @@ jobs:
           node "$UI_BROWSER_ROOT/node_modules/playwright/cli.js" install --with-deps chromium
       - name: Check layouts, interactions and static AI docs
         run: node scripts/check-browser.mjs
+      - name: Check direct UTF-8 navigation on real Vite servers
+        run: node scripts/check-ai-docs-http.mjs --browser
       - name: Upload screenshots and measurements
         if: always()
         uses: actions/upload-artifact@v4
