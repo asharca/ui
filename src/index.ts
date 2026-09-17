@@ -19,3 +19,4 @@ export * from './SafeStreamdown.tsx';
 export * from './Sidebar.tsx';
 export * from './WorkspaceTabBar.tsx';
 export * from './WorkspaceSidebar.tsx';
+export * from './locales.js';

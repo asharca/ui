@@ -1,41 +1,33 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const declarations = join(root, 'dist/index.d.ts');
-if (!existsSync(declarations)) {
-  throw new Error('Run pnpm build before checking published example imports.');
-}
-
-// Keep fixtures inside the repo so normal React/TypeScript dependencies resolve.
-// The temporary directory is always removed, including on type-check failures.
-const temporaryDirectory = mkdtempSync(join(root, '.showcase-example-check-'));
+assert(existsSync(declarations), 'Run pnpm build before checking the public examples.');
+const directory = mkdtempSync(join(root, '.showcase-consumer-'));
 try {
-  const examples = ['ButtonDemo.tsx', 'DataTableDemo.tsx'];
-  const files = examples.map((name) => {
-    const source = readFileSync(join(root, 'showcase/demos', name), 'utf8')
-      .replaceAll('"../../src/index"', '"@asharca/ui"');
-    if (/from\s+['"]\./.test(source)) {
-      throw new Error(`${name} is not self-contained: a relative import remains.`);
-    }
-    const path = join(temporaryDirectory, name);
-    writeFileSync(path, source);
-    return path;
+  const demos = readdirSync(join(root, 'showcase/demos')).filter((name) => name.endsWith('.tsx')).sort();
+  const files = demos.map((name) => {
+    const source = readFileSync(join(root, 'showcase/demos', name), 'utf8');
+    assert(source.includes('"../../src/index"'), `${name} must import the public component surface.`);
+    const copy = source.replaceAll('"../../src/index"', '"@asharca/ui"');
+    assert(!/from\s+['"]\./.test(copy), `${name} is not self-contained: it imports another local file.`);
+    const path = join(directory, name); writeFileSync(path, copy); return path;
   });
   const program = ts.createProgram(files, {
     target: ts.ScriptTarget.ES2022,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     jsx: ts.JsxEmit.ReactJSX,
-    noEmit: true,
     strict: true,
     skipLibCheck: true,
     esModuleInterop: true,
-    types: ['react', 'react-dom'],
-    baseUrl: root,
+    noEmit: true,
     paths: { '@asharca/ui': [declarations] },
+    lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
   });
   const diagnostics = ts.getPreEmitDiagnostics(program);
   if (diagnostics.length) {
@@ -46,8 +38,6 @@ try {
     }));
     process.exitCode = 1;
   } else {
-    console.log('ButtonDemo and DataTableDemo copied snippets type-check against public package declarations.');
+    console.log(`${demos.length} self-contained demos type-check against the built public package declarations.`);
   }
-} finally {
-  rmSync(temporaryDirectory, { recursive: true, force: true });
-}
+} finally { rmSync(directory, { recursive: true, force: true }); }
