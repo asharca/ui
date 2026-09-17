@@ -47,6 +47,8 @@ jobs:
         run: |
           npm install --prefix "$UI_BROWSER_ROOT" --no-package-lock --ignore-scripts playwright@1.58.2
           node "$UI_BROWSER_ROOT/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Check redesigned site, search and navigation
+        run: node scripts/check-site-redesign.mjs
       - name: Check layouts, interactions and static AI docs
         run: node scripts/check-browser.mjs
       - name: Check direct UTF-8 navigation on real Vite servers
@@ -55,8 +57,6 @@ jobs:
         run: node scripts/check-design.mjs
       - name: Check specimen panels, approval recovery and preference fallbacks
         run: node scripts/check-design-specimens.mjs
-      - name: Check redesigned site, search and navigation
-        run: node scripts/check-site-redesign.mjs
       - name: Capture unclipped design panels for review
         run: node scripts/capture-design-review.mjs
       - name: Upload screenshots and measurements

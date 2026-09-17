@@ -62,6 +62,10 @@ try {
     assert(await dialog.getByRole('link', { name: /ChoiceField/ }).evaluate((node) => document.activeElement === node));
     await page.screenshot({ path: join(output, `${width}-${mode}-search.png`) });
     await page.keyboard.press('Escape');
+    // Radix restores focus after its unmount cleanup. Wait for that lifecycle
+    // instead of racing an immediate evaluate against the Escape key event.
+    await dialog.waitFor({ state: 'hidden' });
+    await page.waitForFunction(() => document.activeElement?.matches('button.docs-search-trigger'), undefined, { timeout: 5000 });
     assert(await trigger.evaluate((node) => document.activeElement === node), 'Search must restore trigger focus');
     await page.keyboard.press('Control+k');
     await dialog.waitFor();
