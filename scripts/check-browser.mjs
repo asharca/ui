@@ -25,9 +25,10 @@ const server = createServer(async (request, response) => {
 });
 await new Promise((done) => server.listen(0, '127.0.0.1', done));
 const base = `http://127.0.0.1:${server.address().port}/ui/`;
-const browser = await chromium.launch();
+let browser;
 const results = [];
 try {
+  browser = await chromium.launch();
   for (const width of [375, 768, 1440]) {
     for (const theme of ['light', 'dark']) {
       const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce' });
@@ -57,6 +58,8 @@ try {
             }),
           };
         });
+        results.push({ width, theme, id, ...measurement });
+        await page.screenshot({ path: join(directory, `${width}-${theme}-${id}.png`), fullPage: true });
         assert(measurement.documentWidth <= width + 1, `${id}: document overflows at ${width}`);
         assert(measurement.mainScroll <= measurement.mainWidth + 1, `${id}: main overflows at ${width}`);
         assert.notEqual(measurement.background, 'rgba(0, 0, 0, 0)', 'Documentation background must have actual theme tokens');
@@ -66,8 +69,6 @@ try {
           assert(choice.gap >= 8 && choice.gap <= 16, `${id}: inconsistent input-to-label spacing`);
           assert(choice.descriptionAligned, `${id}: description does not align with the title`);
         }
-        await page.screenshot({ path: join(directory, `${width}-${theme}-${id}.png`), fullPage: true });
-        results.push({ width, theme, id, ...measurement });
       }
       await page.goto(`${base}#/components/checkbox`);
       const checkbox = page.getByRole('checkbox', { name: '接收发布通知', exact: true });
@@ -88,7 +89,12 @@ try {
       if (width <= 850) {
         const trigger = page.getByRole('button', { name: '打开文档导航', exact: true });
         await trigger.click();
-        await page.getByRole('dialog', { name: '文档导航', exact: true }).waitFor();
+        const dialog = page.getByRole('dialog', { name: '文档导航', exact: true });
+        await dialog.waitFor();
+        const bounds = await dialog.boundingBox();
+        await page.screenshot({ path: join(directory, `${width}-${theme}-navigation.png`), fullPage: true });
+        assert(bounds && bounds.x >= -1 && bounds.y >= -1, 'Mobile navigation is shifted outside the screen');
+        assert(bounds.x + bounds.width <= width + 1 && bounds.y + bounds.height <= 901, 'Mobile navigation does not fit the screen');
         for (let i = 0; i < 5; i++) {
           await page.keyboard.press('Shift+Tab');
           assert(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')), 'Focus escaped mobile navigation');
@@ -96,12 +102,22 @@ try {
         await page.keyboard.press('Escape');
         assert(await trigger.evaluate((node) => node === document.activeElement), 'Mobile trigger focus was not restored');
       }
-      await page.goto(`${base}#/examples/settings`);
-      await page.getByRole('heading', { name: '工作区偏好' }).waitFor();
-      await page.getByRole('button', { name: '保存偏好' }).click();
-      await page.getByText('演示设置已保存。').waitFor();
-      await page.screenshot({ path: join(directory, `${width}-${theme}-settings.png`), fullPage: true });
+      for (const [route, heading] of [['components', '按场景找到组件'], ['ai', '给 AI 使用的文档'], ['examples/settings', '工作区偏好']]) {
+        await page.goto(`${base}#/${route}`);
+        await page.getByRole('heading', { name: heading, exact: true }).waitFor();
+        const fits = await page.evaluate(() => {
+          const main = document.querySelector('.docs-main');
+          return document.documentElement.scrollWidth <= innerWidth + 1 && main.scrollWidth <= main.clientWidth + 1;
+        });
+        assert(fits, `${route}: landing page overflows at ${width}`);
+        if (route === 'examples/settings') {
+          await page.getByRole('button', { name: '保存偏好' }).click();
+          await page.getByText('演示设置已保存。').waitFor();
+        }
+        await page.screenshot({ path: join(directory, `${width}-${theme}-${route.replaceAll('/', '-')}.png`), fullPage: true });
+      }
       assert.equal(errors.length, 0, errors.join('\n'));
+      console.log(`PASS ${width}px ${theme}: choices, chat, navigation, overview, AI page and settings.`);
       await context.close();
     }
   }
@@ -120,9 +136,9 @@ try {
   assert.equal(full.status(), 200);
   assert((await full.text()).includes('ChoiceFieldDemo'));
   await request.close();
-  console.log(`PASS: ${results.length} component/viewport/theme layouts, native label/radio interactions, mobile focus, settings forms and ${links.length} static AI links at a /ui/ subpath.`);
+  console.log(`PASS: ${results.length} component/viewport/theme layouts, 18 landing-page layouts, native label/radio interactions, mobile focus and bounds, and ${links.length} static AI links at a /ui/ subpath.`);
 } finally {
   writeFileSync(join(directory, 'measurements.json'), JSON.stringify(results, null, 2));
-  await browser.close();
+  await browser?.close();
   await new Promise((done) => server.close(done));
 }
