@@ -15,9 +15,10 @@ async function fits(page, width, label) {
   const value = await page.evaluate(() => {
     const main = document.querySelector('.docs-main');
     const top = document.querySelector('.docs-top');
-    return { document: document.documentElement.scrollWidth, main: main.scrollWidth - main.clientWidth, header: top.scrollWidth - top.clientWidth };
+    return { document: document.documentElement.scrollWidth, main: main.scrollWidth - main.clientWidth, header: top.scrollWidth - top.clientWidth, headerTop: top.getBoundingClientRect().top };
   });
   assert(value.document <= width + 1 && value.main <= 1 && value.header <= 1, `${label}: overflow ${JSON.stringify(value)}`);
+  assert(Math.abs(value.headerTop) <= 1, `${label}: ancestor scrolling moved the site header (${value.headerTop}px)`);
 }
 async function searchFits(dialog, width, label) {
   const box = await dialog.boundingBox();
@@ -81,6 +82,7 @@ try {
       await toggle.click();
       await page.getByRole('button', { name: 'API 与接入边界', exact: true }).click();
       await page.waitForFunction(() => document.querySelector('.docs-toc button[aria-current="location"]')?.textContent === 'API 与接入边界');
+      await fits(page, width, 'after table of contents navigation');
     }
     await page.goto(`${base}#/installation`);
     await page.getByRole('heading', { name: '安装', exact: true, level: 1 }).waitFor();

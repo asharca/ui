@@ -3,6 +3,7 @@ import { BookOpen, ChevronDown, Layers3, Palette, Rocket, Sparkles } from 'lucid
 import { SearchInput } from '../src/Controls';
 import { catalogMetadata } from './catalog-data';
 import { componentGroups } from './component-metadata';
+import { scrollWithin } from './docs-scroll';
 
 export function DocsDirectory({ route, query, onQueryChange, inputRef, onNavigate }: {
   route: string; query: string; onQueryChange: (value: string) => void;
@@ -16,7 +17,11 @@ export function DocsDirectory({ route, query, onQueryChange, inputRef, onNavigat
   useEffect(() => {
     if (activeGroup) setCollapsed((groups) => groups.filter((group) => group !== activeGroup));
   }, [activeGroup, route]);
-  useEffect(() => { root.current?.querySelector('[aria-current="page"]')?.scrollIntoView?.({ block: 'nearest' }); }, [route]);
+  useEffect(() => {
+    const pane = root.current?.closest<HTMLElement>('.docs-sidebar, .docs-mobile-dialog') ?? null;
+    const item = root.current?.querySelector<HTMLElement>('[aria-current="page"]') ?? null;
+    scrollWithin(pane, item, 'nearest');
+  }, [route, collapsed]);
   const filtered = catalogMetadata.filter((item) => `${item.name} ${item.description} ${item.group}`.toLowerCase().includes(query.trim().toLowerCase()));
   const starts = [
     { href: '#/installation', icon: Rocket, name: '安装与快速开始' },
