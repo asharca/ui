@@ -41,6 +41,8 @@ jobs:
         run: node scripts/check-ai-docs-http.mjs --browser
       - name: Check design skins, contrast, density and state preservation
         run: node scripts/check-design.mjs
+      - name: Check specimen panels, approval recovery and preference fallbacks
+        run: node scripts/check-design-specimens.mjs
       - name: Upload screenshots and measurements
         if: always()
         uses: actions/upload-artifact@v4
