@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import * as UI from "../src/index";
+import { ButtonDemo } from "./demos/ButtonDemo";
+import { DataTableDemo } from "./demos/DataTableDemo";
 import { SearchDemo } from "./demos/SearchDemo";
 import { WorkspaceSidebarDemo } from "./demos/WorkspaceSidebarDemo";
 import { WorkspaceDemo } from "./demos/WorkspaceDemo";
@@ -8,51 +9,6 @@ import { ToolbarDemo } from "./demos/ToolbarDemo";
 import { ConversationDemo } from "./demos/ConversationDemo";
 import { ShellDemo } from "./demos/ShellDemo";
 import { ChatThreadDemo } from "./demos/ChatThreadDemo";
-
-const dataTableRows = [
-  ["Design System", "已发布", "Ava"],
-  ["Mobile App", "进行中", "Leo"],
-  ["API Gateway", "风险", "Mia"],
-];
-
-function SelectableDataTableDemo() {
-  const [selected, setSelected] = useState<string[]>([]);
-  return (
-    <div className="docs-demo-stack">
-      <div className="row spread table-toolbar">
-        <span>{selected.length ? `已选择 ${selected.length} 项` : "选择项目"}</span>
-        <UI.Button
-          size="sm"
-          variant="ghost"
-          className={selected.length ? "" : "table-toolbar__hidden-action"}
-          aria-hidden={!selected.length}
-          tabIndex={selected.length ? 0 : -1}
-          onClick={() => setSelected([])}
-        >
-          清除选择
-        </UI.Button>
-      </div>
-      <UI.DataTable
-        label="项目列表"
-        headers={[{ label: "项目" }, { label: "状态" }, { label: "负责人" }]}
-        rowIds={dataTableRows.map(([name]) => name)}
-        rowLabels={dataTableRows.map(([name]) => name)}
-        selectedRowIds={selected}
-        onSelectedRowIdsChange={setSelected}
-        selectable
-        minWidth="32rem"
-      >
-        <tbody>
-          {dataTableRows.map(([name, status, owner]) => (
-            <tr key={name}>
-              <td>{name}</td><td>{status}</td><td>{owner}</td>
-            </tr>
-          ))}
-        </tbody>
-      </UI.DataTable>
-    </div>
-  );
-}
 
 export const componentDocs = [
   { id: "workspace-sidebar", name: "WorkspaceSidebar", description: "支持折叠、徽标、底部插槽和移动端开关的受控侧边栏。路由、移动端焦点管理与偏好持久化由宿主负责。", file: "WorkspaceSidebar.tsx", module: "workspace-sidebar", code: "", demoFile: "WorkspaceSidebarDemo.tsx", preview: <WorkspaceSidebarDemo /> },
@@ -333,17 +289,9 @@ export const componentDocs = [
     description: "用于触发操作的按钮，支持尺寸、变体和加载状态。",
     file: "Controls.tsx",
     module: "controls",
-    code: '<Button variant="outline">保存更改</Button>',
-    preview: (
-      <UI.Button
-        variant="outline"
-        onClick={(e) => {
-          e.currentTarget.textContent = "已保存";
-        }}
-      >
-        保存更改
-      </UI.Button>
-    ),
+    code: "",
+    demoFile: "ButtonDemo.tsx",
+    preview: <ButtonDemo />,
   },
   {
     id: "icon-button",
@@ -655,11 +603,12 @@ export const componentDocs = [
   {
     id: "data-table",
     name: "DataTable",
-    description: "支持可滚动容器、行多选和全选的数据表格。",
-    file: "Layout.tsx",
+    description: "支持稳定行标识、受控多选和全选的数据表格。示例包含排序与筛选。",
+    file: "DataTable.tsx",
     module: "layout",
-    code: '<DataTable selectable rowIds={rows.map((row) => row.id)} selectedRowIds={selected} onSelectedRowIdsChange={setSelected} headers={headers}><tbody>{rows.map((row) => <tr key={row.id}><td>{row.name}</td><td>{row.status}</td></tr>)}</tbody></DataTable>',
-    preview: <SelectableDataTableDemo />,
+    code: "",
+    demoFile: "DataTableDemo.tsx",
+    preview: <DataTableDemo />,
   },
   {
     id: "copy-button",
