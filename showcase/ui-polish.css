@@ -11,6 +11,8 @@
   --toolplane-ui-brand-foreground: 0 0% 100%;
 }
 :root.dark { --muted: 0 0% 17%; --muted-foreground: 0 0% 68%; --foreground: var(--toolplane-ui-foreground, 0 0% 94%); --toolplane-ui-brand-foreground: 0 0% 10%; }
+/* Tailwind 4 translates use the individual translate property, not transform. */
+.docs-mobile-dialog { translate: 0 0; display: block; }
 .docs-standalone-preview { height: 100dvh; min-height: 0; overflow: auto; overscroll-behavior: contain; }
 .demo-choice-stack { display: grid; align-content: start; gap: 24px; width: 100%; max-width: 560px; margin-inline: auto; }
 .demo-choice-stack > button { justify-self: start; }
