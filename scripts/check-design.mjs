@@ -30,9 +30,11 @@ try {
       for (const style of ['minimal', 'tech', 'glass']) {
         const context = await browser.newContext({ viewport: { width, height: 1000 }, colorScheme: mode, reducedMotion: 'reduce' });
         await context.addInitScript(({ style, mode }) => {
+          if (window !== window.top || sessionStorage.getItem('design-seeded')) return;
           localStorage.setItem('asharca-ui-docs-style', style);
           localStorage.setItem('asharca-ui-docs-theme', mode);
           localStorage.setItem('asharca-ui-docs-density', 'comfortable');
+          sessionStorage.setItem('design-seeded', 'true');
         }, { style, mode });
         const page = await context.newPage();
         const errors = [];
@@ -91,10 +93,9 @@ try {
         const frame = page.frameLocator('.docs-preview-frame');
         await frame.getByRole('button', { name: '保存更改', exact: true }).waitFor();
         assert.equal(await frame.locator('html').getAttribute('data-ui-style'), style);
-        assert.equal(await frame.locator('html').getAttribute('data-ui-density'), 'comfortable');
-        // addInitScript resets storage on page navigation; preview URLs, not
-        // shared storage, remain the source of truth for embedded documents.
+        assert.equal(await frame.locator('html').getAttribute('data-ui-density'), 'compact');
         assert.equal(await frame.locator('html').evaluate((node) => node.classList.contains('dark')), mode === 'dark');
+        assert.equal(await page.evaluate(() => localStorage.getItem('asharca-ui-docs-density')), 'compact', 'Preview must not overwrite parent preferences');
         await page.goto(`${base}#/home`);
         await page.getByRole('link', { name: '开始构建', exact: true }).waitFor();
         await fits(page, `${style}/${mode}/${width} home`);
