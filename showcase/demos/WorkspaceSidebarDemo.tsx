@@ -6,8 +6,10 @@ export function WorkspaceSidebarDemo() {
   const sidebar = useRef<HTMLElement>(null); const close = useRef<HTMLButtonElement>(null); const trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!mobileOpen) return;
+    const returnTarget = trigger.current;
     close.current?.focus();
     const previousOverflow = document.body.style.overflow; document.body.style.overflow = "hidden";
+    const onResize = () => { if (window.innerWidth > 850) setMobileOpen(false); };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); setMobileOpen(false); }
       if (event.key !== "Tab") return;
@@ -16,10 +18,10 @@ export function WorkspaceSidebarDemo() {
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     };
-    document.addEventListener("keydown", onKey);
-    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); trigger.current?.focus(); };
+    document.addEventListener("keydown", onKey); window.addEventListener("resize", onResize);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); window.removeEventListener("resize", onResize); returnTarget?.focus(); };
   }, [mobileOpen]);
-  return <div style={{ display: "flex", minHeight: 360, width: "100%", borderRadius: 8, overflow: "hidden" }}>
+  return <div style={{ display: "flex", height: 360, width: "100%", borderRadius: 8, overflow: "hidden" }}>
     {mobileOpen && <button type="button" aria-label="关闭导航遮罩" onClick={() => setMobileOpen(false)} style={{ position: "fixed", inset: 0, background: "#0006", zIndex: 29 }} />}
     <WorkspaceSidebar ref={sidebar} mobileCloseRef={close} brand="Workspace" brandIcon={<Settings2 size={22} />} brandLabel="工作区首页" onBrandClick={() => setActive("overview")}
       collapsed={collapsed} onCollapsedChange={setCollapsed} mobileOpen={mobileOpen} onMobileOpenChange={setMobileOpen} activeId={active} onSelect={(id) => { setActive(id); setMobileOpen(false); }}
