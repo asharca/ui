@@ -43,6 +43,8 @@ jobs:
         run: node scripts/check-design.mjs
       - name: Check specimen panels, approval recovery and preference fallbacks
         run: node scripts/check-design-specimens.mjs
+      - name: Capture unclipped design panels for review
+        run: node scripts/capture-design-review.mjs
       - name: Upload screenshots and measurements
         if: always()
         uses: actions/upload-artifact@v4

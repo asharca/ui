@@ -9,7 +9,7 @@
 .design-specimen-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .design-specimen { min-width: 0; border: 1px solid hsl(var(--border)); border-radius: calc(var(--toolplane-ui-radius, .625rem) + .25rem); background: hsl(var(--card)); overflow-wrap: anywhere; }
 .design-specimen-heading { display: flex; gap: .875rem; align-items: flex-start; padding: 1.25rem; border-bottom: 1px solid hsl(var(--border)); }
-.design-specimen-heading > span { padding-top: .125rem; color: hsl(var(--brand)); font-family: ui-monospace, monospace; font-size: .6875rem; letter-spacing: .08em; }
+.design-specimen-heading > span { flex: 0 0 auto; min-width: 2ch; white-space: nowrap; padding-top: .125rem; color: hsl(var(--brand)); font-family: ui-monospace, monospace; font-size: .6875rem; letter-spacing: .08em; }
 .design-specimen-heading > div { min-width: 0; }
 .design-specimen-heading h3 { font-size: .9375rem; font-weight: 600; line-height: 1.5; }
 .design-specimen-heading p { margin-top: .375rem; font-size: .8125rem; line-height: 1.8; color: hsl(var(--muted-foreground)); }
@@ -42,7 +42,7 @@
 .design-token-sample > strong { font-size: .8125rem; font-weight: 500; }
 .design-token-sample > span { font-size: 1.375rem; font-weight: 550; }
 .design-token-sample code { font-size: .6875rem; line-height: 1.7; overflow-wrap: anywhere; }
-.design-specimen-links { display: grid; }
+.design-specimen-links { display: flex; flex-direction: column; }
 .design-specimen-links a { display: flex; justify-content: space-between; align-items: center; gap: .75rem; min-height: 3rem; padding-block: .75rem; border-bottom: 1px solid hsl(var(--border)); font-size: .875rem; }
 .design-specimen-links a:hover { color: hsl(var(--brand)); }
 .design-specimen-links svg { flex-shrink: 0; }
