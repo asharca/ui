@@ -7,6 +7,7 @@ export * from './ChatComposerToolbar.tsx';
 export * from './chat-markdown.ts';
 export * from './ContentPage.tsx';
 export * from './Controls.tsx';
+export * from './ChoiceField.js';
 export * from './ConversationSidebar.tsx';
 export * from './Dialog.tsx';
 export * from './Feedback.tsx';

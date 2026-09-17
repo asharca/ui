@@ -1,0 +1,35 @@
+@layer components {
+  .ui-checkbox, .ui-radio { margin: 0; vertical-align: middle; flex-shrink: 0; }
+  .ui-choice {
+    display: grid;
+    grid-template-columns: 1rem minmax(0, 1fr);
+    align-items: start;
+    column-gap: .75rem;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    text-align: start;
+    font-size: .875rem;
+    line-height: 1.25rem;
+    cursor: pointer;
+  }
+  .ui-choice > :is(.ui-checkbox, .ui-radio) { width: 1rem; height: 1rem; margin: .125rem 0 0; }
+  .ui-choice__content { display: block; min-width: 0; overflow-wrap: anywhere; }
+  .ui-choice__label { display: block; line-height: 1.25rem; font-weight: 500; }
+  .ui-choice__description, .ui-choice__error { display: block; margin-top: .25rem; font-size: .875rem; line-height: 1.5rem; }
+  .ui-choice[data-variant="plain"] { padding-block: .25rem; }
+  .ui-choice[data-variant="card"] { padding: 1rem; border: 1px solid hsl(var(--border)); border-radius: var(--ui-radius-control, .5rem); transition: border-color 150ms ease, background-color 150ms ease; }
+  .ui-choice[data-variant="card"]:has(input:checked) { border-color: hsl(var(--ring)); background: hsl(var(--muted) / .4); }
+  .ui-choice[data-variant="card"]:has(input:focus-visible) { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+  .ui-choice:has(input:disabled) { cursor: not-allowed; }
+  .ui-choice:has(input:disabled) .ui-choice__content { opacity: .55; }
+  .ui-choice:has(input[aria-invalid="true"])[data-variant="card"] { border-color: hsl(var(--destructive-text)); }
+  .ui-choice-group { min-width: 0; border: 0; padding: 0; margin: 0; }
+  .ui-choice-group__legend { padding: 0; margin-bottom: .5rem; font-size: .875rem; line-height: 1.5rem; font-weight: 600; }
+  .ui-choice-group__description { margin: 0 0 .875rem; }
+  .ui-choice-group__items { display: grid; gap: .75rem; }
+  @media (forced-colors: active) {
+    .ui-choice[data-variant="card"]:has(input:checked) { border-color: Highlight; }
+    .ui-choice:has(input:disabled) { color: GrayText; }
+  }
+}

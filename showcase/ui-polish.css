@@ -1,0 +1,53 @@
+/* Site-only variables: the package continues to scope defaults to component roots. */
+:root {
+  --background: var(--toolplane-ui-background, 0 0% 100%);
+  --foreground: var(--toolplane-ui-foreground, 0 0% 12%);
+  --card: var(--toolplane-ui-card, 0 0% 100%);
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 43%;
+  --border: var(--toolplane-ui-border, 0 0% 90%);
+  --ring: var(--toolplane-ui-ring, 0 0% 55%);
+  --shell: var(--toolplane-ui-shell, 0 0% 97%);
+  --toolplane-ui-brand-foreground: 0 0% 100%;
+}
+:root.dark { --muted: 0 0% 17%; --muted-foreground: 0 0% 68%; --foreground: var(--toolplane-ui-foreground, 0 0% 94%); --toolplane-ui-brand-foreground: 0 0% 10%; }
+.docs-standalone-preview { height: 100dvh; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.demo-choice-stack { display: grid; align-content: start; gap: 24px; width: 100%; max-width: 560px; margin-inline: auto; }
+.demo-choice-stack > button { justify-self: start; }
+.demo-status { margin: 0; padding-top: 14px; border-top: 1px solid hsl(var(--border)); font-size: 12px; line-height: 1.7; color: hsl(var(--muted-foreground)); }
+/* Legacy label examples remain supported, without changing unrelated host labels. */
+:where(.workbench, .docs-demo-canvas, .docs-standalone-preview) label:has(> :is(.ui-checkbox, .ui-radio)):not(.ui-choice) {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: .625rem;
+  max-width: 100%;
+  min-width: 0;
+  line-height: 1.375rem;
+  white-space: normal;
+  cursor: pointer;
+}
+:where(.workbench, .docs-demo-canvas, .docs-standalone-preview) label:not(.ui-choice) > :is(.ui-checkbox, .ui-radio) { width: 1rem; height: 1rem; margin: .1875rem 0 0; flex-shrink: 0; }
+:where(.workbench, .docs-demo-canvas, .docs-standalone-preview) label:has(> :is(.ui-checkbox, .ui-radio):disabled):not(.ui-choice) { cursor: not-allowed; color: hsl(var(--muted-foreground)); }
+.ui-composer-option label { align-items: flex-start; line-height: 1.375rem; }
+.ui-composer-option label > input, .ui-composer-option label > svg { margin-top: .1875rem; }
+.ui-composer-option label > span { min-width: 0; overflow-wrap: anywhere; }
+.workbench { font-size: 14px; }
+.workbench .example-grid { gap: 22px; }
+.workbench .demo-heading h2 { font-size: 16px; }
+.workbench .demo-heading p { font-size: 12px; line-height: 1.8; }
+.workbench .setting-row strong { font-size: 13px; line-height: 1.6; }
+.workbench .setting-row label span { font-size: 12px; line-height: 1.65; }
+.workbench .checkbox-label { font-size: 13px; }
+.workbench .ui-tabs-trigger { font-size: 13px; }
+.workbench .ui-accordion-trigger { font-size: 14px; }
+.workbench .ui-accordion-content { font-size: 13px; }
+.workbench .page-footer { font-size: 12px; }
+.workbench .example-surface { border-radius: 10px; }
+.settings-example { width: 100%; }
+.settings-section { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.3fr); gap: 32px; padding-block: 28px; border-top: 1px solid hsl(var(--border)); }
+.settings-section > div { min-width: 0; }
+.settings-section h2 { font-size: 16px; font-weight: 600; }
+.settings-section > div > p { margin-top: 8px; font-size: 13px; line-height: 1.8; color: hsl(var(--muted-foreground)); }
+.settings-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; border-top: 1px solid hsl(var(--border)); padding-top: 24px; }
+.settings-actions p { font-size: 12px; color: hsl(var(--muted-foreground)); }
+@media (max-width: 640px) { .settings-section { grid-template-columns: minmax(0, 1fr); gap: 20px; } .demo-choice-stack { gap: 20px; } }
