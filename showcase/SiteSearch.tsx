@@ -12,6 +12,8 @@ const pages = [
   ...catalogMetadata.map((doc) => ({ name: doc.name, group: doc.group, description: doc.description, href: `#/components/${doc.id}` })),
 ];
 
+// Keep positioning inline: CSS optimization can fold translate into transform
+// and accidentally reactivate the shared Dialog's Tailwind Y translation.
 export function SiteSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [query, setQuery] = useState('');
   const input = useRef<HTMLInputElement>(null);
@@ -20,7 +22,7 @@ export function SiteSearch({ open, onOpenChange }: { open: boolean; onOpenChange
   const term = query.trim().toLowerCase();
   const results = (term ? pages.filter((item) => `${item.name} ${item.description} ${item.group}`.toLowerCase().includes(term)) : pages.slice(0, 10)).slice(0, 30);
   const close = () => { onOpenChange(false); setQuery(''); };
-  return <Dialog open={open} onOpenChange={(value) => { onOpenChange(value); if (!value) setQuery(''); }}><DialogPortal><DialogOverlay className="site-search-overlay" /><DialogContent className="site-search-dialog" aria-describedby={undefined} onOpenAutoFocus={(event) => { event.preventDefault(); previous.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; input.current?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); if (previous.current?.isConnected) previous.current.focus(); }}>
+  return <Dialog open={open} onOpenChange={(value) => { onOpenChange(value); if (!value) setQuery(''); }}><DialogPortal><DialogOverlay className="site-search-overlay" /><DialogContent className="site-search-dialog" style={{ transform: 'none', translate: '-50% 0' }} aria-describedby={undefined} onOpenAutoFocus={(event) => { event.preventDefault(); previous.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; input.current?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); if (previous.current?.isConnected) previous.current.focus(); }}>
     <div className="site-search-heading"><DialogTitle><Search size={17} />搜索文档</DialogTitle><DialogClose asChild><IconButton label="关闭搜索" variant="ghost" icon={<X size={16} />} /></DialogClose></div>
     <SearchInput ref={input} label="搜索文档和组件" placeholder="搜索组件、用途或指南…" value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery('')} onKeyDown={(event) => {
       if (results.length && (event.key === 'ArrowDown' || event.key === 'Enter')) { event.preventDefault(); if (event.key === 'Enter') links.current[0]?.click(); else links.current[0]?.focus(); }

@@ -19,6 +19,12 @@ async function fits(page, width, label) {
   });
   assert(value.document <= width + 1 && value.main <= 1 && value.header <= 1, `${label}: overflow ${JSON.stringify(value)}`);
 }
+async function searchFits(dialog, width, label) {
+  const box = await dialog.boundingBox();
+  assert(box && box.x >= -1 && box.y >= -1, `${label}: search is clipped outside the viewport`);
+  assert(box.x + box.width <= width + 1 && box.y + box.height <= 1001, `${label}: search exceeds viewport bounds`);
+  assert(Math.abs(box.x + box.width / 2 - width / 2) <= 1, `${label}: search must be horizontally centered`);
+}
 try {
   server = await preview({ configFile: resolve('showcase/vite.config.ts'), preview: { host: '127.0.0.1', port: 0, open: false } });
   const base = `http://127.0.0.1:${server.httpServer.address().port}/`;
@@ -46,9 +52,11 @@ try {
     await trigger.click();
     const dialog = page.getByRole('dialog', { name: '搜索文档', exact: true });
     await dialog.waitFor();
+    await searchFits(dialog, width, 'initial results');
     const search = dialog.getByRole('searchbox', { name: '搜索文档和组件', exact: true });
     assert(await search.evaluate((node) => document.activeElement === node));
     await search.fill('ChoiceField');
+    await searchFits(dialog, width, 'filtered results');
     await page.keyboard.press('ArrowDown');
     assert(await dialog.getByRole('link', { name: /ChoiceField/ }).evaluate((node) => document.activeElement === node));
     await page.screenshot({ path: join(output, `${width}-${mode}-search.png`) });
