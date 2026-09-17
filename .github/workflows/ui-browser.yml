@@ -15,12 +15,12 @@ jobs:
   browser:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      UI_BROWSER_ROOT: ${{ runner.temp }}/ui-browser
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Set isolated browser tooling path
+        run: echo "UI_BROWSER_ROOT=$RUNNER_TEMP/ui-browser" >> "$GITHUB_ENV"
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
