@@ -118,7 +118,7 @@ export function DataTable({
         : '';
 
   useEffect(() => {
-    if (issue && (typeof process === 'undefined' || process.env.NODE_ENV !== 'production')) {
+    if (issue && process.env.NODE_ENV !== 'production') {
       console.warn(`[DataTable] ${issue}`);
     }
   }, [issue]);
@@ -127,7 +127,10 @@ export function DataTable({
     !(strictSelection && missingIds) && Boolean(onSelectedRowIdsChange);
   // Preserve existing positional IDs for static-table consumers; strictSelection
   // lets hosts opt into a stable-ID contract without a breaking API change.
-  const ids = selectableRows.map((_, index) => rowIds?.[index] ?? String(index));
+  const ids = selectableRows.map((_, index) => {
+    const id = rowIds?.[index];
+    return typeof id === 'string' ? id : String(index);
+  });
   const visibleIds = new Set(ids);
   const selected = new Set(selectedRowIds);
   const allSelected = ids.length > 0 && ids.every((id) => selected.has(id));
