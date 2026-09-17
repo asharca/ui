@@ -6,100 +6,32 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "keywords": [
-    "toolplane",
-    "react",
-    "ui",
-    "chat",
-    "assistant-ui",
-    "tailwindcss"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/asharca/ui.git"
-  },
+  "keywords": ["toolplane", "react", "ui", "chat", "assistant-ui", "tailwindcss"],
+  "repository": { "type": "git", "url": "git+https://github.com/asharca/ui.git" },
   "homepage": "https://github.com/asharca/ui#readme",
-  "bugs": {
-    "url": "https://github.com/asharca/ui/issues"
-  },
+  "bugs": { "url": "https://github.com/asharca/ui/issues" },
   "packageManager": "pnpm@10.32.1",
-  "engines": {
-    "node": ">=20"
-  },
-  "sideEffects": [
-    "./src/styles.css"
-  ],
-  "files": [
-    "dist",
-    "src/styles.css",
-    "README.md",
-    "LICENSE"
-  ],
+  "engines": { "node": ">=20" },
+  "sideEffects": ["./src/styles.css", "./src/styles.base.css"],
+  "files": ["dist", "src/styles.css", "src/styles.base.css", "README.md", "LICENSE"],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./controls": {
-      "types": "./dist/Controls.d.ts",
-      "import": "./dist/Controls.js"
-    },
-    "./accordion": {
-      "types": "./dist/Accordion.d.ts",
-      "import": "./dist/Accordion.js"
-    },
-    "./avatar": {
-      "types": "./dist/Avatar.d.ts",
-      "import": "./dist/Avatar.js"
-    },
-    "./workspace-tab-bar": {
-      "types": "./dist/WorkspaceTabBar.d.ts",
-      "import": "./dist/WorkspaceTabBar.js"
-    },
-    "./workspace-sidebar": {
-      "types": "./dist/WorkspaceSidebar.d.ts",
-      "import": "./dist/WorkspaceSidebar.js"
-    },
-    "./dialog": {
-      "types": "./dist/Dialog.d.ts",
-      "import": "./dist/Dialog.js"
-    },
-    "./feedback": {
-      "types": "./dist/Feedback.d.ts",
-      "import": "./dist/Feedback.js"
-    },
-    "./forms": {
-      "types": "./dist/Forms.d.ts",
-      "import": "./dist/Forms.js"
-    },
-    "./layout": {
-      "types": "./dist/Layout.d.ts",
-      "import": "./dist/Layout.js"
-    },
-    "./navigation": {
-      "types": "./dist/Navigation.d.ts",
-      "import": "./dist/Navigation.js"
-    },
-    "./overlays": {
-      "types": "./dist/Overlays.d.ts",
-      "import": "./dist/Overlays.js"
-    },
-    "./chat-shell": {
-      "types": "./dist/ChatShell.d.ts",
-      "import": "./dist/ChatShell.js"
-    },
-    "./chat-composer-toolbar": {
-      "types": "./dist/ChatComposerToolbar.d.ts",
-      "import": "./dist/ChatComposerToolbar.js"
-    },
-    "./chat-thread": {
-      "types": "./dist/ChatThread.d.ts",
-      "import": "./dist/ChatThread.js"
-    },
-    "./conversation-sidebar": {
-      "types": "./dist/ConversationSidebar.d.ts",
-      "import": "./dist/ConversationSidebar.js"
-    },
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./controls": { "types": "./dist/Controls.d.ts", "import": "./dist/Controls.js" },
+    "./accordion": { "types": "./dist/Accordion.d.ts", "import": "./dist/Accordion.js" },
+    "./avatar": { "types": "./dist/Avatar.d.ts", "import": "./dist/Avatar.js" },
+    "./workspace-tab-bar": { "types": "./dist/WorkspaceTabBar.d.ts", "import": "./dist/WorkspaceTabBar.js" },
+    "./workspace-sidebar": { "types": "./dist/WorkspaceSidebar.d.ts", "import": "./dist/WorkspaceSidebar.js" },
+    "./dialog": { "types": "./dist/Dialog.d.ts", "import": "./dist/Dialog.js" },
+    "./feedback": { "types": "./dist/Feedback.d.ts", "import": "./dist/Feedback.js" },
+    "./forms": { "types": "./dist/Forms.d.ts", "import": "./dist/Forms.js" },
+    "./layout": { "types": "./dist/Layout.d.ts", "import": "./dist/Layout.js" },
+    "./navigation": { "types": "./dist/Navigation.d.ts", "import": "./dist/Navigation.js" },
+    "./overlays": { "types": "./dist/Overlays.d.ts", "import": "./dist/Overlays.js" },
+    "./chat-shell": { "types": "./dist/ChatShell.d.ts", "import": "./dist/ChatShell.js" },
+    "./chat-composer-toolbar": { "types": "./dist/ChatComposerToolbar.d.ts", "import": "./dist/ChatComposerToolbar.js" },
+    "./chat-thread": { "types": "./dist/ChatThread.d.ts", "import": "./dist/ChatThread.js" },
+    "./tool-call-card": { "types": "./dist/ToolCallCard.d.ts", "import": "./dist/ToolCallCard.js" },
+    "./conversation-sidebar": { "types": "./dist/ConversationSidebar.d.ts", "import": "./dist/ConversationSidebar.js" },
     "./styles.css": "./src/styles.css"
   },
   "scripts": {
@@ -109,48 +41,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:package": "node scripts/check-package.mjs",
+    "test:examples": "node scripts/check-showcase-examples.mjs",
     "build": "node --input-type=module -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
     "postbuild": "node --input-type=module -e \"import { readFileSync, writeFileSync } from 'node:fs'; const path = 'dist/index.d.ts'; writeFileSync(path, readFileSync(path, 'utf8').replaceAll('.tsx', '.js').replaceAll('.ts', '.js'))\"",
     "prepack": "pnpm build"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "peerDependencies": {
-    "@assistant-ui/react": "0.15.18",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tailwindcss": "^4.0.0"
-  },
-  "dependencies": {
-    "@assistant-ui/react-streamdown": "0.3.13",
-    "@streamdown/code": "^1.1.1",
-    "@streamdown/mermaid": "^1.0.2",
-    "lucide-react": "^1.21.0",
-    "radix-ui": "1.6.2",
-    "remark-breaks": "^4.0.0",
-    "streamdown": "^2.5.0"
-  },
+  "publishConfig": { "access": "public" },
+  "peerDependencies": { "@assistant-ui/react": "0.15.18", "react": "^19.0.0", "react-dom": "^19.0.0", "tailwindcss": "^4.0.0" },
+  "dependencies": { "@assistant-ui/react-streamdown": "0.3.13", "@streamdown/code": "^1.1.1", "@streamdown/mermaid": "^1.0.2", "lucide-react": "^1.21.0", "radix-ui": "1.6.2", "remark-breaks": "^4.0.0", "streamdown": "^2.5.0" },
   "devDependencies": {
-    "@assistant-ui/react": "0.15.18",
-    "@tailwindcss/postcss": "^4",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^24",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^6.0.3",
-    "eslint": "^10",
-    "eslint-plugin-react-hooks": "^7",
-    "jsdom": "^29.1.1",
-    "postcss": "^8",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "typescript-eslint": "^8",
-    "vite": "^8.2.2",
-    "vitest": "^4.1.9"
+    "@assistant-ui/react": "0.15.18", "@tailwindcss/postcss": "^4", "@testing-library/jest-dom": "6.9.1", "@testing-library/react": "^16.3.2", "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24", "@types/react": "^19", "@types/react-dom": "^19", "@vitejs/plugin-react": "^6.0.3", "eslint": "^10", "eslint-plugin-react-hooks": "^7", "jsdom": "^29.1.1",
+    "postcss": "^8", "react": "19.2.4", "react-dom": "19.2.4", "tailwindcss": "^4", "typescript": "^5", "typescript-eslint": "^8", "vite": "^8.2.2", "vitest": "^4.1.9"
   }
 }
