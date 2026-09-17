@@ -16,3 +16,4 @@ export function ChoiceFieldDemo() {
     <Button type="submit" variant="primary">保存演示设置</Button>
     {submitted && agreed && <p role="status" className="demo-status">设置已保存到本地演示状态。</p>}
   </form>;
+}
