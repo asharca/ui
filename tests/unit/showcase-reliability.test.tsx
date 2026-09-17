@@ -15,6 +15,9 @@ it('lets visitors explore button variants, sizes and interaction states', async 
   const user = userEvent.setup();
   render(<ButtonDemo />);
   const save = screen.getByRole('button', { name: '保存更改' });
+  expect(save).toHaveClass('ui-button-primary');
+  await user.selectOptions(screen.getByRole('combobox', { name: '按钮变体' }), 'outline');
+  expect(save).toHaveClass('ui-button-outline');
   await user.selectOptions(screen.getByRole('combobox', { name: '按钮变体' }), 'primary');
   await user.selectOptions(screen.getByRole('combobox', { name: '按钮尺寸' }), 'lg');
   expect(save).toHaveClass('ui-button-primary', 'ui-button-lg');
@@ -24,7 +27,9 @@ it('lets visitors explore button variants, sizes and interaction states', async 
   expect(screen.getByRole('button', { name: '正在保存…' })).toBeDisabled();
   await user.click(screen.getByRole('button', { name: '重置', exact: true }));
   expect(screen.getByRole('button', { name: '保存更改' })).toBeEnabled();
-  expect(screen.getByRole('button', { name: '保存更改' })).toHaveClass('ui-button-outline');
+  expect(screen.getByRole('button', { name: '保存更改' })).toHaveClass('ui-button-primary');
+  expect(screen.getByRole('combobox', { name: '按钮变体' })).toHaveValue('primary');
+  expect(screen.getByRole('combobox', { name: '按钮尺寸' })).toHaveValue('md');
   await user.click(screen.getByRole('checkbox', { name: '禁用状态' }));
   expect(screen.getByRole('button', { name: '保存更改' })).toBeDisabled();
 });

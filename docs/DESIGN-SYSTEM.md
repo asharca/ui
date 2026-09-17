@@ -7,7 +7,7 @@
 | 风格 | 色彩与表面 | 几何 | 适用场景 |
 | --- | --- | --- | --- |
 | Minimal Pro / minimal | 中性色、轻阴影、实色面板 | 10px 基础圆角 | 文档、设置、企业表单 |
-| Tech Noir / tech | 蓝黑或冷白、青色强调、细边界与轻内高光 | 8px 基础圆角 | AI、Agent、工具控制台 |
+| Tech Noir / tech | 蓝黑或冷白、钴蓝强调、细边界与克制阴影 | 8px 基础圆角 | AI、Agent、工具控制台 |
 | Glass / glass | 紫色强调、柔和阴影、指定容器轻透明 | 14px 基础圆角 | 产品展示、轻量工作台 |
 
 每套都提供浅色和深色；密度独立为 comfortable / compact。科技感不是持续动画或满屏渐变。玻璃仅用于 data-surface="glass"，输入、代码、菜单与浮层保持实色；系统要求减少透明度时关闭模糊。普通 Card 不添加假按钮语义，也不默认悬浮抬升。
@@ -38,7 +38,7 @@
 
 ## 高频组件的视觉契约
 
-Button 保留六种已有 variant，不新增虚假的 soft API；主操作有轻内高光，次操作、轮廓、ghost 和危险操作有独立层级。disabled/loading 仍由原有实现阻止激活。
+Button 保留六种已有 variant，不新增虚假的 soft API；主操作与次操作、轮廓、ghost 和危险操作有独立层级。disabled/loading 仍由原有实现阻止激活。
 
 Input / Textarea / Select 默认实色、明确边界，支持原生 data-appearance="filled" 的填充式外观。错误边界配合 aria-invalid 与说明 ID，不能只靠红色。只读和禁用不是同一种状态。
 
@@ -48,11 +48,11 @@ Card / Panel 使用统一表面、圆角和轻高光，可用 data-surface="elev
 
 TabsList 可使用 data-variant="segmented|underline|pills"，Radix Tabs 的键盘和 ARIA 关系不变。Dialog / 菜单 / Popover 不修改焦点或 Portal 行为；实色阅读面、边界与阴影负责层次。
 
-DataTable 用更清晰的表头、行间距、受控选中态和数字排版。ToolCallCard 使用有语义的边条、状态标记与工具图标容器，保留七种真实状态、审批与受限结果。ChatThread 的输入框、工具栏、Markdown 与工具过程共享主题，不复制宿主业务逻辑。
+DataTable 用更清晰的表头、行间距、受控选中态和数字排版。ToolCallCard 使用有语义的状态标记与工具图标容器，保留七种真实状态、审批与受限结果。ChatThread 的输入框、工具栏、Markdown 与工具过程共享主题，不复制宿主业务逻辑。
 
 ## 展示与机器文档
 
-#/home 是产品式入口，#/themes 是可交互主题实验室。原来的无 hash 默认安装页和全部组件路由保留。顶栏风格切换与明暗独立；主题实验室可调密度并复制配置。独立 iframe / 新窗口通过 URL 接收风格、明暗和密度，不写回父页面偏好。
+#/home 是产品式入口，#/themes 是可交互主题实验室。无 hash 和 #/ 默认进入产品首页；安装页改为明确的 #/installation，全部组件路由保留。顶栏风格切换与明暗独立；主题实验室可调密度并复制配置。独立 iframe / 新窗口通过 URL 接收风格、明暗和密度，不写回父页面偏好。
 
 主题切换不重挂载当前内嵌示例；页面重载、重置或切换 iframe 视口会重置本地演示数据。展示中的运行按钮仅有可取消的本地计时器，不发送模型或工具请求。
 
