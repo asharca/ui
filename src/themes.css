@@ -1,0 +1,18 @@
+/* Optional entry: import after styles.css and opt in with data-ui-style. */
+@import "./theme-tokens.css";
+
+/* Density is independent of the palette, including when both are on html. */
+[data-ui-style][data-ui-density="compact"], :root[data-ui-style][data-ui-density="compact"] { --ds-height: 2.25rem; --ds-space: .75rem; }
+[data-ui-style][data-ui-density="comfortable"], :root[data-ui-style][data-ui-density="comfortable"] { --ds-height: 2.5rem; --ds-space: 1rem; }
+
+/* Existing public sizing variables remain authoritative in an opted-in skin. */
+@layer components {
+  :where([data-ui-style]) :is([data-toolplane-ui="button"],.ui-input,.ui-textarea,.ui-tabs-list) { border-radius: var(--radius); }
+  :where([data-ui-style]) .ui-input:not(.ui-input-sm):not(.ui-input-lg) { height: var(--toolplane-ui-control-height); }
+  :where([data-ui-style]) [data-toolplane-ui="button"]:not(.ui-button-sm):not(.ui-button-lg) { min-height: var(--toolplane-ui-control-height); }
+  :where([data-ui-style]) .ui-choice[data-variant="card"] { border-radius: var(--radius); }
+  :where([data-ui-style]) :is(.ui-panel,.ui-panel-muted) { border-radius: calc(var(--radius) + .25rem); }
+  :where([data-ui-style]) .ui-tabs-list[data-variant="underline"] { border-radius: 0; }
+  :where([data-ui-style]) .ui-tabs-list[data-variant="pills"] { border-radius: 999px; }
+  @media (pointer: coarse) { :where([data-ui-style]) [data-toolplane-ui="button"]:not(.ui-button-sm):not(.ui-button-lg) { min-height: max(2.75rem, var(--toolplane-ui-control-height)); } }
+}

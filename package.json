@@ -12,8 +12,8 @@
   "bugs": { "url": "https://github.com/asharca/ui/issues" },
   "packageManager": "pnpm@10.32.1",
   "engines": { "node": ">=20" },
-  "sideEffects": ["./src/styles.css", "./src/styles.base.css", "./src/styles.components.css", "./src/choice-field.css"],
-  "files": ["dist", "src/styles.css", "src/styles.base.css", "src/styles.components.css", "src/choice-field.css", "docs/ai", "llms.txt", "README.md", "LICENSE"],
+  "sideEffects": ["./src/styles.css", "./src/styles.base.css", "./src/styles.components.css", "./src/choice-field.css", "./src/themes.css", "./src/theme-tokens.css", "./src/design-components.css"],
+  "files": ["dist", "src/styles.css", "src/styles.base.css", "src/styles.components.css", "src/choice-field.css", "src/themes.css", "src/theme-tokens.css", "src/design-components.css", "docs/ai", "llms.txt", "README.md", "LICENSE"],
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./controls": { "types": "./dist/Controls.d.ts", "import": "./dist/Controls.js" },
@@ -34,6 +34,7 @@
     "./tool-call-card": { "types": "./dist/ToolCallCard.d.ts", "import": "./dist/ToolCallCard.js" },
     "./conversation-sidebar": { "types": "./dist/ConversationSidebar.d.ts", "import": "./dist/ConversationSidebar.js" },
     "./styles.css": "./src/styles.css",
+    "./themes.css": "./src/themes.css",
     "./llms.txt": "./dist/ai/llms.txt",
     "./llms-full.txt": "./dist/ai/llms-full.txt"
   },

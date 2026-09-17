@@ -1,0 +1,147 @@
+/* Optional skins. Import AFTER @asharca/ui/styles.css.
+   No selector is active until a host opts in with data-ui-style.
+   All colors retain the existing HSL-channel public contract. */
+@import "./design-components.css";
+
+[data-ui-style], :root[data-ui-style] {
+  --ds-hue: 240;
+  --ds-saturation: 5%;
+  --ds-brand-light: 240 6% 16%;
+  --ds-brand-dark: 240 5% 94%;
+  --ds-on-brand-light: 0 0% 100%;
+  --ds-on-brand-dark: 240 6% 12%;
+  --ds-radius: .625rem;
+  --ds-composer-radius: 1rem;
+  --ds-panel-shadow: 0 1px 2px hsl(240 10% 10% / .04);
+  --ds-elevated-shadow: 0 12px 36px -16px hsl(240 10% 10% / .24), 0 2px 6px hsl(240 10% 10% / .04);
+  --ds-primary-shadow: 0 1px 2px hsl(240 10% 10% / .1), inset 0 1px 0 hsl(0 0% 100% / .1);
+  --ds-surface-alpha: 1;
+  --ds-blur: 0px;
+  --ds-duration: 160ms;
+  --ds-ease: cubic-bezier(.2, .8, .2, 1);
+  --ds-space: 1rem;
+  --ds-height: 2.5rem;
+  --ds-highlight: linear-gradient(180deg, hsl(0 0% 100% / .04), transparent);
+}
+[data-ui-style="tech"], :root[data-ui-style="tech"] {
+  --ds-hue: 222;
+  --ds-saturation: 24%;
+  --ds-brand-light: 199 92% 34%;
+  --ds-brand-dark: 187 86% 62%;
+  --ds-on-brand-light: 0 0% 100%;
+  --ds-on-brand-dark: 222 45% 10%;
+  --ds-radius: .5rem;
+  --ds-composer-radius: 1.125rem;
+  --ds-panel-shadow: 0 1px 3px hsl(222 40% 4% / .08), inset 0 1px 0 hsl(200 90% 85% / .04);
+  --ds-elevated-shadow: 0 16px 44px -16px hsl(222 50% 4% / .35), 0 0 0 1px hsl(190 70% 70% / .035);
+  --ds-primary-shadow: 0 2px 8px hsl(190 90% 40% / .13), inset 0 1px 0 hsl(0 0% 100% / .2);
+  --ds-highlight: linear-gradient(180deg, hsl(190 90% 90% / .07), transparent);
+}
+[data-ui-style="glass"], :root[data-ui-style="glass"] {
+  --ds-hue: 250;
+  --ds-saturation: 18%;
+  --ds-brand-light: 255 65% 46%;
+  --ds-brand-dark: 253 96% 80%;
+  --ds-on-brand-light: 0 0% 100%;
+  --ds-on-brand-dark: 250 36% 12%;
+  --ds-radius: .875rem;
+  --ds-composer-radius: 1.5rem;
+  --ds-panel-shadow: 0 8px 28px -18px hsl(252 50% 30% / .3), inset 0 1px 0 hsl(0 0% 100% / .12);
+  --ds-elevated-shadow: 0 20px 56px -20px hsl(250 50% 8% / .35), inset 0 1px 0 hsl(0 0% 100% / .15);
+  --ds-primary-shadow: 0 4px 12px hsl(253 80% 50% / .18), inset 0 1px 0 hsl(0 0% 100% / .2);
+  --ds-surface-alpha: .92;
+  --ds-blur: 16px;
+  --ds-highlight: linear-gradient(145deg, hsl(0 0% 100% / .12), transparent 55%);
+}
+/* Light is the default. Explicit local modes also work inside a dark host. */
+[data-ui-style], :root[data-ui-style], [data-ui-style][data-ui-mode="light"] {
+  color-scheme: light;
+  --toolplane-ui-background: var(--ds-hue) 18% 99%;
+  --toolplane-ui-foreground: var(--ds-hue) var(--ds-saturation) 13%;
+  --toolplane-ui-card: var(--ds-hue) 12% 100%;
+  --toolplane-ui-card-foreground: var(--ds-hue) var(--ds-saturation) 13%;
+  --toolplane-ui-popover: var(--ds-hue) 12% 100%;
+  --toolplane-ui-popover-foreground: var(--ds-hue) var(--ds-saturation) 13%;
+  --toolplane-ui-primary: var(--ds-brand-light);
+  --toolplane-ui-primary-foreground: var(--ds-on-brand-light);
+  --toolplane-ui-brand: var(--ds-brand-light);
+  --toolplane-ui-brand-foreground: var(--ds-on-brand-light);
+  --toolplane-ui-brand-soft: var(--ds-hue) 32% 94%;
+  --toolplane-ui-secondary: var(--ds-hue) 16% 95%;
+  --toolplane-ui-secondary-foreground: var(--ds-hue) var(--ds-saturation) 18%;
+  --toolplane-ui-muted: var(--ds-hue) 15% 95%;
+  --toolplane-ui-muted-foreground: var(--ds-hue) 10% 41%;
+  --toolplane-ui-accent: var(--ds-hue) 22% 92%;
+  --toolplane-ui-accent-foreground: var(--ds-hue) var(--ds-saturation) 16%;
+  --toolplane-ui-border: var(--ds-hue) 16% 87%;
+  --toolplane-ui-input: var(--ds-hue) 10% 56%;
+  --toolplane-ui-ring: var(--ds-brand-light);
+  --toolplane-ui-shell: var(--ds-hue) 20% 97%;
+  --toolplane-ui-shell-foreground: var(--ds-hue) var(--ds-saturation) 13%;
+  --toolplane-ui-destructive: 0 72% 43%;
+  --toolplane-ui-destructive-foreground: 0 0% 100%;
+  --toolplane-ui-destructive-text: 0 72% 41%;
+  --toolplane-ui-warning: 32 94% 35%;
+  --ds-success: 158 72% 29%;
+  --ds-warning: 32 94% 32%;
+  --ds-shadow-color: 222 32% 18%;
+  --ds-code-bg: var(--ds-hue) 17% 96%;
+}
+.dark[data-ui-style]:not([data-ui-mode="light"]),
+.dark [data-ui-style]:not([data-ui-mode="light"]),
+:root.dark[data-ui-style]:not([data-ui-mode="light"]),
+[data-ui-style][data-ui-mode="dark"] {
+  color-scheme: dark;
+  --toolplane-ui-background: var(--ds-hue) var(--ds-saturation) 7%;
+  --toolplane-ui-foreground: var(--ds-hue) 12% 94%;
+  --toolplane-ui-card: var(--ds-hue) var(--ds-saturation) 10%;
+  --toolplane-ui-card-foreground: var(--ds-hue) 12% 94%;
+  --toolplane-ui-popover: var(--ds-hue) var(--ds-saturation) 12%;
+  --toolplane-ui-popover-foreground: var(--ds-hue) 12% 96%;
+  --toolplane-ui-primary: var(--ds-brand-dark);
+  --toolplane-ui-primary-foreground: var(--ds-on-brand-dark);
+  --toolplane-ui-brand: var(--ds-brand-dark);
+  --toolplane-ui-brand-foreground: var(--ds-on-brand-dark);
+  --toolplane-ui-brand-soft: var(--ds-hue) 30% 17%;
+  --toolplane-ui-secondary: var(--ds-hue) var(--ds-saturation) 16%;
+  --toolplane-ui-secondary-foreground: var(--ds-hue) 12% 94%;
+  --toolplane-ui-muted: var(--ds-hue) var(--ds-saturation) 14%;
+  --toolplane-ui-muted-foreground: var(--ds-hue) 12% 71%;
+  --toolplane-ui-accent: var(--ds-hue) var(--ds-saturation) 20%;
+  --toolplane-ui-accent-foreground: var(--ds-hue) 12% 96%;
+  --toolplane-ui-border: var(--ds-hue) 17% 24%;
+  --toolplane-ui-input: var(--ds-hue) 15% 48%;
+  --toolplane-ui-ring: var(--ds-brand-dark);
+  --toolplane-ui-shell: var(--ds-hue) var(--ds-saturation) 9%;
+  --toolplane-ui-shell-foreground: var(--ds-hue) 12% 94%;
+  --toolplane-ui-destructive: 0 64% 43%;
+  --toolplane-ui-destructive-foreground: 0 0% 100%;
+  --toolplane-ui-destructive-text: 0 86% 76%;
+  --toolplane-ui-warning: 40 94% 65%;
+  --ds-success: 158 66% 63%;
+  --ds-warning: 40 94% 65%;
+  --ds-shadow-color: 222 45% 2%;
+  --ds-code-bg: var(--ds-hue) var(--ds-saturation) 8%;
+}
+[data-ui-style], :root[data-ui-style] {
+  --toolplane-ui-radius: var(--ds-radius);
+  --toolplane-ui-composer-radius: var(--ds-composer-radius);
+  --toolplane-ui-control-height: var(--ds-height);
+  /* Root aliases support documentation and ordinary host markup as well. */
+  --background: var(--toolplane-ui-background);
+  --foreground: var(--toolplane-ui-foreground);
+  --card: var(--toolplane-ui-card);
+  --card-foreground: var(--toolplane-ui-card-foreground);
+  --muted: var(--toolplane-ui-muted);
+  --muted-foreground: var(--toolplane-ui-muted-foreground);
+  --border: var(--toolplane-ui-border);
+  --ring: var(--toolplane-ui-ring);
+  --brand: var(--toolplane-ui-brand);
+  --brand-foreground: var(--toolplane-ui-brand-foreground);
+  --shell: var(--toolplane-ui-shell);
+}
+[data-ui-density="compact"] { --ds-height: 2.25rem; --ds-space: .75rem; }
+[data-ui-density="comfortable"] { --ds-height: 2.5rem; --ds-space: 1rem; }
+@media (prefers-reduced-motion: reduce) { [data-ui-style] { --ds-duration: .01ms; } }
+@media (prefers-reduced-transparency: reduce) { [data-ui-style] { --ds-surface-alpha: 1; --ds-blur: 0px; } }
+@media print { [data-ui-style] { --ds-blur: 0px; --ds-surface-alpha: 1; --ds-panel-shadow: none; --ds-elevated-shadow: none; } }
