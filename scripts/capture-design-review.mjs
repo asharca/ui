@@ -13,27 +13,68 @@ let browser;
 let server;
 let failure;
 
-// The docs use an inner scroller. Element screenshots taller than that viewport
-// otherwise capture clipped panels or unrelated content below the panel. Keep
-// width unchanged and temporarily extend viewport height for a full-panel image.
-// Layout/interaction assertions run separately at the original 1000px height.
+// Keep the real 1000px viewport and component CSS unchanged. A long element
+// inside .docs-main is clipped by that scroller, even in a full-page screenshot.
+// Capture its visible sections while scrolling, then join the genuine pixels.
 async function capturePanel(page, locator, name) {
   const viewport = page.viewportSize();
-  const original = await locator.boundingBox();
-  assert(original, `Missing panel ${name}`);
+  const originalScroll = await locator.evaluate((node) => node.closest('.docs-main').scrollTop);
+  const tiles = [];
+  let dimensions;
   try {
-    await page.setViewportSize({ width: viewport.width, height: Math.max(viewport.height, Math.ceil(original.height) + 200) });
-    await locator.evaluate((node) => node.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' }));
-    const geometry = await locator.evaluate((node) => {
-      const bounds = node.getBoundingClientRect();
-      const clip = node.closest('.docs-main').getBoundingClientRect();
-      return { width: innerWidth, height: innerHeight, top: bounds.top, bottom: bounds.bottom, clipTop: clip.top, clipBottom: clip.bottom };
-    });
-    assert(geometry.top >= geometry.clipTop - 1 && geometry.bottom <= geometry.clipBottom + 1, `Panel is clipped: ${name} ${JSON.stringify(geometry)}`);
-    await locator.screenshot({ path: join(directory, `${name}.png`) });
-    captures.push({ name, type: 'full-panel', ...geometry });
+    let offset = 0;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      await locator.evaluate((node, offset) => {
+        const main = node.closest('.docs-main');
+        const position = node.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop;
+        main.scrollTop = position + offset;
+      }, offset);
+      await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+      const geometry = await locator.evaluate((node) => {
+        const bounds = node.getBoundingClientRect();
+        const clip = node.closest('.docs-main').getBoundingClientRect();
+        const x = Math.max(0, bounds.left, clip.left);
+        const y = Math.max(0, bounds.top, clip.top);
+        return {
+          x, y, width: Math.min(innerWidth, bounds.right, clip.right) - x,
+          height: Math.min(innerHeight, bounds.bottom, clip.bottom) - y,
+          outputY: y - bounds.top, panelWidth: bounds.width, panelHeight: bounds.height,
+        };
+      });
+      assert(geometry.height > 0 && geometry.width > 0, `No visible panel pixels: ${name}`);
+      assert(geometry.width >= geometry.panelWidth - 1, `Panel is horizontally clipped: ${name}`);
+      dimensions = { width: Math.ceil(geometry.panelWidth), height: Math.ceil(geometry.panelHeight) };
+      const png = await page.screenshot({ clip: { x: geometry.x, y: geometry.y, width: geometry.width, height: geometry.height }, animations: 'disabled' });
+      const y = Math.round(geometry.outputY);
+      tiles.push({ y, height: Math.ceil(geometry.height), image: png.toString('base64') });
+      if (y + geometry.height >= geometry.panelHeight - 1) break;
+      const next = Math.floor(geometry.outputY + geometry.height) - 24;
+      assert(next > offset, `Scrolling did not advance: ${name}`);
+      offset = next;
+    }
+    let covered = 0;
+    for (const tile of tiles) {
+      assert(tile.y <= covered + 1, `A screenshot section is missing: ${name}`);
+      covered = Math.max(covered, tile.y + tile.height);
+    }
+    assert(covered >= dimensions.height - 1, `The panel bottom was not captured: ${name}`);
+    const image = await page.evaluate(async ({ dimensions, tiles }) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
+      const context = canvas.getContext('2d');
+      for (const tile of tiles) {
+        const image = new Image();
+        image.src = `data:image/png;base64,${tile.image}`;
+        await image.decode();
+        context.drawImage(image, 0, tile.y);
+      }
+      return canvas.toDataURL('image/png').split(',')[1];
+    }, { dimensions, tiles });
+    writeFileSync(join(directory, `${name}.png`), Buffer.from(image, 'base64'));
+    captures.push({ name, type: 'stitched-original-viewport', viewport, ...dimensions, segments: tiles.map(({ y, height }) => ({ y, height })) });
   } finally {
-    await page.setViewportSize(viewport);
+    await locator.evaluate((node, value) => { node.closest('.docs-main').scrollTop = value; }, originalScroll);
   }
 }
 
@@ -70,7 +111,7 @@ try {
     }
     await context.close();
   }
-  console.log(`PASS ${captures.length} review captures: original-width home viewports and unclipped full panels; phone/desktop numbering does not wrap.`);
+  console.log(`PASS ${captures.length} review captures: original home viewports and complete stitched scroll panels; phone/desktop numbering does not wrap.`);
 } catch (error) {
   failure = String(error.stack ?? error);
   console.error(error);
