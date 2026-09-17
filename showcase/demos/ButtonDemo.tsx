@@ -14,7 +14,7 @@ const sizes: ControlSize[] = ["sm", "md", "lg"];
 
 export function ButtonDemo() {
   const id = useId();
-  const [variant, setVariant] = useState<ButtonVariant>("outline");
+  const [variant, setVariant] = useState<ButtonVariant>("primary");
   const [size, setSize] = useState<ControlSize>("md");
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -56,7 +56,7 @@ export function ButtonDemo() {
           禁用状态
         </label>
         <Button variant="ghost" size="sm" onClick={() => {
-          setVariant("outline");
+          setVariant("primary");
           setSize("md");
           setLoading(false);
           setDisabled(false);

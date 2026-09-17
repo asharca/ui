@@ -26,16 +26,16 @@
 [data-ui-style="tech"], :root[data-ui-style="tech"] {
   --ds-hue: 222;
   --ds-saturation: 24%;
-  --ds-brand-light: 199 92% 34%;
-  --ds-brand-dark: 187 86% 62%;
+  --ds-brand-light: 221 83% 48%;
+  --ds-brand-dark: 215 96% 72%;
   --ds-on-brand-light: 0 0% 100%;
   --ds-on-brand-dark: 222 45% 10%;
   --ds-radius: .5rem;
   --ds-composer-radius: 1.125rem;
   --ds-panel-shadow: 0 1px 3px hsl(222 40% 4% / .08), inset 0 1px 0 hsl(200 90% 85% / .04);
   --ds-elevated-shadow: 0 16px 44px -16px hsl(222 50% 4% / .35), 0 0 0 1px hsl(190 70% 70% / .035);
-  --ds-primary-shadow: 0 2px 8px hsl(190 90% 40% / .13), inset 0 1px 0 hsl(0 0% 100% / .2);
-  --ds-highlight: linear-gradient(180deg, hsl(190 90% 90% / .07), transparent);
+  --ds-primary-shadow: 0 1px 2px hsl(222 45% 10% / .12);
+  --ds-highlight: none;
 }
 [data-ui-style="glass"], :root[data-ui-style="glass"] {
   --ds-hue: 250;

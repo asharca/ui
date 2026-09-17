@@ -3,7 +3,8 @@
 @layer components {
   :where([data-ui-style], [data-ui-style] *)[data-toolplane-ui="button"] {
     border-radius: var(--ds-radius);
-    font-weight: 550;
+    font-weight: 600;
+    letter-spacing: -.01em;
     gap: .5rem;
     transition: background-color var(--ds-duration) var(--ds-ease), border-color var(--ds-duration) var(--ds-ease), box-shadow var(--ds-duration) var(--ds-ease);
   }
@@ -13,16 +14,16 @@
     box-shadow: var(--ds-primary-shadow); background-image: var(--ds-highlight);
   }
   :where([data-ui-style]) .ui-button-primary:not(.ui-button-danger):hover:not(:disabled):not([aria-disabled="true"]) { background-color: hsl(var(--brand) / .88); }
-  :where([data-ui-style]) .ui-button-secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); border-color: hsl(var(--border)); box-shadow: inset 0 1px 0 hsl(0 0% 100% / .04); }
-  :where([data-ui-style]) .ui-button-outline { background: transparent; border-color: hsl(var(--input)); box-shadow: none; }
+  :where([data-ui-style]) .ui-button-secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); border-color: hsl(var(--border)); box-shadow: 0 1px 2px hsl(var(--ds-shadow-color) / .035); }
+  :where([data-ui-style]) .ui-button-outline { background: hsl(var(--card)); border-color: hsl(var(--input)); box-shadow: 0 1px 2px hsl(var(--ds-shadow-color) / .025); }
   :where([data-ui-style]) .ui-button-ghost { background: transparent; color: hsl(var(--muted-foreground)); }
   :where([data-ui-style]) :is(.ui-button-secondary,.ui-button-ghost):hover:not(:disabled):not([aria-disabled="true"]) { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
   :where([data-ui-style]) .ui-button-danger { background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); box-shadow: none; }
   :where([data-ui-style]) .ui-button-danger-secondary { color: hsl(var(--destructive-text)); border-color: hsl(var(--destructive-text) / .5); background: hsl(var(--destructive) / .07); }
-  :where([data-ui-style]) [data-toolplane-ui="button"]:active:not(:disabled):not([aria-disabled="true"]) { box-shadow: inset 0 2px 4px hsl(var(--ds-shadow-color) / .16); }
+  :where([data-ui-style]) [data-toolplane-ui="button"]:active:not(:disabled):not([aria-disabled="true"]) { box-shadow: inset 0 1px 2px hsl(var(--ds-shadow-color) / .10); }
   :where([data-ui-style]) :is(.ui-input,.ui-textarea) {
     border-color: hsl(var(--input)); border-radius: var(--ds-radius); background: hsl(var(--card));
-    box-shadow: inset 0 1px 2px hsl(var(--ds-shadow-color) / .03);
+    box-shadow: 0 1px 2px hsl(var(--ds-shadow-color) / .025);
     transition: border-color var(--ds-duration) var(--ds-ease), box-shadow var(--ds-duration) var(--ds-ease);
   }
   :where([data-ui-style]) .ui-input:not(.ui-input-sm):not(.ui-input-lg) { height: var(--ds-height); }
@@ -36,16 +37,35 @@
   :where([data-ui-style]) :is(.ui-input,.ui-textarea)[readonly] { background: hsl(var(--muted) / .65); box-shadow: none; }
   :where([data-ui-style]) .ui-field { gap: .5rem; }
   :where([data-ui-style]) :is(.ui-field-description,.ui-field-error) { font-size: .8125rem; line-height: 1.6; }
+  :where([data-ui-style]) :is(.ui-input,.ui-textarea):hover:not(:disabled):not(:focus-visible):not([aria-invalid="true"]) { border-color: hsl(var(--muted-foreground)); }
+  /* Keep real inputs, including native form submission, indeterminate and
+     disabled-fieldset semantics. Forced colors restores the platform control. */
+  :where([data-ui-style]) :is(.ui-checkbox,.ui-radio) {
+    appearance: none; display: inline-grid; place-content: center; box-sizing: border-box;
+    width: 1rem; height: 1rem; border: 1px solid hsl(var(--input));
+    border-radius: .25rem; background: hsl(var(--card)); color: hsl(var(--brand-foreground));
+    box-shadow: 0 1px 2px hsl(var(--ds-shadow-color) / .04);
+    transition: background-color var(--ds-duration) var(--ds-ease), border-color var(--ds-duration) var(--ds-ease);
+  }
+  :where([data-ui-style]) .ui-radio { border-radius: 50%; }
+  :where([data-ui-style]) :is(.ui-checkbox,.ui-radio):is(:checked,:indeterminate) { background: hsl(var(--brand)); border-color: hsl(var(--brand)); }
+  :where([data-ui-style]) :is(.ui-checkbox,.ui-radio)::after { content: ""; display: block; visibility: hidden; }
+  :where([data-ui-style]) .ui-checkbox::after { width: .25rem; height: .5rem; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: translateY(-1px) rotate(45deg); }
+  :where([data-ui-style]) .ui-radio::after { width: .375rem; height: .375rem; border-radius: 50%; background: currentColor; }
+  :where([data-ui-style]) :is(.ui-checkbox,.ui-radio):checked::after { visibility: visible; }
+  :where([data-ui-style]) .ui-checkbox:indeterminate::after { visibility: visible; width: .5rem; height: 0; border-width: 0 0 2px; transform: none; }
+  :where([data-ui-style]) :is(.ui-checkbox,.ui-radio):focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+  :where([data-ui-style]) :is(.ui-checkbox,.ui-radio)[aria-invalid="true"] { border-color: hsl(var(--destructive-text)); }
   /* Native choice behavior is intentional. Styling the full option improves
      hierarchy without replacing the input with an inaccessible custom div. */
-  :where([data-ui-style]) .ui-choice[data-variant="card"] { border-radius: var(--ds-radius); background: hsl(var(--card)); border-color: hsl(var(--border)); box-shadow: var(--ds-panel-shadow); transition: border-color var(--ds-duration) var(--ds-ease), background-color var(--ds-duration) var(--ds-ease); }
-  :where([data-ui-style]) .ui-choice[data-variant="card"]:has(input:checked) { border-color: hsl(var(--brand)); background: hsl(var(--brand-soft)); box-shadow: inset 0 0 0 1px hsl(var(--brand) / .22); }
+  :where([data-ui-style]) .ui-choice[data-variant="card"] { border-radius: var(--ds-radius); background: hsl(var(--card)); border-color: hsl(var(--border)); box-shadow: none; transition: border-color var(--ds-duration) var(--ds-ease), background-color var(--ds-duration) var(--ds-ease); }
+  :where([data-ui-style]) .ui-choice[data-variant="card"]:has(input:checked) { border-color: hsl(var(--brand)); background: hsl(var(--brand) / .04); box-shadow: inset 0 0 0 .5px hsl(var(--brand)); }
   :where([data-ui-style]) .ui-choice[data-variant="card"]:hover:not(:has(input:disabled)) { border-color: hsl(var(--ring)); }
   :where([data-ui-style]) .ui-choice:has(input:focus-visible) { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
   :where([data-ui-style]) .ui-choice:has(input[aria-invalid="true"]) { border-color: hsl(var(--destructive-text)); }
-  :where([data-ui-style]) .ui-switch { box-shadow: inset 0 1px 2px hsl(var(--ds-shadow-color) / .15); }
-  :where([data-ui-style]) .ui-switch[data-state="checked"] { background: hsl(var(--brand)); }
-  :where([data-ui-style]) .ui-switch-thumb { background: hsl(var(--card-foreground)); }
+  :where([data-ui-style]) .ui-switch { width: 2.375rem; height: 1.375rem; border: 1px solid hsl(var(--input)); background: hsl(var(--muted-foreground)); box-shadow: inset 0 1px 2px hsl(var(--ds-shadow-color) / .10); }
+  :where([data-ui-style]) .ui-switch[data-state="checked"] { background: hsl(var(--brand)); border-color: hsl(var(--brand)); }
+  :where([data-ui-style]) .ui-switch-thumb { background: hsl(0 0% 100%); box-shadow: 0 1px 2px hsl(var(--ds-shadow-color) / .2); }
   :where([data-ui-style]) .ui-switch-thumb[data-state="checked"] { background: hsl(var(--brand-foreground)); }
   :where([data-ui-style]) :is(.ui-panel,.ui-panel-muted) { border-radius: calc(var(--ds-radius) + .25rem); box-shadow: var(--ds-panel-shadow); }
   :where([data-ui-style]) .ui-panel { background: hsl(var(--card)); background-image: var(--ds-highlight); }
@@ -56,9 +76,9 @@
     background-color: hsl(var(--popover)); color: hsl(var(--popover-foreground)); box-shadow: var(--ds-elevated-shadow);
   }
   :where([data-ui-style]) .ui-dropdown-item { border-radius: max(.25rem, calc(var(--ds-radius) - .25rem)); padding-block: .5rem; }
-  :where([data-ui-style]) .ui-tabs-list { padding: .25rem; gap: .25rem; border: 1px solid hsl(var(--border)); border-radius: var(--ds-radius); background: hsl(var(--muted)); }
+  :where([data-ui-style]) .ui-tabs-list { padding: .25rem; gap: .25rem; border: 1px solid transparent; border-radius: var(--ds-radius); background: hsl(var(--muted)); }
   :where([data-ui-style]) .ui-tabs-trigger { min-height: 2rem; border-radius: max(.25rem, calc(var(--ds-radius) - .25rem)); }
-  :where([data-ui-style]) .ui-tabs-trigger[data-state="active"] { box-shadow: var(--ds-panel-shadow); }
+  :where([data-ui-style]) .ui-tabs-trigger[data-state="active"] { background: hsl(var(--card)); color: hsl(var(--foreground)); box-shadow: 0 1px 3px hsl(var(--ds-shadow-color) / .1); }
   :where([data-ui-style]) .ui-tabs-list[data-variant="underline"] { background: transparent; padding: 0; gap: 1rem; border: 0; border-bottom: 1px solid hsl(var(--border)); border-radius: 0; }
   :where([data-ui-style]) .ui-tabs-list[data-variant="underline"] .ui-tabs-trigger { padding: .625rem .125rem; border-radius: 0; border-bottom: 2px solid transparent; }
   :where([data-ui-style]) .ui-tabs-list[data-variant="underline"] .ui-tabs-trigger[data-state="active"] { background: transparent; color: hsl(var(--brand)); box-shadow: none; border-bottom-color: hsl(var(--brand)); }
@@ -80,17 +100,14 @@
   :where([data-ui-style]) [data-ui="chat.composer"] { border: 1px solid hsl(var(--input)); background: hsl(var(--card)); box-shadow: var(--ds-elevated-shadow); }
   :where([data-ui-style]) [data-ui="chat.composer"]:focus-within { border-color: hsl(var(--ring)); box-shadow: 0 0 0 3px hsl(var(--ring) / .1), var(--ds-elevated-shadow); }
   :where([data-ui-style]) .ui-chat-prose { line-height: 1.85; }
-  :where([data-ui-style]) .ui-tool-call { background: hsl(var(--card)); border-radius: calc(var(--ds-radius) + .125rem); box-shadow: var(--ds-panel-shadow); border-inline-start: 3px solid hsl(var(--border)); }
-  :where([data-ui-style]) .ui-tool-call > summary { padding: .75rem; min-height: 3rem; background: hsl(var(--muted) / .4); }
+  :where([data-ui-style]) .ui-tool-call { background: hsl(var(--card)); border-radius: calc(var(--ds-radius) + .125rem); box-shadow: var(--ds-panel-shadow); border: 1px solid hsl(var(--border)); }
+  :where([data-ui-style]) .ui-tool-call > summary { padding: .75rem; min-height: 3rem; background: transparent; }
   :where([data-ui-style]) .ui-tool-call__icon { padding: .375rem; border: 1px solid hsl(var(--border)); border-radius: max(.25rem, calc(var(--ds-radius) - .125rem)); background: hsl(var(--card)); }
-  :where([data-ui-style]) .ui-tool-call__state { padding: .25rem .375rem; border-radius: .375rem; background: hsl(var(--muted)); font-weight: 550; }
-  :where([data-ui-style]) .ui-tool-call[data-state="running"] { border-inline-start-color: hsl(var(--brand)); }
-  :where([data-ui-style]) .ui-tool-call[data-state="running"] .ui-tool-call__state { color: hsl(var(--brand)); }
-  :where([data-ui-style]) .ui-tool-call[data-state="completed"] { border-inline-start-color: hsl(var(--ds-success)); }
-  :where([data-ui-style]) .ui-tool-call[data-state="completed"] .ui-tool-call__state { color: hsl(var(--ds-success)); }
-  :where([data-ui-style]) .ui-tool-call[data-state="awaiting-approval"] { border-color: hsl(var(--border)); border-inline-start-color: hsl(var(--ds-warning)); }
-  :where([data-ui-style]) .ui-tool-call[data-state="awaiting-approval"] .ui-tool-call__state { color: hsl(var(--ds-warning)); }
-  :where([data-ui-style]) .ui-tool-call[data-state="failed"] { border-inline-start-color: hsl(var(--destructive-text)); }
+  :where([data-ui-style]) .ui-tool-call__state { padding: .25rem .5rem; border-radius: .375rem; background: hsl(var(--muted)); font-weight: 550; }
+  :where([data-ui-style]) .ui-tool-call[data-state="running"] .ui-tool-call__state { color: hsl(var(--brand)); background: hsl(var(--brand) / .06); }
+  :where([data-ui-style]) .ui-tool-call[data-state="completed"] .ui-tool-call__state { color: hsl(var(--ds-success)); background: hsl(var(--ds-success) / .06); }
+  :where([data-ui-style]) .ui-tool-call[data-state="awaiting-approval"] .ui-tool-call__state { color: hsl(var(--ds-warning)); background: hsl(var(--ds-warning) / .06); }
+  :where([data-ui-style]) .ui-tool-call[data-state="failed"] .ui-tool-call__state { color: hsl(var(--destructive-text)); background: hsl(var(--destructive-text) / .06); }
   :where([data-ui-style]) .ui-tool-call__body pre { background: hsl(var(--ds-code-bg)); line-height: 1.7; }
   /* Glass is limited to explicitly marked surfaces, never every nested control. */
   @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -99,6 +116,12 @@
   @media (pointer: coarse) { :where([data-ui-style]) [data-toolplane-ui="button"] { min-height: 2.75rem; } }
   @media (prefers-reduced-motion: reduce) { :where([data-ui-style]) * { scroll-behavior: auto; } }
   @media (forced-colors: active) {
+    :where([data-ui-style]) :is(.ui-checkbox,.ui-radio) { appearance: auto; background: revert; border: revert; box-shadow: none; accent-color: auto; }
+    :where([data-ui-style]) :is(.ui-checkbox,.ui-radio)::after { display: none; }
+    :where([data-ui-style]) .ui-switch { border-color: ButtonText; }
+    :where([data-ui-style]) .ui-switch[data-state="checked"] { background: Highlight; }
+    :where([data-ui-style]) .ui-switch-thumb { background: ButtonText; }
+    :where([data-ui-style]) .ui-switch-thumb[data-state="checked"] { background: HighlightText; }
     :where([data-ui-style]) :is(.ui-panel,.ui-choice,.ui-tool-call,[data-ui="chat.composer"],.ui-input,.ui-textarea,[data-toolplane-ui="button"]) { border-color: ButtonText; box-shadow: none; background-image: none; }
     :where([data-ui-style]) .ui-choice:has(input:checked) { outline: 2px solid Highlight; }
     :where([data-ui-style]) .ui-tool-call__state { color: CanvasText; }

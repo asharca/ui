@@ -11,7 +11,7 @@ import pkg from '../../package.json';
 afterEach(() => { cleanup(); window.history.replaceState(null, '', '/'); });
 it('places the workspace in a separate examples section', () => {
   window.history.replaceState(null, '', '/#/examples'); render(<DocsApp />);
-  expect(within(screen.getByRole('navigation', { name: '站点导航' })).queryByRole('link', { name: '组件', exact: true })).not.toBeInTheDocument();
+  expect(within(screen.getByRole('navigation', { name: '站点导航' })).getByRole('link', { name: '组件', exact: true })).toHaveAttribute('href', '#/components');
   expect(screen.getByRole('navigation', { name: '组件目录' })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: '示例', level: 1 })).toBeVisible();
   expect(screen.getByRole('link', { name: '打开工作区示例' })).toHaveAttribute('href', '#/examples/workspace');
@@ -49,7 +49,8 @@ it("shows only the current component's demo source", async () => {
   await waitFor(() => expect(code).toHaveTextContent('export function ShellDemo'));
   expect(code).toHaveTextContent('"@asharca/ui"'); expect(code).not.toHaveTextContent('ConversationDemo'); expect(code).not.toHaveTextContent('WorkspaceDemo'); expect(code).not.toHaveTextContent('componentDocs');
 });
-it('starts on installation and filters the component directory', async () => {
+it('keeps explicit installation and filters the component directory', async () => {
+  window.history.replaceState(null, '', '/#/installation');
   const user = userEvent.setup(); render(<DocsApp />);
   expect(screen.getByRole('heading', { name: '安装', exact: true })).toBeVisible();
   expect(screen.getByRole('region', { name: '安装命令' }).querySelector('code')).toHaveTextContent(/^pnpm add @asharca\/ui$/);
