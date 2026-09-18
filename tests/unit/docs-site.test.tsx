@@ -85,7 +85,7 @@ it('keeps explicit installation and filters the component directory', async () =
   expect(screen.getByRole('region', { name: '安装命令' }).querySelector('code')).toHaveTextContent(/^pnpm add @asharca\/ui$/);
   const troubleshooting = screen.getByText('依赖未自动安装或版本冲突？').closest('details'); expect(troubleshooting).not.toHaveAttribute('open');
   await user.click(screen.getByText('依赖未自动安装或版本冲突？'));
-  expect(screen.getByRole('region', { name: '完整依赖安装命令' })).toHaveTextContent('@assistant-ui/react@0.15.18');
+  expect(screen.getByRole('region', { name: '完整依赖安装命令' })).toHaveTextContent(`@assistant-ui/react@${pkg.devDependencies['@assistant-ui/react']}`);
   await user.selectOptions(screen.getByRole('combobox', { name: '包管理器' }), 'npm');
   expect(screen.getByRole('region', { name: '安装命令' }).querySelector('code')).toHaveTextContent(/^npm install @asharca\/ui$/);
   await user.type(screen.getByRole('searchbox', { name: '搜索组件文档' }), 'ChatComposerToolbar');

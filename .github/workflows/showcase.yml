@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - fix/ui-reliability-and-showcase
   workflow_dispatch:
 
 permissions:

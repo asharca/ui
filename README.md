@@ -21,7 +21,7 @@ pnpm installs missing peer dependencies by default. If automatic peer installati
 is disabled or your package manager leaves peers missing, install them explicitly:
 
 ```bash
-pnpm add @asharca/ui @assistant-ui/react@0.15.18 react@^19 react-dom@^19 tailwindcss@^4
+pnpm add @asharca/ui @assistant-ui/react@0.15.20 react@^19 react-dom@^19 tailwindcss@^4
 ```
 
 For version conflicts, first check that your application and other dependencies
@@ -29,11 +29,14 @@ support these versions. Installing the package does not configure your CSS build
 
 The package uses React 19 and Tailwind CSS 4. `ChatThread` additionally accepts an assistant-ui `AssistantRuntime`, so transport and persistence stay in the host application.
 
-The runtime peer is pinned to `@assistant-ui/react@0.15.18`, paired with
-`@assistant-ui/react-streamdown@0.3.13`. These are the latest releases verified on
-September 5, 2026. Older runtime versions are not supported. Hosts that also use
-the Streamdown adapter should use `0.3.13` so the renderer and host share the same
-assistant-ui context. No package patch or legacy runtime hook is required.
+The runtime peer accepts `@assistant-ui/react@^0.15.18`, paired with
+`@assistant-ui/react-streamdown@0.3.13`. Version `0.2.3` is tested with runtime
+`0.15.20` on September 18, 2026. Existing locked `0.15.18` installations remain
+in the supported range; new installations should use `0.15.20`, which aligns
+the upstream core/cloud dependencies. An unlocked `0.15.18` install can select
+an incompatible cloud peer. Keep strict peer validation enabled.
+Hosts that also use the Streamdown adapter should use `0.3.13` so the renderer
+and host share the same assistant-ui context.
 
 Import the stylesheet once from the host application's global Tailwind stylesheet:
 

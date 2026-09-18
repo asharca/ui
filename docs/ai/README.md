@@ -4,9 +4,9 @@
 
 ## 先确认版本和来源
 
-以目标项目实际安装的 package.json、exports 和 TypeScript 声明为准。当前优化分支尚未发布，即使工作区版本号仍是 0.2.2，也不能推断 npm 上的 0.2.2 包含 ChoiceField、ToolCallCard 或这些新增属性。不要捏造不存在的组件或接口。
+以目标项目实际安装的 package.json、exports 和 TypeScript 声明为准。ChoiceField、ToolCallCard、ChartContainer 和可选主题属于 0.2.3 的发布范围，不要推断旧 npm 0.2.2 包含这些接口。发布状态以 npm 和 GitHub Release 为准。不要捏造不存在的组件或接口。
 
-开发本仓库使用 Node 24 与 pnpm；消费项目遵守包的 engines/peerDependencies。主要环境是 React 19、React DOM 19 和 Tailwind CSS 4。当前聊天 peer 是 `@assistant-ui/react@0.15.18`，适配器是 `@assistant-ui/react-streamdown@0.3.13`。无锁新安装曾出现 core/cloud 的 peer 冲突，保持严格检查，报告真实错误，不要私自加 override 或升级运行时来隐藏问题。
+开发本仓库使用 Node 24 与 pnpm；消费项目遵守包的 engines/peerDependencies。主要环境是 React 19、React DOM 19 和 Tailwind CSS 4。当前聊天 peer 是 `@assistant-ui/react@^0.15.18`，适配器是 `@assistant-ui/react-streamdown@0.3.13`。已有锁定的 0.15.18 安装仍在兼容范围内；新安装使用本仓库验证的 0.15.20，以对齐上游 core/cloud 依赖。保持严格检查，报告真实错误，不要通过 override 或关闭 peer 检查隐藏问题。
 
 ## 安装与样式
 

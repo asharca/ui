@@ -17,7 +17,7 @@ import { DesignControls } from './DesignControls';
 import { previewHref, useDesignSettings, type DesignStyle, type DesignDensity } from './design-settings';
 import { ExampleGallery, ExamplePage } from './examples/ExamplePage';
 import { appExamples } from './examples/registry';
-import { version } from '../package.json';
+import { version, devDependencies, peerDependencies } from '../package.json';
 import './docs.css';
 import './ui-polish.css';
 
@@ -94,8 +94,8 @@ function Installation() {
   return <>
     <div className="docs-page-heading"><span className="docs-eyebrow">开始使用</span><h1>安装</h1><p>从安装到第一个组件。把精心设计的界面，带进你的 React 项目。</p><span className="docs-meta">工作区 v{version} · {componentDocs.length} 个组件入口</span></div>
     <div className="docs-version-note">本页对应开发分支。新增接口与主题尚未发布，安装 npm 包前请核对实际版本与导出；已安装项目不需要为了浏览文档升级依赖。</div>
-    <section id="requirements"><h2>环境要求</h2><div className="docs-requirements"><code>React 19</code><code>TypeScript</code><code>Tailwind CSS 4</code></div><p>React 19、React DOM 19、Tailwind CSS 4。聊天运行时固定使用 assistant-ui 0.15.18；开发本仓库使用 Node 24 和 pnpm。</p><p>组件包不依赖 Next.js 或 ToolPlane。模型调用、鉴权与持久化由宿主提供。</p></section>
-    <section id="dependencies"><h2>1. 安装依赖</h2><label className="docs-source-select">包管理器<Select aria-label="包管理器" value={manager} onChange={(event) => setManager(event.target.value)}>{['pnpm', 'npm', 'yarn', 'bun'].map((name) => <option key={name}>{name}</option>)}</Select></label><DocCode label="安装命令" language="bash" code={`${command} @asharca/ui`} /><details><summary>依赖未自动安装或版本冲突？</summary><p>可显式声明运行时和框架依赖。固定运行时的间接依赖仍可能发生 peer 冲突，请先对齐兼容版本，不要关闭严格检查。</p><DocCode label="完整依赖安装命令" language="bash" code={`${command} @asharca/ui @assistant-ui/react@0.15.18 react@^19 react-dom@^19 tailwindcss@^4`} /></details></section>
+    <section id="requirements"><h2>环境要求</h2><div className="docs-requirements"><code>React 19</code><code>TypeScript</code><code>Tailwind CSS 4</code></div><p>聊天运行时兼容范围为 assistant-ui {peerDependencies['@assistant-ui/react']}，本仓库使用 {devDependencies['@assistant-ui/react']} 验证；开发使用 Node 24 和 pnpm。</p><p>组件包不依赖 Next.js 或 ToolPlane。模型调用、鉴权与持久化由宿主提供。</p></section>
+    <section id="dependencies"><h2>1. 安装依赖</h2><label className="docs-source-select">包管理器<Select aria-label="包管理器" value={manager} onChange={(event) => setManager(event.target.value)}>{['pnpm', 'npm', 'yarn', 'bun'].map((name) => <option key={name}>{name}</option>)}</Select></label><DocCode label="安装命令" language="bash" code={`${command} @asharca/ui`} /><details><summary>依赖未自动安装或版本冲突？</summary><p>可显式声明运行时和框架依赖。新安装推荐使用已验证的补丁版本，对齐间接依赖，不要关闭严格 peer 检查。</p><DocCode label="完整依赖安装命令" language="bash" code={`${command} @asharca/ui @assistant-ui/react@${devDependencies['@assistant-ui/react']} react@^19 react-dom@^19 tailwindcss@^4`} /></details></section>
     <section id="styles"><h2>2. 导入全局样式</h2><p>先配置 Tailwind 4 构建，再导入样式入口。仅导入 React 组件不会自动生成全部样式。</p><DocCode label="app.css" language="css" code={'@import "tailwindcss";\n@import "@asharca/ui/styles.css";'} /></section>
     <section id="first-component"><h2>3. 使用第一个组件</h2><DocCode label="App.tsx" code={'import { Button } from "@asharca/ui/controls";\nimport "./app.css";\n\nexport default function App() {\n  return <Button variant="primary">开始使用</Button>;\n}'} /><a className="docs-next-link" href="#/components/button">查看 Button 的全部状态<ArrowRight size={16} /></a></section>
     <section id="theme"><h2>4. 配置主题</h2><p>颜色变量使用 HSL 通道值，全局 .dark 切换暗色默认主题。可选皮肤与可复制配置见<a href="#/themes">主题实验室</a>。</p><DocCode label="主题变量 CSS" language="css" code={':root {\n  --toolplane-ui-radius: 0.5rem;\n  --toolplane-ui-control-height: 2.25rem;\n  --toolplane-ui-chat-width: 53rem;\n  --toolplane-ui-composer-radius: 1.25rem;\n}\n.dark {\n  --toolplane-ui-brand: 128 73% 67%;\n}'} /><p>浮层默认挂载到 body。局部主题需要明确 Portal 容器或全局变量，不会自动跨越 Portal。</p></section>
