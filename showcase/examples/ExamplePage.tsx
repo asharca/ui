@@ -7,7 +7,8 @@ import {
   type ComponentType,
   type ReactNode,
 } from "react";
-import { ArrowLeft, ArrowUpRight, Code2, Moon, Sun } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Moon, Sun } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 import {
   Button,
   IconButton,
@@ -155,6 +156,18 @@ export function ExamplePage({
     };
   }, [file, view, retry]);
   const Demo = components[example.id];
+  const detached =
+    example.id === "workspace" &&
+    new URLSearchParams(window.location.search).get("detached") === "1";
+  if (detached) {
+    return (
+      <ExampleBoundary>
+        <Suspense fallback={<Spinner label="加载示例" />}>
+          <Demo embedded />
+        </Suspense>
+      </ExampleBoundary>
+    );
+  }
   const sourcePath = file.startsWith("../../")
     ? file.slice(6)
     : file.startsWith("../")
@@ -186,7 +199,7 @@ export function ExamplePage({
           <TabsList data-variant="underline" aria-label="示例视图">
             <TabsTrigger value="preview">预览</TabsTrigger>
             <TabsTrigger value="source">
-              <Code2 size={14} />
+              <FaGithub size={14} />
               源码
             </TabsTrigger>
           </TabsList>

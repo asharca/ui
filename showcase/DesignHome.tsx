@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { ArrowRight, ArrowUpRight, Check, Code2, Command, Layers3, Palette, Sparkles, Terminal, Wand2 } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 import { Button, Input, Switch } from '../src/Controls';
 import { ChoiceField, ChoiceGroup } from '../src/ChoiceField';
 import { CopyButton } from '../src/Forms';
@@ -56,6 +57,6 @@ export function DesignHome() {
     </section>
     <section className="landing-ai" aria-labelledby="ai-design-title"><div><span className="landing-kicker">BUILT FOR WHAT'S NEXT</span><h2 id="ai-design-title">不只是聊天框。<br />是一套 AI 界面语言。</h2><p>思考、调用、审批、结果。用一致的交互表达每个阶段，把模型与业务逻辑留给你的应用。</p><a className="landing-text-link" href="#/components/tool-call-card">查看工具调用组件<ArrowRight size={16} /></a><a className="landing-text-link" href="#/ai">让编程助手读懂组件<ArrowRight size={16} /></a></div><div className="landing-ai-example"><header><span className="landing-app-icon"><Sparkles size={18} /></span><div><strong>让每次行动，都有迹可循</strong><span>可展开的工具调用 · 静态示例数据</span></div></header><ToolCallCard name="design__components" state="completed" presentation={{ label: '读取组件文档', kind: 'mcp', description: '展示示例数据，不会发起网络请求。' }} output={{ components: ['Button', 'Input', 'ChoiceField'], source: 'local example' }} labels={{ completed: '已完成', output: '示例结果', copy: '复制内容', showMore: '显示完整内容', showLess: '收起内容' }} /><div className="landing-ai-answer"><Check size={17} /><p>交互已准备好。<span>接入你的 runtime，构建属于你的助手。</span></p></div><a href="#/themes">打开完整工作台预览<ArrowUpRight size={14} /></a></div></section>
     <section className="landing-bottom"><div><Palette size={23} /><h2>你的产品，你的风格。</h2><p>Minimal、Tech、Glass。共享交互约定，不限制视觉表达。</p></div><Button asChild variant="outline"><a href="#/themes">探索三套风格<ArrowRight size={16} /></a></Button></section>
-    <footer className="landing-footer"><a href="#/home"><strong>asharca<span>/</span>ui</strong></a><span>为人，也为 AI 而设计。</span><nav aria-label="页脚导航"><a href="#/installation">文档</a><a href="#/ai">AI 参考</a><a href="https://github.com/asharca/ui" target="_blank" rel="noreferrer">GitHub<ArrowUpRight size={12} /></a></nav></footer>
+    <footer className="landing-footer"><a href="#/home"><strong>asharca<span>/</span>ui</strong></a><span>为人，也为 AI 而设计。</span><nav aria-label="页脚导航"><a href="#/installation">文档</a><a href="#/ai">AI 参考</a><a href="https://github.com/asharca/ui" target="_blank" rel="noreferrer">GitHub<FaGithub size={12} /></a></nav></footer>
   </div>;
 }
