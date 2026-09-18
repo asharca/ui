@@ -1,5 +1,7 @@
 # @asharca/ui
 
+[Live documentation](https://asharca.github.io/ui/) · [Application examples](https://asharca.github.io/ui/#/examples)
+
 `ChatComposerToolbar` (`@asharca/ui/chat-composer-toolbar`) provides a unified
 tool menu and configurable, ordered shortcuts. Pass `tools`, `pinnedIds`, and
 `onPinnedIdsChange`; the consuming app owns actions and preference persistence.
@@ -163,7 +165,12 @@ memory and resets on reload.
 
 `pnpm build:showcase` type-checks and builds the site into `showcase-dist/`.
 The showcase is development-only and is not included in the npm package.
-It includes nine interactive examples with copyable code snippets. Profile photos
+Open `#/examples` for order administration, analytics, project boards, the
+component workspace, and settings. Each has an in-page style, light/dark and
+density switcher, plus source tabs reading the actual files in
+`showcase/examples/`. See `showcase/examples/README.md` for file locations.
+The chart primitives are exported from `@asharca/ui/chart`; combine them with
+Recharts and the existing styles. Profile photos
 in `showcase/public/avatars` are demo assets from Unsplash (photo IDs
 `1494790108377-be9c29b29330`, `1506794778202-cad84cf45f1d`, and
 `1534528741775-53994a69daeb`); member names and emails are fictional.

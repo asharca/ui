@@ -10,10 +10,12 @@ assert(existsSync(declarations), 'Run pnpm build before checking the public exam
 const directory = mkdtempSync(join(root, '.showcase-consumer-'));
 try {
   const demos = readdirSync(join(root, 'showcase/demos')).filter((name) => name.endsWith('.tsx')).sort();
-  const files = demos.map((name) => {
-    const source = readFileSync(join(root, 'showcase/demos', name), 'utf8');
-    assert(source.includes('"../../src/index"'), `${name} must import the public component surface.`);
-    const copy = source.replaceAll('"../../src/index"', '"@asharca/ui"');
+  const applications = ['AdminExample.tsx', 'AnalyticsExample.tsx', 'ProjectsExample.tsx', 'SettingsExample.tsx'];
+  const inputs = [...demos.map((name) => ['demos', name]), ...applications.map((name) => ['examples', name])];
+  const files = inputs.map(([folder, name]) => {
+    const source = readFileSync(join(root, 'showcase', folder, name), 'utf8');
+    assert(/['"]\.\.\/\.\.\/src\/index['"]/.test(source), `${name} must import the public component surface.`);
+    const copy = source.replace(/(['"])\.\.\/\.\.\/src\/index\1/g, '"@asharca/ui"');
     assert(!/from\s+['"]\./.test(copy), `${name} is not self-contained: it imports another local file.`);
     const path = join(directory, name); writeFileSync(path, copy); return path;
   });
@@ -38,6 +40,6 @@ try {
     }));
     process.exitCode = 1;
   } else {
-    console.log(`${demos.length} self-contained demos type-check against the built public package declarations.`);
+    console.log(`${demos.length} self-contained demos and ${applications.length} application examples type-check against the built public package declarations.`);
   }
 } finally { rmSync(directory, { recursive: true, force: true }); }

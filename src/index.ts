@@ -4,6 +4,7 @@ export * from './Avatar.tsx';
 export * from './ChatShell.tsx';
 export * from './ChatThread.tsx';
 export * from './ChatComposerToolbar.tsx';
+export * from './Chart.js';
 export * from './chat-markdown.ts';
 export * from './ContentPage.tsx';
 export * from './Controls.tsx';

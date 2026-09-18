@@ -9,7 +9,7 @@ afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); window.
 
 it.each(['minimal', 'tech', 'glass'] as const)('keeps the valid %s skin', (style) => { expect(normalizeStyle(style)).toBe(style); });
 it('validates untrusted URL/storage values instead of interpolating arbitrary CSS', () => {
-  expect(normalizeStyle('url(evil)')).toBe('tech'); expect(normalizeStyle(null)).toBe('tech');
+  expect(normalizeStyle('url(evil)')).toBe('minimal'); expect(normalizeStyle(null)).toBe('minimal');
   expect(normalizeDensity('compact')).toBe('compact'); expect(normalizeDensity('other')).toBe('comfortable');
 });
 it('includes all three independent preferences in standalone preview URLs', () => {
@@ -27,7 +27,7 @@ it('preview parameters do not overwrite parent preferences and root changes clea
 it('remains usable when browser storage throws', () => {
   vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('blocked'); });
   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked'); });
-  const { result } = renderHook(() => useDesignSettings(null)); expect(result.current.style).toBe('tech');
+  const { result } = renderHook(() => useDesignSettings(null)); expect(result.current.style).toBe('minimal');
 });
 it('lets visitors change a skin without discarding their current form edits', async () => {
   window.history.replaceState(null, '', '/#/themes'); const user = userEvent.setup(); render(<DocsApp />);

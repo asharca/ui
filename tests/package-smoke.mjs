@@ -12,10 +12,12 @@ import { Tabs as TabsExport } from '@asharca/ui/navigation';
 import { ChatThread as ThreadExport } from '@asharca/ui/chat-thread';
 import { ChatComposerToolbar } from '@asharca/ui/chat-composer-toolbar';
 import { Button } from '@asharca/ui/controls';
+import { ChartContainer, ChartTooltipContent } from '@asharca/ui/chart';
 import postcss from 'postcss';
 import tailwindcss from '@tailwindcss/postcss';
 
 assert.equal(ChatThread, ThreadExport);
+assert.match(renderToStaticMarkup(createElement(ChartContainer, { config: { revenue: { label: 'Revenue', color: 'var(--chart-1)' } } }, createElement(ChartTooltipContent))), /--color-revenue:var\(--chart-1\)/);
 assert.match(renderToStaticMarkup(createElement(ChatComposerToolbar, { tools: [], pinnedIds: [], onPinnedIdsChange() {} })), /data-chat-ui="composer-toolbar"/);
 assert.equal(Avatar, AvatarExport);
 assert.equal(Accordion, AccordionExport);
@@ -38,7 +40,7 @@ const { css } = await postcss([tailwindcss()]).process(
 );
 assert(css.includes('.ui-button-primary'), 'Component styles missing');
 assert(css.includes('.tp-chat-shell'), 'Chat shell styles missing');
-for (const selector of ['.ui-switch', '.ui-slider', '.ui-progress', '.ui-skeleton', '.ui-avatar', '.ui-tabs-list', '.ui-accordion-trigger', '.ui-dropdown-menu']) {
+for (const selector of ['.ui-switch', '.ui-slider', '.ui-progress', '.ui-skeleton', '.ui-avatar', '.ui-tabs-list', '.ui-accordion-trigger', '.ui-dropdown-menu', '.ui-chart', '.ui-chart-tooltip']) {
   assert(css.includes(selector), `${selector} missing from published styles`);
 }
 assert(css.includes(String.raw`.grid-cols-\[0fr\]`), 'Published component utilities missing');

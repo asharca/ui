@@ -29,4 +29,17 @@ export const catalogMetadata: ComponentMetadata[] = [...componentMetadata.map((m
   notes: metadata.name === 'Checkbox' || metadata.name === 'Radio'
     ? `${metadata.notes} 带标题或多行说明时优先组合 ChoiceField / ChoiceGroup，避免空格对齐。`
     : metadata.notes,
-})), choice];
+})), choice, {
+  id: 'chart-container', name: 'ChartContainer', file: 'Chart.tsx', module: 'chart',
+  demoFile: 'ChartContainerDemo.tsx', group: '数据与布局',
+  description: '基于 Recharts 的响应式图表容器、主题色、提示框与图例。',
+  api: [
+    ['config', 'ChartConfig', '必填', '系列键映射到 label 与可选 color；生成 --color-系列键 CSS 变量'],
+    ['children', 'ReactNode', '必填', '直接组合 Recharts 的 BarChart、AreaChart、PieChart 等'],
+    ['style / className', '原生 div 属性', '高度 280px', '容器必须有明确高度；style 可覆盖尺寸和系列颜色'],
+    ['ChartTooltip / ChartLegend', 'Recharts 原生组件', '—', '保留 Recharts 的交互配置与属性'],
+    ['ChartTooltipContent', 'active / payload / label / formatter / labelFormatter / hideLabel', '—', '在 ChartContainer 内使用，读取 config 的系列名称与颜色'],
+    ['ChartLegendContent', 'payload / className', '—', '在 ChartContainer 内使用，显示系列名称与颜色'],
+  ],
+  notes: '沿用 shadcn 的组合方式，不隐藏 Recharts API。数据、坐标轴和格式化由宿主提供；config 的键使用普通标识符。color 可引用 --chart-1 至 --chart-5 或宿主 CSS 变量，自动适配明暗模式。需要安装 recharts 才能在应用中直接导入图表原语。为图表提供可访问名称、开启 accessibilityLayer，复杂图表同时提供数据表。',
+}];

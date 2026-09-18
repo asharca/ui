@@ -3,12 +3,14 @@ import { ArrowRight, FileText, Search, X } from 'lucide-react';
 import { IconButton, SearchInput } from '../src/Controls';
 import { Dialog, DialogClose, DialogContent, DialogOverlay, DialogPortal, DialogTitle } from '../src/Dialog';
 import { catalogMetadata } from './catalog-data';
+import { appExamples } from './examples/registry';
 
 const pages = [
   { name: '安装与快速开始', group: '指南', description: '依赖、样式、导入与第一个组件', href: '#/installation' },
   { name: '主题实验室', group: '指南', description: 'Minimal Tech Glass 明暗模式与界面密度', href: '#/themes' },
   { name: 'AI 接入文档', group: '指南', description: 'llms.txt Markdown 编程助手', href: '#/ai' },
-  { name: '组合示例', group: '指南', description: '工作区、设置与表单', href: '#/examples' },
+  { name: '组合示例', group: '指南', description: '后台、图表、看板、工作区与设置', href: '#/examples' },
+  ...appExamples.map((example) => ({ name: example.name, group: '示例', description: example.description, href: `#/examples/${example.id}` })),
   ...catalogMetadata.map((doc) => ({ name: doc.name, group: doc.group, description: doc.description, href: `#/components/${doc.id}` })),
 ];
 
@@ -31,6 +33,5 @@ export function SiteSearch({ open, onOpenChange }: { open: boolean; onOpenChange
     <div className="site-search-results" aria-label="文档搜索结果"><p className="site-search-count" role="status">{term ? `${results.length} 个结果${results.length === 30 ? '（最多显示 30 项）' : ''}` : '快速访问'}</p>{results.map((item, index) => <a key={item.href} href={item.href} ref={(node) => { links.current[index] = node; }} onClick={close} onKeyDown={(event) => {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); const next = index + (event.key === 'ArrowDown' ? 1 : -1); if (next < 0 || next >= results.length) input.current?.focus(); else links.current[next]?.focus(); }
     }}><span className="site-search-icon"><FileText size={17} /></span><span><strong>{item.name}<small>{item.group}</small></strong><span>{item.description}</span></span><ArrowRight size={15} /></a>)}{!results.length && <p className="docs-search-empty">没有找到结果，试试 Button、表单或 AI。</p>}</div>
-    <footer><span><kbd>↑</kbd><kbd>↓</kbd> 选择</span><span><kbd>Enter</kbd> 打开</span><span><kbd>Esc</kbd> 关闭</span></footer>
   </DialogContent></DialogPortal></Dialog>;
 }

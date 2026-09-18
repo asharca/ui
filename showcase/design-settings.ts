@@ -10,7 +10,7 @@ export type DesignDensity = 'comfortable' | 'compact';
 export const STYLE_KEY = 'asharca-ui-docs-style';
 export const DENSITY_KEY = 'asharca-ui-docs-density';
 export function normalizeStyle(value: unknown): DesignStyle {
-  return value === 'minimal' || value === 'glass' || value === 'tech' ? value : 'tech';
+  return value === 'minimal' || value === 'glass' || value === 'tech' ? value : 'minimal';
 }
 export function normalizeDensity(value: unknown): DesignDensity { return value === 'compact' ? 'compact' : 'comfortable'; }
 function readPreference(key: string) { try { return localStorage.getItem(key); } catch { return null; } }

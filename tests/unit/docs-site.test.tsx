@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it } from 'vitest';
 import * as UI from '../../src/index';
@@ -9,6 +9,35 @@ import { DocsApp } from '../../showcase/DocsApp';
 import pkg from '../../package.json';
 
 afterEach(() => { cleanup(); window.history.replaceState(null, '', '/'); });
+
+it.each(['#/guide', '#/guide?from=bookmark'])('redirects the legacy %s entry to the canonical documentation', (hash) => {
+  window.history.replaceState({ source: 'bookmark' }, '', `/?site=docs${hash}`);
+  const historyLength = window.history.length;
+  render(<DocsApp />);
+  expect(window.location.hash).toBe(hash.replace('#/guide', '#/installation'));
+  expect(window.location.search).toBe('?site=docs');
+  expect(window.history.state).toEqual({ source: 'bookmark' });
+  expect(window.history.length).toBe(historyLength);
+  expect(screen.getByRole('heading', { name: '安装', exact: true, level: 1 })).toBeVisible();
+  expect(screen.getByRole('link', { name: '安装与快速开始' })).toHaveAttribute('aria-current', 'page');
+  expect(screen.queryByRole('link', { name: '使用手册' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('navigation', { name: '手册目录' })).not.toBeInTheDocument();
+  expect(document.title).toBe('安装 — Asharca UI');
+});
+
+it('handles legacy links again after navigating within the documentation', async () => {
+  window.history.replaceState(null, '', '/#/components/button');
+  const user = userEvent.setup(); render(<DocsApp />);
+  for (const hash of ['#/guide', '#/guide?from=old-link']) {
+    await act(async () => { window.location.hash = hash; });
+    await waitFor(() => expect(window.location.hash).toBe(hash.replace('#/guide', '#/installation')));
+    expect(screen.getByRole('heading', { name: '安装', exact: true, level: 1 })).toBeVisible();
+    const sidebar = within(screen.getByRole('complementary', { name: '文档导航' }));
+    await user.click(sidebar.getByRole('link', { name: 'Button', exact: true }));
+    expect(await screen.findByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+  }
+});
+
 it('places the workspace in a separate examples section', () => {
   window.history.replaceState(null, '', '/#/examples'); render(<DocsApp />);
   expect(within(screen.getByRole('navigation', { name: '站点导航' })).getByRole('link', { name: '组件', exact: true })).toHaveAttribute('href', '#/components');
@@ -77,4 +106,32 @@ it('renders standalone previews without another copy of the navigation', async (
   expect(await screen.findByRole('textbox', { name: '项目名称' })).toBeInTheDocument();
   expect(screen.queryByRole('navigation', { name: '组件目录' })).not.toBeInTheDocument();
   expect(document.documentElement).toHaveClass('dark');
+});
+
+it('preserves demo edits across code tabs and resets only when requested', async () => {
+  window.history.replaceState(null, '', '/#/components/input');
+  const user = userEvent.setup(); render(<DocsApp />);
+  const input = await screen.findByRole('textbox', { name: '项目名称' });
+  await user.type(input, 'Release notes');
+  await user.click(screen.getByRole('tab', { name: '用法代码' }));
+  expect(await screen.findByRole('region', { name: '用法 TSX' })).toHaveTextContent('InputDemo');
+  expect(screen.queryByRole('textbox', { name: '项目名称' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('combobox', { name: '视觉风格' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('tab', { name: '预览', exact: true }));
+  expect(screen.getByRole('textbox', { name: '项目名称' })).toHaveValue('Release notes');
+  await user.click(screen.getByRole('button', { name: '重置组件预览' }));
+  expect(await screen.findByRole('textbox', { name: '项目名称' })).toHaveValue('');
+});
+
+it('groups the catalog and combines category and text filters', async () => {
+  window.history.replaceState(null, '', '/#/components');
+  const user = userEvent.setup(); render(<DocsApp />);
+  const main = within(screen.getByRole('main'));
+  expect(main.getByRole('region', { name: '基础控件' })).toBeVisible();
+  await user.selectOptions(main.getByRole('combobox', { name: '组件分类' }), 'AI 聊天');
+  expect(main.queryByRole('heading', { name: 'Button', exact: true })).not.toBeInTheDocument();
+  expect(main.getByRole('heading', { name: 'ChatThread', level: 3 })).toBeVisible();
+  await user.type(main.getByRole('searchbox'), '不存在的组件');
+  expect(main.getByRole('status')).toHaveTextContent('0 个组件');
+  expect(main.queryByRole('region', { name: 'AI 聊天' })).not.toBeInTheDocument();
 });

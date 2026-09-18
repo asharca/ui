@@ -79,3 +79,11 @@ it('includes the real integration contract and related components on documentati
   expect(within(usage).getAllByRole('link').length).toBeGreaterThan(0);
   expect(screen.getByRole('button', { name: '使用约定' })).toBeInTheDocument();
 });
+
+it('opens only the active category on a direct component visit', () => {
+  render(<DocsDirectory route="#/components/chat-thread" query="" onQueryChange={() => undefined} onNavigate={() => undefined} />);
+  expect(screen.getByRole('link', { name: 'ChatThread', exact: true })).toHaveAttribute('aria-current', 'page');
+  expect(screen.getByRole('button', { name: /AI 聊天/ })).toHaveAttribute('aria-expanded', 'true');
+  expect(screen.getByRole('button', { name: /基础控件/ })).toHaveAttribute('aria-expanded', 'false');
+  expect(screen.queryByRole('link', { name: 'Button', exact: true })).not.toBeInTheDocument();
+});

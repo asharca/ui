@@ -72,7 +72,9 @@ or apply the theme globally; automatic scoped-theme propagation is not implement
 
 The directory is grouped into controls, forms/feedback, data/layout,
 navigation/overlays, AI chat and workspace. Component metadata does not eagerly
-import chat runtimes. Demos, full source, manual and workbench load on demand.
+import chat runtimes. Demos, full source and workbench load on demand.
+Installation, themes and component pages share one documentation navigation;
+the former `#/guide` entry redirects to `#/installation`.
 The default preview remains inline; 375/768/1280 previews are actual iframe
 viewports. Each preview can be reset or opened independently.
 

@@ -15,22 +15,20 @@ import { scrollWithin } from './docs-scroll';
 import { SiteSearch } from './SiteSearch';
 import { DesignControls } from './DesignControls';
 import { previewHref, useDesignSettings, type DesignStyle, type DesignDensity } from './design-settings';
+import { ExampleGallery, ExamplePage } from './examples/ExamplePage';
+import { appExamples } from './examples/registry';
 import { version } from '../package.json';
 import './docs.css';
-import './docs-workbench.css';
 import './ui-polish.css';
 
 const sources = import.meta.glob<string>('../src/*.{tsx,ts,css}', { query: '?raw', import: 'default' });
 const demos = import.meta.glob<string>('./demos/*.tsx', { query: '?raw', import: 'default' });
-const Workbench = lazy(() => import('./App').then((module) => ({ default: module.App })));
-const Manual = lazy(() => import('./Manual').then((module) => ({ default: module.Manual })));
 const AIPage = lazy(() => import('./AIPage').then((module) => ({ default: module.AIPage })));
-const SettingsExample = lazy(() => import('./blocks/SettingsExample').then((module) => ({ default: module.SettingsExample })));
 const DesignHome = lazy(() => import('./DesignHome').then((module) => ({ default: module.DesignHome })));
 const ThemeStudio = lazy(() => import('./ThemeStudio').then((module) => ({ default: module.ThemeStudio })));
 const THEME_KEY = 'asharca-ui-docs-theme';
 
-function ComponentPage({ id, dark, style, density }: { id: string; dark: boolean; style: DesignStyle; density: DesignDensity }) {
+function ComponentPage({ id, dark, style, density, onStyleChange }: { id: string; dark: boolean; style: DesignStyle; density: DesignDensity; onStyleChange: (style: DesignStyle) => void }) {
   const doc = componentDocs.find((item) => item.id === id)!;
   const [view, setView] = useState('preview');
   const [viewport, setViewport] = useState('inline');
@@ -64,26 +62,27 @@ function ComponentPage({ id, dark, style, density }: { id: string; dark: boolean
   }, [doc.demoFile]);
   const index = componentDocs.indexOf(doc);
   return <>
-    <div className="docs-page-heading"><span className="docs-eyebrow"><a href="#/components">组件</a><ChevronRight size={12} />{doc.group}</span><h1>{doc.name}</h1><p>{doc.description}</p></div>
-    <div className="docs-page-actions">
-      {demoSource ? <CopyButton text={componentMarkdown(doc, demoSource, version)} label="复制给 AI" copiedLabel="已复制 Markdown" failedLabel="复制失败" /> : <Button disabled size="sm">{demoError ? '文档加载失败' : '正在准备文档…'}</Button>}
-      <a className="docs-outline-link" href={`${import.meta.env.BASE_URL}ai/components/${id}.md`}><FileText size={15} />Markdown</a>
-      <span className="docs-meta">React · TypeScript · 工作区 v{version}</span>
+    <div className="docs-heading-row">
+      <div className="docs-page-heading"><span className="docs-eyebrow"><a href="#/components">组件</a><ChevronRight size={12} />{doc.group}</span><h1>{doc.name}</h1><p>{doc.description}</p></div>
+      <div className="docs-page-actions">
+        {demoSource ? <CopyButton text={componentMarkdown(doc, demoSource, version)} label="复制给 AI" copiedLabel="已复制 Markdown" failedLabel="复制失败" /> : <Button disabled size="sm">{demoError ? '文档加载失败' : '正在准备文档…'}</Button>}
+        <a className="docs-icon-link" href={`${import.meta.env.BASE_URL}ai/components/${id}.md`} aria-label="查看组件 Markdown" title="查看组件 Markdown"><FileText size={16} /></a>
+      </div>
     </div>
-    <section id="preview"><Tabs value={view} onValueChange={setView}>
+    <section id="preview"><Tabs value={view} onValueChange={setView} className="docs-component-tabs">
       <div className="docs-preview-toolbar"><TabsList data-variant="underline" aria-label="组件示例视图"><TabsTrigger value="preview">预览</TabsTrigger><TabsTrigger value="code">用法代码</TabsTrigger></TabsList>
-        <div className="docs-preview-actions"><Select aria-label="预览视口" value={viewport} controlSize="sm" onChange={(event) => setViewport(event.target.value)}><option value="inline">自适应</option><option value="375">手机 · 375px</option><option value="768">平板 · 768px</option><option value="1280">桌面 · 1280px</option></Select>
+        <div className="docs-preview-actions" hidden={view !== 'preview'}><DesignControls style={style} onStyleChange={onStyleChange} /><Select aria-label="预览视口" value={viewport} controlSize="sm" onChange={(event) => setViewport(event.target.value)}><option value="inline">自适应</option><option value="375">手机 · 375px</option><option value="768">平板 · 768px</option><option value="1280">桌面 · 1280px</option></Select>
           <IconButton label="重置组件预览" icon={<RotateCcw size={15} />} size="sm" variant="ghost" onClick={() => setReset((value) => value + 1)} />
           <a href={standalone} target="_blank" rel="noreferrer" aria-label="独立打开示例" title="独立打开示例"><ExternalLink size={16} /></a>
         </div>
       </div>
-      <TabsContent value="preview"><div className="docs-preview docs-preview-catalog">{viewport === 'inline' ? <div key={reset} className="docs-preview-inner docs-demo-canvas">{doc.preview}</div>
-        : <div className="docs-viewport-scroll"><iframe key={`${reset}-${viewport}`} title={`${doc.name} ${viewport}px 预览`} src={standalone} style={{ width: Number(viewport) }} className="docs-preview-frame" /></div>}</div><p className="docs-preview-hint">示例仅修改本地状态。使用顶栏切换视觉风格；独立视口和新窗口会同步明暗、风格与密度。</p></TabsContent>
-      <TabsContent value="code">{demoError ? <p role="alert">示例源码加载失败，请刷新重试。</p> : demoSource ? <DocCode code={demoSource} label="用法 TSX" /> : <Spinner label="加载示例源码" />}<p>预览与代码来自同一份文件；图片资源请替换为自己的地址。额外的视觉皮肤见<a href="#/themes">主题实验室</a>。</p></TabsContent>
+      <TabsContent value="preview" forceMount aria-hidden={view !== 'preview'} inert={view !== 'preview'} style={view === 'preview' ? undefined : { visibility: 'hidden', position: 'absolute', insetInline: 0, top: 0 }}><div className="docs-preview docs-preview-catalog">{viewport === 'inline' ? <div key={reset} className="docs-preview-inner docs-demo-canvas">{doc.preview}</div>
+        : <div className="docs-viewport-scroll"><iframe key={`${reset}-${viewport}`} title={`${doc.name} ${viewport}px 预览`} src={standalone} style={{ width: Number(viewport) }} className="docs-preview-frame" /></div>}</div></TabsContent>
+      <TabsContent value="code">{demoError ? <p role="alert">示例源码加载失败，请刷新重试。</p> : demoSource ? <DocCode code={demoSource} label="用法 TSX" /> : <Spinner label="加载示例源码" />}</TabsContent>
     </Tabs></section>
-    <section id="installation"><h2>安装与导入</h2><DocCode code="pnpm add @asharca/ui" label="终端" language="bash" /><DocCode code={`import { ${doc.name} } from "@asharca/ui${doc.module ? `/${doc.module}` : ''}";`} label="按需导入" /><p>首次使用请完成<a href="#/installation">样式配置</a>。当前分支新增接口需要对应版本，不能直接套用到旧 npm 包。</p></section>
+    <section id="installation"><h2>安装与导入</h2><DocCode code={`import { ${doc.name} } from "@asharca/ui${doc.module ? `/${doc.module}` : ''}";`} label="按需导入" /><p>首次使用请完成<a href="#/installation">安装与样式配置</a>。当前为开发分支，新增接口需核对已安装版本。</p></section>
     <section id="usage"><h2>使用约定</h2><div className="docs-usage-note"><p>{doc.notes}</p><div className="docs-related"><span>相关组件</span>{componentDocs.filter((item) => item.group === doc.group && item.id !== id).slice(0, 4).map((item) => <a key={item.id} href={`#/components/${item.id}`}>{item.name}</a>)}</div></div></section>
-    <section id="api"><h2>API 与接入边界</h2><div className="docs-api-scroll" role="region" aria-label={`${doc.name} 属性说明`} tabIndex={0}><table className="docs-api-table"><thead><tr><th scope="col">属性</th><th scope="col">类型</th><th scope="col">默认值</th><th scope="col">说明</th></tr></thead><tbody>{doc.api.map(([name, type, value, description]) => <tr key={name}><th scope="row"><code>{name}</code></th><td><code>{type}</code></td><td>{value}</td><td>{description}</td></tr>)}</tbody></table></div><p>这里只列主要扩展属性，完整类型以公开声明为准。业务、权限、路由与持久化留在宿主应用。</p></section>
+    <section id="api"><h2>API 参考</h2><div className="docs-api-scroll" role="region" aria-label={`${doc.name} 属性说明`} tabIndex={0}><table className="docs-api-table"><thead><tr><th scope="col">属性</th><th scope="col">类型</th><th scope="col">默认值</th><th scope="col">说明</th></tr></thead><tbody>{doc.api.map(([name, type, value, description]) => <tr key={name}><th scope="row"><code>{name}</code></th><td><code>{type}</code></td><td>{value}</td><td>{description}</td></tr>)}</tbody></table></div><p>主要扩展属性如上，完整类型以公开声明为准。</p></section>
     <section id="source"><h2>组件源码</h2><details open={sourceOpen} onToggle={(event) => setSourceOpen(event.currentTarget.open)}><summary>查看组件实现</summary>{sourceOpen && <><label className="docs-source-select">源码文件<Select aria-label="源码文件" value={sourceFile} onChange={(event) => setSourceFile(event.target.value)}>{[doc.file, ...Object.keys(sources).map((path) => path.replace('../src/', '')).filter((file) => file !== doc.file).sort()].map((file) => <option key={file}>{file}</option>)}</Select></label>{sourceError ? <p role="alert">源码加载失败，请刷新重试。</p> : source ? <DocCode code={source} label={`src/${sourceFile}`} language={sourceFile.endsWith('.css') ? 'css' : sourceFile.endsWith('.ts') ? 'typescript' : 'tsx'} /> : <Spinner label="加载组件源码" />}</>}</details><p>按需读取实际实现；复制组件实现时仍需保留其本地依赖和样式。</p></section>
     <footer className="docs-pager">{index > 0 ? <a href={`#/components/${componentDocs[index - 1].id}`}><ArrowLeft size={15} />{componentDocs[index - 1].name}</a> : <span />}{index < componentDocs.length - 1 && <a href={`#/components/${componentDocs[index + 1].id}`}>{componentDocs[index + 1].name}<ArrowRight size={15} /></a>}</footer>
   </>;
@@ -107,7 +106,22 @@ function Overview() {
   const [group, setGroup] = useState('全部');
   const [query, setQuery] = useState('');
   const visible = componentDocs.filter((doc) => (group === '全部' || doc.group === group) && `${doc.name} ${doc.description}`.toLowerCase().includes(query.trim().toLowerCase()));
-  return <><div className="docs-page-heading"><span className="docs-eyebrow">组件目录</span><h1>按场景找到组件</h1><p>从基础控件到 AI 聊天，预览真实状态，复制完整示例。</p></div><SearchInput label="筛选组件总览" placeholder="按名称或用途筛选…" value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery('')} /><div className="docs-filter-bar" role="group" aria-label="组件分类">{['全部', ...componentGroups].map((item) => <Button key={item} size="sm" variant={group === item ? 'primary' : 'ghost'} aria-pressed={group === item} onClick={() => setGroup(item)}>{item}</Button>)}</div><div className="docs-catalog-grid">{visible.map((doc) => <a href={`#/components/${doc.id}`} key={doc.id}><span>{doc.group}</span><h2>{doc.name}</h2><p>{doc.description}</p><ArrowRight size={16} aria-hidden="true" /></a>)}</div>{!visible.length && <p role="status">没有匹配的组件，请调整筛选条件。</p>}</>;
+  return <>
+    <div className="docs-page-heading"><span className="docs-eyebrow">文档</span><h1>组件</h1><p>基础控件、应用布局与 AI 对话。</p></div>
+    <div className="docs-catalog-toolbar">
+      <SearchInput label="筛选组件总览" placeholder="按名称或用途筛选…" value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery('')} />
+      <Select aria-label="组件分类" value={group} onChange={(event) => setGroup(event.target.value)}>{['全部', ...componentGroups].map((item) => <option key={item}>{item}</option>)}</Select>
+      <span className="docs-meta" role="status">{visible.length} 个组件</span>
+    </div>
+    {componentGroups.map((name) => {
+      const entries = visible.filter((doc) => doc.group === name);
+      return entries.length > 0 && <section className="docs-catalog-section" key={name} aria-label={name}>
+        <div className="docs-catalog-heading"><h2>{name}</h2><span>{entries.length}</span></div>
+        <div className="docs-catalog-grid">{entries.map((doc) => <a href={`#/components/${doc.id}`} key={doc.id}><div><h3>{doc.name}</h3><p>{doc.description}</p></div><ChevronRight size={16} aria-hidden="true" /></a>)}</div>
+      </section>;
+    })}
+    {!visible.length && <p className="docs-search-empty">没有匹配的组件，请调整筛选条件。</p>}
+  </>;
 }
 
 function readTheme() {
@@ -115,8 +129,12 @@ function readTheme() {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
+function readRoute() {
+  return (window.location.hash || '#/home').replace(/^#\/guide(?=\?|$)/, '#/installation');
+}
+
 export function DocsApp() {
-  const [route, setRoute] = useState(() => window.location.hash || '#/home');
+  const [route, setRoute] = useState(readRoute);
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -131,21 +149,26 @@ export function DocsApp() {
   const effectiveDark = previewRoute ? new URLSearchParams(routeQuery).get('theme') === 'dark' : dark;
   const id = routePath.startsWith('#/components/') ? routePath.slice('#/components/'.length) : '';
   const doc = componentDocs.find((item) => item.id === id);
-  const guide = routePath === '#/guide'; const ai = routePath === '#/ai';
+  const ai = routePath === '#/ai';
   const overview = routePath === '#/components'; const examples = routePath === '#/examples';
-  const settings = routePath === '#/examples/settings';
+  const example = appExamples.find((item) => routePath === `#/examples/${item.id}` || (item.id === 'workspace' && routePath === '#workbench'));
   const home = ['#/home', '#/', '#'].includes(routePath); const themes = routePath === '#/themes';
-  const missing = !['#/installation', '#', '#workbench', '#/examples/workspace'].includes(routePath) && !doc && !guide && !ai && !overview && !examples && !settings && !previewRoute && !home && !themes;
+  const missing = routePath !== '#/installation' && !doc && !ai && !overview && !examples && !example && !previewRoute && !home && !themes;
   useEffect(() => {
-    const onHash = () => { setRoute(window.location.hash || '#/home'); setOpen(false); setSearchOpen(false); setSearch(''); };
+    const onHash = () => {
+      const next = readRoute();
+      if (window.location.hash && window.location.hash !== next) window.history.replaceState(window.history.state, '', next);
+      setRoute(next); setOpen(false); setSearchOpen(false); setSearch('');
+    };
+    onHash();
     window.addEventListener('hashchange', onHash); return () => window.removeEventListener('hashchange', onHash);
   }, []);
   useEffect(() => { main.current?.scrollTo?.(0, 0); }, [route]);
   useEffect(() => { document.documentElement.classList.toggle('dark', effectiveDark); }, [effectiveDark, routePath]);
   useEffect(() => { if (!previewRoute) { try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch { /* Storage is optional. */ } } }, [dark, previewRoute]);
   useEffect(() => {
-    document.title = `${doc?.name ?? (home ? 'AI 界面设计系统' : themes ? '主题实验室' : ai ? 'AI 文档' : overview ? '组件' : examples || settings ? '示例' : guide ? '使用手册' : '安装')} — Asharca UI`;
-  }, [doc, ai, overview, examples, settings, guide, home, themes]);
+    document.title = `${doc?.name ?? example?.name ?? (home ? 'AI 界面设计系统' : themes ? '主题实验室' : ai ? 'AI 文档' : overview ? '组件' : examples ? '示例' : '安装')} — Asharca UI`;
+  }, [doc, ai, overview, examples, example, home, themes]);
   useEffect(() => {
     const keys = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && !previewRoute) {
@@ -178,22 +201,22 @@ export function DocsApp() {
     const preview = componentDocs.find((item) => item.id === routePath.slice('#/preview/'.length));
     return <main data-toolplane-ui="preview" className="docs-standalone-preview" key={routePath}>{preview ? preview.preview : <p role="alert">未找到组件示例。</p>}</main>;
   }
-  if (routePath === '#workbench' || routePath === '#/examples/workspace') return <Suspense fallback={<Spinner label="加载工作区" />}><Workbench /></Suspense>;
+  if (example) return <><ExamplePage key={example.id} example={example} style={design.style} onStyleChange={design.setStyle} dark={dark} onDarkChange={setDark} density={design.density} onDensityChange={design.setDensity} /><SiteSearch open={searchOpen} onOpenChange={setSearchOpen} /></>;
   const toc = ai ? [['ai-start', '使用方式'], ['ai-contract', '接口约定'], ['ai-prompt', '任务模板'], ['ai-generate', '同步生成']]
-    : doc ? [['preview', '预览与用法'], ['installation', '安装与导入'], ['usage', '使用约定'], ['api', 'API 与接入边界'], ['source', '组件源码']]
+    : doc ? [['preview', '预览与用法'], ['installation', '安装与导入'], ['usage', '使用约定'], ['api', 'API 参考'], ['source', '组件源码']]
       : [['requirements', '环境要求'], ['dependencies', '安装依赖'], ['styles', '全局样式'], ['first-component', '第一个组件'], ['theme', '主题']];
   return <><Dialog open={open} onOpenChange={setOpen}><div className={`docs-site ${home ? 'is-home' : ''}`} data-toolplane-ui="docs">
     <a href="#main-content" className="docs-skip-link" onClick={(event) => { event.preventDefault(); main.current?.focus(); }}>跳到正文</a>
     <header className="docs-top">
       <a href="#/home" className="docs-brand" aria-label="Asharca UI 首页"><span className="docs-brand-mark"><Box size={18} strokeWidth={1.8} /></span><strong>asharca<span>/</span>ui</strong></a>
-      <nav aria-label="站点导航"><a href="#/installation" aria-current={!home && !themes && !examples && !settings && !ai && !overview && !doc ? 'page' : undefined}>文档</a><a href="#/components" aria-current={overview || doc ? 'page' : undefined}>组件</a><a href="#/themes" aria-current={themes ? 'page' : undefined}>主题</a><a href="#/examples" aria-current={examples || settings ? 'page' : undefined}>示例</a><a href="#/ai" aria-current={ai ? 'page' : undefined}>AI 文档</a></nav>
-      <div className="docs-top-actions"><button type="button" className="docs-search-trigger" aria-label="搜索文档" onClick={() => setSearchOpen(true)}><Search size={15} /><span>搜索文档…</span><kbd>⌘ K</kbd></button><DesignControls style={design.style} onStyleChange={design.setStyle} /><a href="https://github.com/asharca/ui" aria-label="GitHub 源码" title="GitHub 源码" target="_blank" rel="noreferrer"><Code2 size={17} /></a><IconButton variant="ghost" label={dark ? '切换浅色主题' : '切换深色主题'} icon={dark ? <Sun size={17} /> : <Moon size={17} />} onClick={() => setDark(!dark)} /><DialogTrigger asChild><IconButton className="docs-mobile-toggle" variant="ghost" label="打开文档导航" icon={<Menu size={18} />} /></DialogTrigger></div>
+      <nav aria-label="站点导航"><a href="#/installation" aria-current={!home && !themes && !examples && !ai && !overview && !doc ? 'page' : undefined}>文档</a><a href="#/components" aria-current={overview || doc ? 'page' : undefined}>组件</a><a href="#/themes" aria-current={themes ? 'page' : undefined}>主题</a><a href="#/examples" aria-current={examples ? 'page' : undefined}>示例</a><a href="#/ai" aria-current={ai ? 'page' : undefined}>AI 文档</a></nav>
+      <div className="docs-top-actions"><button type="button" className="docs-search-trigger" aria-label="搜索文档" onClick={() => setSearchOpen(true)}><Search size={15} /><span>搜索文档…</span></button>{themes && <DesignControls style={design.style} onStyleChange={design.setStyle} />}<a href="https://github.com/asharca/ui" aria-label="GitHub 源码" title="GitHub 源码" target="_blank" rel="noreferrer"><Code2 size={17} /></a><IconButton variant="ghost" label={dark ? '切换浅色主题' : '切换深色主题'} icon={dark ? <Sun size={17} /> : <Moon size={17} />} onClick={() => setDark(!dark)} /><DialogTrigger asChild><IconButton className="docs-mobile-toggle" variant="ghost" label="打开文档导航" icon={<Menu size={18} />} /></DialogTrigger></div>
     </header>
     <div className="docs-body"><aside className="docs-sidebar" aria-label="文档导航">{directory(false)}</aside>
-      <main id="main-content" className="docs-main" ref={main} tabIndex={-1}><div className={`docs-content ${guide ? 'docs-guide' : ''} ${overview || examples ? 'docs-content-wide' : ''} ${home || themes ? 'design-page' : ''}`}>
-        {missing ? <><h1>页面不存在</h1><a href="#/installation">返回安装页</a></> : home ? <Suspense fallback={<Spinner label="加载设计系统" />}><DesignHome /></Suspense> : themes ? <Suspense fallback={<Spinner label="加载主题实验室" />}><ThemeStudio dark={dark} style={design.style} density={design.density} onDarkChange={setDark} onStyleChange={design.setStyle} onDensityChange={design.setDensity} /></Suspense> : ai ? <Suspense fallback={<Spinner label="加载 AI 文档" />}><AIPage /></Suspense> : overview ? <Overview /> : settings ? <Suspense fallback={<Spinner label="加载设置页" />}><SettingsExample /></Suspense> : examples ? <><div className="docs-page-heading"><span className="docs-eyebrow">组合示例</span><h1>示例</h1><p>不只看控件，也看看它们在完整界面里如何工作。</p></div><a className="docs-example" href="#/examples/workspace" aria-label="打开工作区示例"><img src="./workspace-preview.png" alt="工作区示例：可折叠侧边栏、标签导航和组件工作台" width={1440} height={900} /><div><div><h2>工作区</h2><p>侧边栏、标签导航、项目管理与聊天界面。</p></div><ArrowRight size={20} aria-hidden="true" /></div></a><div className="docs-starter-links"><a href="#/home">AI 工作台设计预览<ArrowRight size={16} /></a><a href="#/themes">主题实验室<ArrowRight size={16} /></a><a href="#/examples/settings">设置与通知表单<ArrowRight size={16} /></a><a href="#/components/chat-thread">聊天与流式输出<ArrowRight size={16} /></a><a href="#/components/tool-call-card">工具调用与审批<ArrowRight size={16} /></a><a href="#/components/data-table">排序、筛选与表格选择<ArrowRight size={16} /></a></div></> : doc ? <ComponentPage key={id} id={id} dark={dark} style={design.style} density={design.density} /> : guide ? <Suspense fallback={<Spinner label="加载使用手册" />}><Manual onNavigate={(view) => { window.location.hash = view === 'chat' ? '#/components/chat-thread' : '#/components/button'; }} /></Suspense> : <Installation />}
+      <main id="main-content" className="docs-main" ref={main} tabIndex={-1}><div className={`docs-content ${overview || examples ? 'docs-content-wide' : ''} ${home || themes ? 'design-page' : ''}`}>
+        {missing ? <><h1>页面不存在</h1><a href="#/installation">返回安装页</a></> : home ? <Suspense fallback={<Spinner label="加载设计系统" />}><DesignHome /></Suspense> : themes ? <Suspense fallback={<Spinner label="加载主题实验室" />}><ThemeStudio dark={dark} style={design.style} density={design.density} onDarkChange={setDark} onStyleChange={design.setStyle} onDensityChange={design.setDensity} /></Suspense> : ai ? <Suspense fallback={<Spinner label="加载 AI 文档" />}><AIPage /></Suspense> : overview ? <Overview /> : examples ? <ExampleGallery style={design.style} onStyleChange={design.setStyle} /> : doc ? <ComponentPage key={id} id={id} dark={dark} style={design.style} density={design.density} onStyleChange={design.setStyle} /> : <Installation />}
       </div></main>
-      {!guide && !missing && !examples && !settings && !overview && !home && !themes && <aside className="docs-toc"><span>本页目录</span>{toc.map(([target, label]) => <button key={target} aria-current={activeSection === target ? 'location' : undefined} onClick={() => { setActiveSection(target); scrollWithin(main.current, document.getElementById(target)); }}>{label}</button>)}<a className="docs-toc-ai" href="#/ai">让 AI 理解这些组件<ArrowRight size={14} /></a></aside>}
+      {!missing && !examples && !overview && !home && !themes && <aside className="docs-toc" aria-label="本页目录"><span>本页目录</span>{toc.map(([target, label]) => <button key={target} aria-current={activeSection === target ? 'location' : undefined} onClick={() => { setActiveSection(target); scrollWithin(main.current, document.getElementById(target)); }}>{label}</button>)}</aside>}
     </div>
-  </div><DialogPortal><DialogOverlay className="docs-mobile-overlay" /><DialogContent className="docs-mobile-dialog" aria-describedby={undefined} onOpenAutoFocus={(event) => { event.preventDefault(); mobileSearch.current?.focus(); }}><div className="docs-mobile-heading"><DialogTitle>文档导航</DialogTitle><DialogClose asChild><IconButton label="关闭文档导航" variant="ghost" icon={<X size={18} />} /></DialogClose></div>{directory(true)}</DialogContent></DialogPortal></Dialog><SiteSearch open={searchOpen} onOpenChange={setSearchOpen} /></>;
+  </div><DialogPortal><DialogOverlay className="docs-mobile-overlay" /><DialogContent className="docs-mobile-dialog" aria-describedby={undefined} onOpenAutoFocus={(event) => { event.preventDefault(); mobileSearch.current?.focus(); }}><div className="docs-mobile-heading"><DialogTitle>文档导航</DialogTitle><DialogClose asChild><IconButton label="关闭文档导航" variant="ghost" icon={<X size={18} />} /></DialogClose></div><nav className="docs-mobile-links" aria-label="站点入口"><a href="#/home" onClick={() => setOpen(false)}>首页</a><a href="#/examples" onClick={() => setOpen(false)}>示例</a></nav>{directory(true)}</DialogContent></DialogPortal></Dialog><SiteSearch open={searchOpen} onOpenChange={setSearchOpen} /></>;
 }

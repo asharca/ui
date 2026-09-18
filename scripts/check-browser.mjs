@@ -36,14 +36,14 @@ try {
       const page = await context.newPage();
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      for (const id of ['checkbox', 'radio', 'choice-field', 'button', 'switch', 'chat-composer-toolbar', 'chat-thread']) {
+      for (const id of ['checkbox', 'radio', 'choice-field', 'button', 'switch', 'chat-composer-toolbar', 'chat-thread', 'data-table', 'chat-shell', 'workspace-sidebar']) {
         await page.goto(`${base}#/components/${id}`);
         await page.locator('.docs-demo-canvas').waitFor();
         await page.waitForFunction(() => !document.querySelector('.docs-demo-canvas')?.textContent?.includes('加载组件示例'));
         if (['checkbox', 'radio', 'choice-field'].includes(id)) await page.locator('.ui-choice input').first().waitFor();
         if (id === 'chat-thread') await page.locator('[data-ui="chat.composer"] textarea').waitFor();
         const measurement = await page.evaluate(() => {
-          const main = document.querySelector('.docs-main');
+          const main = document.querySelector('.docs-main, .example-preview-body');
           return {
             viewport: innerWidth, documentWidth: document.documentElement.scrollWidth,
             mainWidth: main.clientWidth, mainScroll: main.scrollWidth,
@@ -102,11 +102,11 @@ try {
         await page.keyboard.press('Escape');
         assert(await trigger.evaluate((node) => node === document.activeElement), 'Mobile trigger focus was not restored');
       }
-      for (const [route, heading] of [['components', '按场景找到组件'], ['ai', '给 AI 使用的文档'], ['examples/settings', '工作区偏好']]) {
+      for (const [route, heading] of [['components', '组件'], ['ai', '给 AI 使用的文档'], ['examples/settings', '工作区偏好']]) {
         await page.goto(`${base}#/${route}`);
         await page.getByRole('heading', { name: heading, exact: true }).waitFor();
         const fits = await page.evaluate(() => {
-          const main = document.querySelector('.docs-main');
+          const main = document.querySelector('.docs-main, .example-preview-body');
           return document.documentElement.scrollWidth <= innerWidth + 1 && main.scrollWidth <= main.clientWidth + 1;
         });
         assert(fits, `${route}: landing page overflows at ${width}`);

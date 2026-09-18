@@ -15,9 +15,10 @@ async function fits(page, width, label) {
   const value = await page.evaluate(() => {
     const main = document.querySelector('.docs-main');
     const top = document.querySelector('.docs-top');
-    return { document: document.documentElement.scrollWidth, main: main.scrollWidth - main.clientWidth, header: top.scrollWidth - top.clientWidth, headerTop: top.getBoundingClientRect().top };
+    return { document: document.documentElement.scrollWidth, main: main.scrollWidth - main.clientWidth, scrollbar: getComputedStyle(main).scrollbarWidth, header: top.scrollWidth - top.clientWidth, headerTop: top.getBoundingClientRect().top };
   });
   assert(value.document <= width + 1 && value.main <= 1 && value.header <= 1, `${label}: overflow ${JSON.stringify(value)}`);
+  assert.equal(value.scrollbar, 'none', `${label}: main content must not show a competing scrollbar`);
   assert(Math.abs(value.headerTop) <= 1, `${label}: ancestor scrolling moved the site header (${value.headerTop}px)`);
 }
 async function searchFits(dialog, width, label) {
@@ -75,6 +76,17 @@ try {
     assert(await page.getByRole('heading', { name: '使用约定', exact: true }).count());
     await fits(page, width, 'button docs');
     await page.screenshot({ path: join(output, `${width}-${mode}-button.png`) });
+    const main = page.locator('.docs-main');
+    const sidebarTop = await page.locator('.docs-sidebar').evaluate((node) => node.scrollTop);
+    await main.hover({ position: { x: 12, y: 80 } });
+    await page.mouse.wheel(0, 400);
+    await page.waitForFunction(() => document.querySelector('.docs-main').scrollTop > 0);
+    const wheelTop = await main.evaluate((node) => node.scrollTop);
+    await main.focus(); await page.keyboard.press('PageDown');
+    await page.waitForFunction((previous) => document.querySelector('.docs-main').scrollTop > previous, wheelTop);
+    assert.equal(await page.locator('.docs-sidebar').evaluate((node) => node.scrollTop), sidebarTop, 'Content scrolling must not scroll the directory');
+    assert.notEqual(await page.locator('.docs-sidebar').evaluate((node) => getComputedStyle(node).scrollbarWidth), 'none', 'Keep the directory scrollbar');
+    await main.evaluate((node) => node.scrollTo(0, 0));
     if (width > 850) {
       const side = page.getByRole('complementary', { name: '文档导航', exact: true });
       const group = side.locator('.docs-nav-group').filter({ has: page.locator('a[href="#/components/button"]') });
@@ -84,14 +96,55 @@ try {
       assert(await side.getByRole('link', { name: 'Button', exact: true }).isVisible());
       await filter.clear(); assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
       await toggle.click();
-      await page.getByRole('button', { name: 'API 与接入边界', exact: true }).click();
-      await page.waitForFunction(() => document.querySelector('.docs-toc button[aria-current="location"]')?.textContent === 'API 与接入边界');
+      await page.getByRole('button', { name: 'API 参考', exact: true }).click();
+      await page.waitForFunction(() => document.querySelector('.docs-toc button[aria-current="location"]')?.textContent === 'API 参考');
       await fits(page, width, 'after table of contents navigation');
+    }
+    await page.goto(`${base}#/components/input`);
+    const input = page.getByRole('textbox', { name: '项目名称', exact: true });
+    await input.fill('Release notes');
+    await page.getByRole('tab', { name: '用法代码', exact: true }).click();
+    await page.getByRole('region', { name: '用法 TSX', exact: true }).waitFor();
+    assert(!(await input.isVisible()), 'Inactive preview must not be visible or keyboard-accessible');
+    assert(!(await page.getByRole('combobox', { name: '预览视口' }).count()), 'Hide preview tools while reading code');
+    await fits(page, width, 'code view');
+    await page.getByRole('tab', { name: '预览', exact: true }).click();
+    assert.equal(await input.inputValue(), 'Release notes', 'Reading code must preserve preview edits');
+    await page.getByRole('button', { name: '重置组件预览' }).click();
+    assert.equal(await input.inputValue(), '', 'Explicit reset must clear the demo');
+    await page.goto(`${base}#/components`);
+    await page.getByRole('heading', { name: '组件', exact: true, level: 1 }).waitFor();
+    await fits(page, width, 'grouped catalog');
+    await page.screenshot({ path: join(output, `${width}-${mode}-catalog.png`) });
+    await page.getByRole('combobox', { name: '组件分类' }).selectOption('AI 聊天');
+    await page.getByRole('searchbox', { name: '筛选组件总览' }).fill('ChatThread');
+    assert.equal(await page.locator('.docs-catalog-grid a').count(), 1, 'Combine category and text filters');
+    await page.locator('.docs-catalog-grid a').click();
+    await page.getByRole('heading', { name: 'ChatThread', exact: true, level: 1 }).waitFor();
+    await fits(page, width, 'catalog navigation');
+    if (width <= 850) {
+      await page.getByRole('button', { name: '打开文档导航' }).click();
+      const navigation = page.getByRole('dialog', { name: '文档导航' });
+      assert.equal(await navigation.getByRole('button', { name: /AI 聊天/ }).getAttribute('aria-expanded'), 'true');
+      await navigation.getByRole('link', { name: '示例', exact: true }).click();
+      await navigation.waitFor({ state: 'hidden' });
+      await page.getByRole('heading', { name: '示例', exact: true, level: 1 }).waitFor();
     }
     await page.goto(`${base}#/installation`);
     await page.getByRole('heading', { name: '安装', exact: true, level: 1 }).waitFor();
     await fits(page, width, 'installation');
     await page.screenshot({ path: join(output, `${width}-${mode}-installation.png`) });
+    await page.goto(`${base}#/components`);
+    await page.getByRole('heading', { name: '组件', exact: true, level: 1 }).waitFor();
+    await page.goto(`${base}#/guide?from=bookmark`);
+    await page.waitForURL(`${base}#/installation?from=bookmark`);
+    await page.getByRole('heading', { name: '安装', exact: true, level: 1 }).waitFor();
+    assert.equal(await page.locator('a[href="#/guide"]').count(), 0, 'Only canonical documentation links should remain');
+    assert.equal(await page.getByRole('navigation', { name: '手册目录' }).count(), 0, 'Do not nest another manual navigation');
+    await fits(page, width, 'legacy documentation redirect');
+    await page.goBack();
+    await page.getByRole('heading', { name: '组件', exact: true, level: 1 }).waitFor();
+    assert(new URL(page.url()).hash === '#/components', 'Redirect must not insert an extra history entry');
     assert.equal(errors.length, 0, errors.join('\n'));
     results.push({ width, mode, status: 'passed' });
     console.log(`PASS redesign ${width}px ${mode}: root homepage, native form, search keyboard/focus, docs, navigation and layout`);
