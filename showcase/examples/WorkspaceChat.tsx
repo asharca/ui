@@ -20,11 +20,11 @@ import {
   type CompleteAttachment,
   type ThreadMessageLike,
 } from "@assistant-ui/react";
-import { ChatThread } from "../src/ChatThread";
-import { ChatComposerToolbar } from "../src/ChatComposerToolbar";
-import { ChatShell, type ChatShellMobilePane } from "../src/ChatShell";
-import { ConversationSidebar } from "../src/ConversationSidebar";
-import { Button, IconButton, Input, Select } from "../src/Controls";
+import { ChatThread } from "../../src/ChatThread";
+import { ChatComposerToolbar } from "../../src/ChatComposerToolbar";
+import { ChatShell, type ChatShellMobilePane } from "../../src/ChatShell";
+import { ConversationSidebar } from "../../src/ConversationSidebar";
+import { Button, IconButton, Input, Select } from "../../src/Controls";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ import {
   DialogPortal,
   DialogTitle,
   DialogDescription,
-} from "../src/Dialog";
+} from "../../src/Dialog";
 
 type Conversation = {
   id: string;

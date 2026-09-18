@@ -68,7 +68,8 @@ describe('@asharca/ui', () => {
     });
     expect(manifest.files).toEqual(expect.arrayContaining(['dist', 'src/styles.css', 'README.md', 'LICENSE']));
     expect(readFileSync(resolve(process.cwd(), 'LICENSE'), 'utf8')).toContain('MIT License');
-    expect(manifest.peerDependencies['@assistant-ui/react']).toBe('0.15.18');
+    expect(manifest.peerDependencies['@assistant-ui/react']).toBe('^0.15.18');
+    expect(manifest.devDependencies['@assistant-ui/react']).toBe('0.15.20');
     expect(manifest.dependencies['@assistant-ui/react-streamdown']).toBe('0.3.13');
     expect(manifest.peerDependenciesMeta).toBeUndefined();
   });

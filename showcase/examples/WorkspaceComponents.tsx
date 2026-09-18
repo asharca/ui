@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { HighlightedCode } from "./HighlightedCode";
+import { HighlightedCode } from "../HighlightedCode";
 import {
   Bell,
   Check,
@@ -54,7 +54,7 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-} from "../src/index";
+} from "../../src/index";
 
 type DemoProps = { notify: (message: string) => void; onCreate: () => void };
 

@@ -6,3 +6,7 @@ coverage/
 *.tsbuildinfo
 .env*
 !.env.example
+showcase/public/ai/
+showcase/public/llms.txt
+showcase/public/llms-full.txt
+ui-browser-artifacts/

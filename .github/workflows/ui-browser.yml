@@ -1,0 +1,71 @@
+name: ui-browser
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set isolated browser tooling path
+        run: echo "UI_BROWSER_ROOT=$RUNNER_TEMP/ui-browser" >> "$GITHUB_ENV"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build showcase
+        run: |
+          mkdir -p ui-browser-artifacts
+          pnpm build:showcase > ui-browser-artifacts/build.log 2>&1 || { cat ui-browser-artifacts/build.log; exit 1; }
+      - name: Package reproducible design review
+        run: |
+          mkdir -p "$RUNNER_TEMP/ui-review-preview"
+          git archive --format=tar HEAD > "$RUNNER_TEMP/ui-review-preview/source.tar"
+          tar -cf "$RUNNER_TEMP/ui-review-preview/preview.tar" -C showcase-dist .
+          git rev-parse HEAD > "$RUNNER_TEMP/ui-review-preview/commit.txt"
+      - name: Upload static preview and source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-review-preview
+          path: ${{ runner.temp }}/ui-review-preview/
+          retention-days: 3
+      - name: Install isolated browser tooling
+        run: |
+          npm install --prefix "$UI_BROWSER_ROOT" --no-package-lock --ignore-scripts playwright@1.58.2
+          node "$UI_BROWSER_ROOT/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Check redesigned site, search and navigation
+        run: node scripts/check-site-redesign.mjs
+      - name: Check application examples, source and charts
+        run: node scripts/check-app-examples.mjs
+      - name: Check layouts, interactions and static AI docs
+        run: node scripts/check-browser.mjs
+      - name: Check direct UTF-8 navigation on real Vite servers
+        run: node scripts/check-ai-docs-http.mjs --browser
+      - name: Check design skins, contrast, density and state preservation
+        run: node scripts/check-design.mjs
+      - name: Check specimen panels, approval recovery and preference fallbacks
+        run: node scripts/check-design-specimens.mjs
+      - name: Capture unclipped design panels for review
+        run: node scripts/capture-design-review.mjs
+      - name: Upload screenshots and measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-browser-artifacts
+          path: ui-browser-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,5 +1,7 @@
 # @asharca/ui
 
+[Live documentation](https://asharca.github.io/ui/) · [Application examples](https://asharca.github.io/ui/#/examples)
+
 `ChatComposerToolbar` (`@asharca/ui/chat-composer-toolbar`) provides a unified
 tool menu and configurable, ordered shortcuts. Pass `tools`, `pinnedIds`, and
 `onPinnedIdsChange`; the consuming app owns actions and preference persistence.
@@ -19,7 +21,7 @@ pnpm installs missing peer dependencies by default. If automatic peer installati
 is disabled or your package manager leaves peers missing, install them explicitly:
 
 ```bash
-pnpm add @asharca/ui @assistant-ui/react@0.15.18 react@^19 react-dom@^19 tailwindcss@^4
+pnpm add @asharca/ui @assistant-ui/react@0.15.20 react@^19 react-dom@^19 tailwindcss@^4
 ```
 
 For version conflicts, first check that your application and other dependencies
@@ -27,11 +29,14 @@ support these versions. Installing the package does not configure your CSS build
 
 The package uses React 19 and Tailwind CSS 4. `ChatThread` additionally accepts an assistant-ui `AssistantRuntime`, so transport and persistence stay in the host application.
 
-The runtime peer is pinned to `@assistant-ui/react@0.15.18`, paired with
-`@assistant-ui/react-streamdown@0.3.13`. These are the latest releases verified on
-September 5, 2026. Older runtime versions are not supported. Hosts that also use
-the Streamdown adapter should use `0.3.13` so the renderer and host share the same
-assistant-ui context. No package patch or legacy runtime hook is required.
+The runtime peer accepts `@assistant-ui/react@^0.15.18`, paired with
+`@assistant-ui/react-streamdown@0.3.13`. Version `0.2.3` is tested with runtime
+`0.15.20` on September 18, 2026. Existing locked `0.15.18` installations remain
+in the supported range; new installations should use `0.15.20`, which aligns
+the upstream core/cloud dependencies. An unlocked `0.15.18` install can select
+an incompatible cloud peer. Keep strict peer validation enabled.
+Hosts that also use the Streamdown adapter should use `0.3.13` so the renderer
+and host share the same assistant-ui context.
 
 Import the stylesheet once from the host application's global Tailwind stylesheet:
 
@@ -163,7 +168,12 @@ memory and resets on reload.
 
 `pnpm build:showcase` type-checks and builds the site into `showcase-dist/`.
 The showcase is development-only and is not included in the npm package.
-It includes nine interactive examples with copyable code snippets. Profile photos
+Open `#/examples` for order administration, analytics, project boards, the
+component workspace, and settings. Each has an in-page style, light/dark and
+density switcher, plus source tabs reading the actual files in
+`showcase/examples/`. See `showcase/examples/README.md` for file locations.
+The chart primitives are exported from `@asharca/ui/chart`; combine them with
+Recharts and the existing styles. Profile photos
 in `showcase/public/avatars` are demo assets from Unsplash (photo IDs
 `1494790108377-be9c29b29330`, `1506794778202-cad84cf45f1d`, and
 `1534528741775-53994a69daeb`); member names and emails are fictional.

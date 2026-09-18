@@ -55,11 +55,11 @@ import {
   TooltipTrigger,
   WorkspaceTabBar,
   WorkspaceSidebar,
-} from "../src/index";
-import { version } from "../package.json";
-import { Example, examples } from "./Examples";
+} from "../../src/index";
+import { version } from "../../package.json";
+import { Example, examples } from "./WorkspaceComponents";
 
-const ChatExample = lazy(() => import("./ChatExample"));
+const ChatExample = lazy(() => import("./WorkspaceChat"));
 const categories = [
   { id: "all", label: "全部组件", icon: LayoutGrid },
   { id: "controls", label: "基础控件", icon: MousePointer2 },
@@ -104,7 +104,7 @@ const projects = [
   },
 ];
 
-export function App() {
+export function WorkspaceExample({ embedded = false }: { embedded?: boolean }) {
   const [workspace, setWorkspace] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const requested = params.get("view");
@@ -158,9 +158,10 @@ export function App() {
     }
   }, [collapsed]);
   useEffect(() => {
+    if (embedded) return;
     document.documentElement.classList.toggle("dark", dark);
     return () => document.documentElement.classList.remove("dark");
-  }, [dark]);
+  }, [dark, embedded]);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 3500);
@@ -314,13 +315,13 @@ export function App() {
                 variant="ghost"
                 onClick={() => setMenuOpen(true)}
               />
-              <a className="workbench-return" href="#/examples">
+              {!embedded && <a className="workbench-return" href="#/examples">
                 <ArrowLeft size={15} />
                 <span>返回示例区</span>
-              </a>
+              </a>}
               <WorkspaceTabBar
                 actions={
-                  <div className="topbar-actions">
+                  !embedded && <div className="topbar-actions">
                     <span className="topbar-version">v{version}</span>
                     <Tooltip>
                       <TooltipTrigger asChild>

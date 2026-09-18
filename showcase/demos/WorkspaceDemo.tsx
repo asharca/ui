@@ -1,63 +1,16 @@
 import { useState } from "react";
-import { Plus, MessageSquare, Settings2 } from "lucide-react";
-import * as UI from "../../src/index";
-
+import { FileText } from "lucide-react";
+import { WorkspaceTabBar, type WorkspaceTab } from "../../src/index";
 export function WorkspaceDemo() {
-  const [tabs, setTabs] = useState([
-    { id: "home", label: "概览", icon: MessageSquare, pinned: true },
-    { id: "settings", label: "设置", icon: Settings2, pinned: false },
-  ]);
-  const [active, setActive] = useState("home");
-  return (
-    <div style={{ width: "100%" }}>
-      <UI.WorkspaceTabBar
-        tabs={tabs}
-        activeTabId={active}
-        onSelect={setActive}
-        onClose={(id) => {
-          if (tabs.length < 2) return;
-          const next = tabs.filter((tab) => tab.id !== id);
-          setTabs(next);
-          if (active === id) setActive(next[0].id);
-        }}
-        onNewTab={() => {
-          const id = crypto.randomUUID();
-          setTabs([
-            ...tabs,
-            { id, label: "新标签", icon: Plus, pinned: false },
-          ]);
-          setActive(id);
-        }}
-        onTogglePinned={(id) =>
-          setTabs(
-            tabs
-              .map((tab) =>
-                tab.id === id ? { ...tab, pinned: !tab.pinned } : tab,
-              )
-              .sort((a, b) => Number(b.pinned) - Number(a.pinned)),
-          )
-        }
-        onReorder={(source, target) => {
-          const a = tabs.findIndex((tab) => tab.id === source);
-          const b = tabs.findIndex((tab) => tab.id === target);
-          if (a < 0 || b < 0 || tabs[a].pinned !== tabs[b].pinned) return;
-          const next = [...tabs];
-          const [moved] = next.splice(a, 1);
-          next.splice(b, 0, moved);
-          setTabs(next);
-        }}
-        onOpenInNewWindow={() =>
-          window.open(
-            "?view=chat&detached=1#/examples/workspace",
-            "_blank",
-            "noopener,noreferrer",
-          )
-        }
-      />
-      <p style={{ padding: 24 }}>
-        {tabs.find((tab) => tab.id === active)?.label}
-      </p>
-    </div>
-  );
+  const [tabs, setTabs] = useState<WorkspaceTab[]>([{ id: "overview", label: "工作区概览", icon: FileText, pinned: true }, { id: "chat", label: "助手会话", icon: FileText, pinned: false }, { id: "settings", label: "设置", icon: FileText, pinned: false }]);
+  const [active, setActive] = useState("overview"); const [status, setStatus] = useState("方向键切换；Alt+Shift+方向键调整顺序。");
+  return <div style={{ display: "grid", gap: 16, width: "100%" }}><WorkspaceTabBar tabs={tabs} activeTabId={active} onSelect={setActive} closeOnDoubleClick={false} showReorderButtons
+    labels={{ navigation: "打开的页面", newTab: "新建标签", close: (name) => `关闭 ${name}`, pin: (name) => `固定 ${name}`, unpin: (name) => `取消固定 ${name}`, openInNewWindow: (name) => `在新窗口打开 ${name}`, moveLeft: (name) => `左移 ${name}`, moveRight: (name) => `右移 ${name}` }}
+    onClose={(id) => { const next = tabs.filter((tab) => tab.id !== id); if (!next.length) return; setTabs(next); if (active === id) setActive(next[0].id); }}
+    onNewTab={() => { const id = crypto.randomUUID(); setTabs([...tabs, { id, label: `页面 ${tabs.length + 1}`, icon: FileText, pinned: false }]); setActive(id); }}
+    onTogglePinned={(id) => setTabs(tabs.map((tab) => tab.id === id ? { ...tab, pinned: !tab.pinned } : tab))}
+    onOpenInNewWindow={(id) => setStatus(`演示回调：请求在新窗口打开 ${tabs.find((tab) => tab.id === id)?.label}`)}
+    onReorder={(source, target) => { const next = [...tabs]; const from = next.findIndex((tab) => tab.id === source); const to = next.findIndex((tab) => tab.id === target); if (from < 0 || to < 0) return; const [item] = next.splice(from, 1); next.splice(to, 0, item); setTabs(next); }} />
+    <p role="status">{status}</p><p>当前页面：{tabs.find((tab) => tab.id === active)?.label}</p>
+  </div>;
 }
-

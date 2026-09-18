@@ -1,0 +1,51 @@
+export const appExamples = [
+  {
+    id: "admin",
+    name: "订单后台",
+    description: "订单管理、状态筛选、批量处理与客户详情。",
+    component: "AdminExample",
+    image: "examples/admin.png",
+    files: ["AdminExample.tsx", "examples.css"],
+  },
+  {
+    id: "analytics",
+    name: "数据分析",
+    description: "收入趋势、渠道分布、订阅构成与数据明细。",
+    component: "AnalyticsExample",
+    image: "examples/analytics.png",
+    files: ["AnalyticsExample.tsx", "../../src/Chart.tsx", "examples.css"],
+  },
+  {
+    id: "projects",
+    name: "项目看板",
+    description: "任务创建、成员筛选、优先级与流程状态。",
+    component: "ProjectsExample",
+    image: "examples/projects.png",
+    files: ["ProjectsExample.tsx", "examples.css"],
+  },
+  {
+    id: "workspace",
+    name: "工作区",
+    description: "可折叠侧栏、多标签工作台与 AI 聊天。",
+    component: "WorkspaceExample",
+    image: "workspace-preview.png",
+    files: [
+      "WorkspaceExample.tsx",
+      "WorkspaceComponents.tsx",
+      "WorkspaceChat.tsx",
+      "../HighlightedCode.tsx",
+      "../highlighted-code.css",
+      "../styles.css",
+      "examples.css",
+    ],
+  },
+  {
+    id: "settings",
+    name: "工作区偏好",
+    description: "工作区资料、通知设置、保存与撤销更改。",
+    component: "SettingsExample",
+    image: "examples/settings.png",
+    files: ["SettingsExample.tsx", "examples.css"],
+  },
+] as const;
+export type AppExample = (typeof appExamples)[number];
