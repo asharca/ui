@@ -5,6 +5,7 @@ import { ChoiceField, ChoiceGroup } from '../src/ChoiceField';
 import { CopyButton } from '../src/Forms';
 import { ToolCallCard } from '../src/ToolCallCard';
 import { catalogMetadata } from './catalog-data';
+import { version } from '../package.json';
 
 /** Real package controls, not a screenshot or a non-interactive illustration. */
 function ComponentPreview() {
@@ -45,7 +46,7 @@ export function DesignHome() {
         <p>从一颗按钮，到完整的 AI 工作流。<br className="landing-desktop-break" />精心设计、自由组合，让你的想法更快成为产品。</p>
         <div className="landing-actions"><Button asChild variant="primary" size="lg"><a href="#/installation">开始构建<ArrowRight size={16} /></a></Button><Button asChild variant="outline" size="lg"><a href="#/components">浏览组件<Layers3 size={16} /></a></Button></div>
         <div className="landing-install"><Terminal size={15} aria-hidden="true" /><code>pnpm add @asharca/ui</code><CopyButton text="pnpm add @asharca/ui" iconOnly label="复制安装命令" copiedLabel="已复制安装命令" failedLabel="复制失败" /></div>
-        <p className="landing-install-note">当前为开发分支预览，新增接口尚未发布到 npm。</p>
+        <p className="landing-install-note">文档 v{version} · 以已安装包的版本和导出为准。</p>
       </div>
       <div className="landing-visual"><ComponentPreview /><div className="landing-visual-caption"><span>你看到的，就是你将使用的组件。</span><span>01 / COMPOSABLE UI</span></div></div>
     </section>

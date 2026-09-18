@@ -10,6 +10,14 @@ import pkg from '../../package.json';
 
 afterEach(() => { cleanup(); window.history.replaceState(null, '', '/'); });
 
+it.each(['#/home', '#/installation', '#/components/button', '#/ai'])('keeps %s version guidance in sync with the package', async (hash) => {
+  window.history.replaceState(null, '', `/${hash}`);
+  render(<DocsApp />);
+  const main = screen.getByRole('main');
+  await waitFor(() => expect(main).toHaveTextContent(`文档 v${pkg.version}`));
+  expect(main).not.toHaveTextContent(/尚未发布|开发分支/);
+});
+
 it.each(['#/guide', '#/guide?from=bookmark'])('redirects the legacy %s entry to the canonical documentation', (hash) => {
   window.history.replaceState({ source: 'bookmark' }, '', `/?site=docs${hash}`);
   const historyLength = window.history.length;

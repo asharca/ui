@@ -2,6 +2,7 @@ import { ArrowDownToLine, FileText } from 'lucide-react';
 import { CopyButton } from '../src/Forms';
 import { DocCode } from './DocCode';
 import guide from '../docs/ai/README.md?raw';
+import { version } from '../package.json';
 
 const prompt = '请先阅读 @asharca/ui 的 AI 使用指南和目标组件 Markdown，核对项目实际安装版本。使用真实公开组件实现界面，单选与复选优先使用 ChoiceField / ChoiceGroup，保留原生 onChange、可访问名称和多行说明。参考 ToolPlane 的工具栏与审批交互，但把业务权限、传输和持久化留在宿主。不生成不存在的 shadcn 注册表或组件 API。完成后执行类型检查和相关测试，并报告实际结果。';
 
@@ -15,7 +16,7 @@ export function AIPage() {
       <a href={`${base}llms-full.txt`} download><ArrowDownToLine size={20} /><strong>llms-full.txt</strong><span>完整参考 · 包含所有组件示例</span></a>
       <a href={`${base}ai/PATTERNS.md`}><FileText size={20} /><strong>组合模式</strong><span>选择控件、表格与 AI 聊天</span></a>
     </div></section>
-    <section id="ai-contract"><h2>不要猜测组件接口</h2><div className="docs-callout"><strong>这是 npm 组件库，不是 shadcn CLI 注册表。</strong><p>文档体验参考 shadcn；安装和 API 仍以 @asharca/ui 的实际公开导出为准。当前优化分支尚未发布，工作区版本号不代表 npm 同版本已有新增接口。</p></div>
+    <section id="ai-contract"><h2>不要猜测组件接口</h2><div className="docs-callout"><strong>这是 npm 组件库，不是 shadcn CLI 注册表。</strong><p>文档 v{version}；安装和 API 以 @asharca/ui 的实际公开导出为准。请核对项目已安装版本，不要假设旧版本包含新增接口。</p></div>
       <div className="docs-api-scroll"><table className="docs-api-table"><thead><tr><th>场景</th><th>正确约定</th></tr></thead><tbody><tr><td>Checkbox / Radio / ChoiceField</td><td>原生 onChange(event)，读取 target.checked 或 target.value。</td></tr><tr><td>Switch</td><td>使用 onCheckedChange(boolean)。</td></tr><tr><td>样式</td><td>Tailwind CSS 4 + @asharca/ui/styles.css。</td></tr><tr><td>ChatThread</td><td>宿主提供 runtime；服务端校验权限并执行工具。</td></tr><tr><td>版本</td><td>先核对已安装 exports；不要随意升级或绕过 peer 检查。</td></tr></tbody></table></div>
     </section>
     <section id="ai-prompt"><h2>可直接使用的任务模板</h2><div className="docs-prompt"><p>{prompt}</p><CopyButton text={prompt} label="复制任务模板" copiedLabel="已复制" failedLabel="复制失败" /></div></section>
