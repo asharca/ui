@@ -92,8 +92,6 @@
   :where([data-ui-style]) .ui-accordion-trigger:hover { color: hsl(var(--brand)); }
   :where([data-ui-style]) [data-toolplane-ui="badge"] { font-weight: 550; letter-spacing: .01em; }
   :where([data-ui-style]) .ui-empty { border-radius: calc(var(--ds-radius) + .25rem); border: 1px dashed hsl(var(--border)); background: hsl(var(--muted) / .25); }
-  :where([data-ui-style]) .tp-workspace-sidebar { border-inline-end: 1px solid hsl(var(--border)); }
-  :where([data-ui-style]) .tp-workspace-sidebar__item[aria-current="page"] { color: hsl(var(--brand)); box-shadow: inset 2px 0 0 hsl(var(--brand)); }
   :where([data-ui-style]) [data-chat-ui="sidebar-conversation"]:focus-within { background: hsl(var(--muted)); border-radius: var(--ds-radius); }
   :where([data-ui-style]) .ui-composer-tool { border-radius: var(--ds-radius); }
   :where([data-ui-style]) .ui-composer-tool[aria-pressed="true"] { background: hsl(var(--brand-soft)); color: hsl(var(--brand)); }

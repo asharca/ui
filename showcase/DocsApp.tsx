@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Box, ChevronRight, Code2, ExternalLink, FileText, Menu, Moon, RotateCcw, Search, Sun, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Box, ChevronRight, ExternalLink, FileText, Menu, Moon, RotateCcw, Search, Sun, X } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 import { Button, IconButton, SearchInput, Select } from '../src/Controls';
 import { CopyButton } from '../src/Forms';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../src/Navigation';
@@ -210,7 +211,7 @@ export function DocsApp() {
     <header className="docs-top">
       <a href="#/home" className="docs-brand" aria-label="Asharca UI 首页"><span className="docs-brand-mark"><Box size={18} strokeWidth={1.8} /></span><strong>asharca<span>/</span>ui</strong></a>
       <nav aria-label="站点导航"><a href="#/installation" aria-current={!home && !themes && !examples && !ai && !overview && !doc ? 'page' : undefined}>文档</a><a href="#/components" aria-current={overview || doc ? 'page' : undefined}>组件</a><a href="#/themes" aria-current={themes ? 'page' : undefined}>主题</a><a href="#/examples" aria-current={examples ? 'page' : undefined}>示例</a><a href="#/ai" aria-current={ai ? 'page' : undefined}>AI 文档</a></nav>
-      <div className="docs-top-actions"><button type="button" className="docs-search-trigger" aria-label="搜索文档" onClick={() => setSearchOpen(true)}><Search size={15} /><span>搜索文档…</span></button>{themes && <DesignControls style={design.style} onStyleChange={design.setStyle} />}<a href="https://github.com/asharca/ui" aria-label="GitHub 源码" title="GitHub 源码" target="_blank" rel="noreferrer"><Code2 size={17} /></a><IconButton variant="ghost" label={dark ? '切换浅色主题' : '切换深色主题'} icon={dark ? <Sun size={17} /> : <Moon size={17} />} onClick={() => setDark(!dark)} /><DialogTrigger asChild><IconButton className="docs-mobile-toggle" variant="ghost" label="打开文档导航" icon={<Menu size={18} />} /></DialogTrigger></div>
+      <div className="docs-top-actions"><button type="button" className="docs-search-trigger" aria-label="搜索文档" onClick={() => setSearchOpen(true)}><Search size={15} /><span>搜索文档…</span></button>{themes && <DesignControls style={design.style} onStyleChange={design.setStyle} />}<a href="https://github.com/asharca/ui" aria-label="GitHub 源码" title="GitHub 源码" target="_blank" rel="noreferrer"><FaGithub size={17} /></a><IconButton variant="ghost" label={dark ? '切换浅色主题' : '切换深色主题'} icon={dark ? <Sun size={17} /> : <Moon size={17} />} onClick={() => setDark(!dark)} /><DialogTrigger asChild><IconButton className="docs-mobile-toggle" variant="ghost" label="打开文档导航" icon={<Menu size={18} />} /></DialogTrigger></div>
     </header>
     <div className="docs-body"><aside className="docs-sidebar" aria-label="文档导航">{directory(false)}</aside>
       <main id="main-content" className="docs-main" ref={main} tabIndex={-1}><div className={`docs-content ${overview || examples ? 'docs-content-wide' : ''} ${home || themes ? 'design-page' : ''}`}>

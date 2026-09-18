@@ -36,8 +36,93 @@ const examples = [
   ["analytics", "数据分析", "AnalyticsExample"],
   ["projects", "项目看板", "ProjectsExample"],
   ["settings", "工作区偏好", "SettingsExample"],
-  ["workspace", "组件工作台", "WorkspaceExample"],
+  ["workspace", null, "WorkspaceExample"],
 ];
+
+function workspaceComposer(target = page) {
+  return target
+    .getByRole("region", { name: "聊天界面", exact: true })
+    .getByRole("textbox", { name: "输入一条消息…", exact: true });
+}
+
+async function checkWorkspaceNavigation(width) {
+  const sidebar = page.getByRole("navigation", { name: "工作区导航" });
+  const tabs = page.getByRole("navigation", { name: "工作区标签页" });
+  const mobile = width <= 850;
+  const drawer = page.getByRole("dialog", { name: "工作台导航" });
+  async function select(label) {
+    if (mobile) await page.getByRole("button", { name: "打开导航", exact: true }).click();
+    await sidebar.waitFor();
+    assert.equal(await sidebar.getByRole("button").count(), 6);
+    await sidebar.getByRole("button", { name: label, exact: true }).click();
+    if (mobile) await drawer.waitFor({ state: "hidden" });
+    await tabs.getByRole("button", { name: label, exact: true }).waitFor();
+    assert.equal(
+      await tabs.getByRole("button", { name: label, exact: true }).getAttribute("aria-current"),
+      "page",
+      `${width}px: sidebar and active tab must agree`,
+    );
+  }
+  for (const [label, layout, record] of [
+    ["智能体", "agents", "发布检查"],
+    ["知识库", "knowledge", "产品文档"],
+    ["成员", "members", "Ava Chen"],
+    ["市场", "market", "代码审查助手"],
+    ["MCP", "mcp", "代码仓库"],
+  ]) {
+    await select(label);
+    await page.getByRole("heading", { name: label, exact: true, level: 1 }).waitFor();
+    await page.locator(`[data-workspace-layout="${layout}"]`).getByText(record, { exact: true }).waitFor();
+    await checkLayout(`workspace-${width}-${layout}`);
+  }
+  await select("助手");
+  await workspaceComposer().waitFor();
+  if (mobile) {
+    const trigger = page.getByRole("button", { name: "打开导航", exact: true });
+    await trigger.click();
+    await drawer.waitFor();
+    await page.waitForFunction(() => {
+      const bounds = document.querySelector("#showcase-sidebar").getBoundingClientRect();
+      return bounds.left >= -1 && bounds.right <= innerWidth + 1;
+    });
+    await page.keyboard.press("Escape");
+    await drawer.waitFor({ state: "hidden" });
+    await page.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "打开导航");
+  } else {
+    await page.getByRole("button", { name: "折叠侧边栏", exact: true }).click();
+    assert.equal(await page.locator(".workbench").getAttribute("data-sidebar-collapsed"), "true");
+    await select("成员");
+    await page.getByRole("heading", { name: "成员", exact: true, level: 1 }).waitFor();
+    await page.getByRole("button", { name: "展开侧边栏", exact: true }).click();
+    assert.equal(await page.locator(".workbench").getAttribute("data-sidebar-collapsed"), "false");
+  }
+  // Exercise real popups and reloads: detached pages must not recreate either shell.
+  for (const [label, view] of [["成员", "members"], ["助手", "chat"]]) {
+    await select(label);
+    const [popup] = await Promise.all([
+      page.waitForEvent("popup"),
+      tabs.getByRole("button", { name: `单独打开 ${label}`, exact: true }).click(),
+    ]);
+    popup.on("pageerror", (error) => errors.push(error.message));
+    try {
+      await popup.setViewportSize({ width, height: 900 });
+      await popup.waitForURL((target) => target.searchParams.get("view") === view && target.searchParams.get("detached") === "1");
+      for (const reload of [false, true]) {
+        if (reload) await popup.reload();
+        if (view === "chat") await workspaceComposer(popup).waitFor();
+        else await popup.getByRole("heading", { name: label, exact: true, level: 1 }).waitFor();
+        assert.equal(await popup.locator(".workbench[data-detached='true']").count(), 1);
+        assert.equal(await popup.locator(".example-preview-toolbar, .workspace-topbar, .tp-workspace-sidebar").count(), 0);
+        assert(await popup.evaluate(() => window.opener === null), "Detached pages must not retain their opener");
+      }
+      await popup.screenshot({ path: resolve(output, `workspace-${width}-detached-${view}.png`) });
+      await tabs.getByRole("button", { name: label, exact: true }).waitFor({ state: "detached" });
+    } finally {
+      await popup.close();
+    }
+  }
+  console.log(`PASS workspace ${width}px: six destinations, sidebar/tab sync, folding or mobile focus, detached members/chat and reloads`);
+}
 
 async function checkLayout(label) {
   const result = await page.evaluate(() => {
@@ -84,9 +169,14 @@ try {
     await page.setViewportSize({ width, height: 900 });
     for (const [id, heading, component] of examples) {
       await page.goto(`${url}#/examples/${id}`);
-      await page
-        .getByRole("heading", { name: heading, exact: true, level: 1 })
-        .waitFor();
+      if (id === "workspace") {
+        // The redesigned workspace opens on the assistant, not the old catalog.
+        await workspaceComposer().waitFor();
+      } else {
+        await page
+          .getByRole("heading", { name: heading, exact: true, level: 1 })
+          .waitFor();
+      }
       await page
         .getByRole("combobox", { name: "示例密度" })
         .selectOption("comfortable");
@@ -98,6 +188,7 @@ try {
         await page
           .getByRole("searchbox", { name: "搜索订单" })
           .fill("ORD-2408");
+      if (id === "workspace") await workspaceComposer().fill("保留工作区草稿");
       for (const style of ["minimal", "tech", "glass"]) {
         await page
           .getByRole("combobox", { name: "视觉风格" })
@@ -114,6 +205,8 @@ try {
               .click();
           const label = `${id}-${width}-${style}-${dark ? "dark" : "light"}`;
           await checkLayout(label);
+          if (id === "workspace")
+            assert.equal(await workspaceComposer().inputValue(), "保留工作区草稿", `${label}: lost chat draft`);
           assert.equal(
             await page.locator("html").getAttribute("data-ui-style"),
             style,
@@ -168,6 +261,7 @@ try {
               await page.getByRole("button", { name: "清除搜索" }).click();
             if (id === "settings")
               await page.getByRole("button", { name: "撤销更改" }).click();
+            if (id === "workspace") await workspaceComposer().fill("");
             await page.screenshot({
               path: resolve(
                 "showcase/public",
@@ -184,6 +278,7 @@ try {
               await page
                 .getByRole("textbox", { name: "工作区名称" })
                 .fill("保留测试输入");
+            if (id === "workspace") await workspaceComposer().fill("保留工作区草稿");
           }
         }
       }
@@ -233,6 +328,10 @@ try {
           "ORD-2408",
         );
       await checkLayout(`${id}-${width}-restored`);
+      if (id === "workspace") {
+        assert.equal(await workspaceComposer().inputValue(), "保留工作区草稿", "Source and density switches must preserve the chat draft");
+        await checkWorkspaceNavigation(width);
+      }
       console.log(
         `PASS ${id} ${width}px: 3 styles, light/dark, density, exact source and preserved state`,
       );
