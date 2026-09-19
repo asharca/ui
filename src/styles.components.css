@@ -130,3 +130,74 @@
   .ui-chart-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; padding-top: 12px; font-size: 12px; }
   .ui-chart-legend > span { display: inline-flex; align-items: center; gap: 6px; }
 }
+
+@layer components {
+  /* Keep one fixed icon rail throughout desktop folding. Auto-centering a
+     36px button inside a still-wide sidebar makes it jump right on frame one.
+     The rail follows the public collapsed-width token, not the animated width. */
+  @media (min-width: 851px) {
+    .tp-workspace-sidebar {
+      --_workspace-icon-rail: calc(var(--workspace-sidebar-collapsed-width, 64px) - 24px);
+      transition: width 200ms ease-out, transform 200ms ease-out;
+    }
+    .tp-workspace-sidebar[data-collapsed="true"] { padding-inline: 12px; }
+    .tp-workspace-sidebar__header,
+    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__header {
+      justify-content: space-between;
+      gap: 0;
+    }
+    .tp-workspace-sidebar__brand {
+      display: grid;
+      grid-template-columns: var(--_workspace-icon-rail) minmax(0, 1fr);
+      flex: 1;
+      gap: 2px;
+      height: 36px;
+      overflow: hidden;
+    }
+    .tp-workspace-sidebar__brand > :first-child { justify-self: center; }
+    /* Do not remove the brand from layout: let the toggle follow the edge
+       smoothly instead of jumping to the center of the expanded header. */
+    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__brand {
+      display: grid;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .tp-workspace-sidebar__toggle { width: calc(var(--_workspace-icon-rail) - 4px); margin-inline: 2px; }
+    .tp-workspace-sidebar__item,
+    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__item {
+      grid-template-columns: var(--_workspace-icon-rail) minmax(0, 1fr) auto;
+      column-gap: 2px;
+      width: 100%;
+      height: 40px;
+      padding: 0;
+      margin-inline: 0;
+      transition: border-radius 200ms ease-out, background-color 120ms ease-out, color 120ms ease-out;
+    }
+    .tp-workspace-sidebar__icon { justify-self: center; }
+    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__item { border-radius: 20px; }
+    .tp-workspace-sidebar__workspace,
+    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__workspace {
+      display: grid;
+      grid-template-columns: var(--_workspace-icon-rail) minmax(0, 1fr) auto;
+      gap: 2px;
+      padding: 6px 0;
+      transition: none;
+    }
+    .tp-workspace-sidebar__workspace-icon { justify-self: center; }
+    .tp-workspace-sidebar__footer,
+    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__footer {
+      display: grid;
+      grid-template-columns: var(--_workspace-icon-rail) minmax(0, 1fr);
+      justify-content: start;
+      gap: 2px;
+      padding: 0;
+    }
+    .tp-workspace-sidebar__footer > :first-child { justify-self: center; }
+    .tp-workspace-sidebar :is(.tp-workspace-sidebar__label, .tp-workspace-sidebar__badge, .tp-workspace-sidebar__workspace-text, .tp-workspace-sidebar__workspace-badge, .tp-workspace-sidebar__section),
+    .tp-workspace-sidebar__footer > :not(:first-child) {
+      transform: none;
+      transition: opacity 120ms ease-out;
+    }
+    .tp-workspace-sidebar[data-collapsed="true"] :is(.tp-workspace-sidebar__label, .tp-workspace-sidebar__badge, .tp-workspace-sidebar__workspace-text, .tp-workspace-sidebar__workspace-badge, .tp-workspace-sidebar__section) { transform: none; }
+  }
+}
