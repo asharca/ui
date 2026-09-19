@@ -13,7 +13,10 @@ const errors = [];
 let browser, server, page;
 
 // Record the actual React component on every animation frame. End-state-only
-// screenshots miss the first-frame auto-margin jump this regression protects.
+// screenshots miss both sideways jumps and an abruptly compressed icon stack.
+const EXPANDED_ROW = 40;
+const COLLAPSED_ROW = 36;
+const NAV_GAP = 4;
 async function recordMotion(label, { reverse = false, reduced = false, expanded = 256, collapsed = 64 } = {}) {
   const sidebar = page.locator('.tp-workspace-sidebar');
   const toggle = sidebar.locator('.tp-workspace-sidebar__toggle');
@@ -22,7 +25,10 @@ async function recordMotion(label, { reverse = false, reduced = false, expanded 
     await document.fonts.ready;
     await Promise.all(node.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
     const toggle = node.querySelector('.tp-workspace-sidebar__toggle');
-    const icons = [...node.querySelectorAll('.tp-workspace-sidebar__icon'), node.querySelector('.tp-workspace-sidebar__workspace-icon'), node.querySelector('.tp-workspace-sidebar__footer > :first-child')].filter(Boolean);
+    const navigationIcons = [...node.querySelectorAll('.tp-workspace-sidebar__icon')];
+    const items = [...node.querySelectorAll('.tp-workspace-sidebar__item')];
+    const nav = node.querySelector('.tp-workspace-sidebar__nav');
+    const icons = [...navigationIcons, node.querySelector('.tp-workspace-sidebar__workspace-icon'), node.querySelector('.tp-workspace-sidebar__footer > :first-child')].filter(Boolean);
     const label = node.querySelector('.tp-workspace-sidebar__label');
     const initial = node.dataset.collapsed === 'true';
     const frames = [];
@@ -30,6 +36,8 @@ async function recordMotion(label, { reverse = false, reduced = false, expanded 
       const root = node.getBoundingClientRect();
       frames.push({
         elapsed, width: root.width,
+        navTop: nav.getBoundingClientRect().top - root.top,
+        rowHeights: items.map((item) => item.getBoundingClientRect().height),
         opacity: Number(getComputedStyle(label).opacity),
         icons: icons.map((icon) => {
           const rect = icon.getBoundingClientRect();
@@ -53,40 +61,69 @@ async function recordMotion(label, { reverse = false, reduced = false, expanded 
       }
       requestAnimationFrame(sample);
     });
-    return { initial, final: node.dataset.collapsed === 'true', focus: document.activeElement === toggle, frames };
+    return { navigationCount: navigationIcons.length, initial, final: node.dataset.collapsed === 'true', focus: document.activeElement === toggle, frames };
   }, reverse);
   results.push({ label, ...motion });
   assert(motion.frames.length >= 3, `${label}: insufficient animation samples`);
   assert(motion.frames[0].icons.length >= 3, `${label}: no sidebar icons to measure`);
   assert.equal(motion.final, reverse ? motion.initial : !motion.initial, `${label}: wrong final collapse state`);
   assert(motion.focus, `${label}: keyboard focus was lost`);
-  let maxDrift = 0;
+  let maxHorizontalDrift = 0;
+  let maxVerticalError = 0;
+  const originFrame = motion.frames[0];
   for (const frame of motion.frames) {
     assert(frame.width >= collapsed - 1 && frame.width <= expanded + 1, `${label}: sidebar width overshoot`);
+    // Height and width share the same duration/easing, including an interrupted
+    // reversal. Follow their actual progress instead of assuming a frame rate.
+    const progress = Math.max(0, Math.min(1, (expanded - frame.width) / (expanded - collapsed)));
+    const expectedRow = EXPANDED_ROW - (EXPANDED_ROW - COLLAPSED_ROW) * progress;
+    assert.equal(frame.rowHeights.length, motion.navigationCount, `${label}: navigation changed during motion`);
+    for (const height of frame.rowHeights)
+      assert(Math.abs(height - expectedRow) <= 0.25, `${label}: row height ${height}px is not synchronized with sidebar width at ${frame.elapsed}ms`);
     for (const [index, icon] of frame.icons.entries()) {
-      const origin = motion.frames[0].icons[index];
-      const drift = Math.max(Math.abs(icon.x - origin.x), Math.abs(icon.y - origin.y));
-      maxDrift = Math.max(maxDrift, drift);
-      assert(drift <= 0.75, `${label}: icon ${index} moved ${drift}px at ${frame.elapsed}ms`);
+      const origin = originFrame.icons[index];
+      const horizontalDrift = Math.abs(icon.x - origin.x);
+      // Navigation may compress vertically; bottom workspace/footer icons stay
+      // anchored. Neither may jump sideways or change its own dimensions.
+      const expectedY = index < motion.navigationCount
+        ? originFrame.navTop + expectedRow / 2 + index * (expectedRow + NAV_GAP)
+        : origin.y;
+      const verticalError = Math.abs(icon.y - expectedY);
+      maxHorizontalDrift = Math.max(maxHorizontalDrift, horizontalDrift);
+      maxVerticalError = Math.max(maxVerticalError, verticalError);
+      assert(horizontalDrift <= 0.75, `${label}: icon ${index} jumped sideways ${horizontalDrift}px at ${frame.elapsed}ms`);
+      assert(verticalError <= 0.75, `${label}: icon ${index} left its smooth vertical path by ${verticalError}px at ${frame.elapsed}ms`);
       assert(icon.width > 0 && icon.height > 0, `${label}: icon disappeared`);
+      assert(Math.abs(icon.width - origin.width) <= 0.25 && Math.abs(icon.height - origin.height) <= 0.25, `${label}: icon was resized`);
     }
   }
   const last = motion.frames.at(-1);
   assert(Math.abs(last.width - (motion.final ? collapsed : expanded)) <= 1, `${label}: final width`);
+  const finalRow = motion.final ? COLLAPSED_ROW : EXPANDED_ROW;
+  assert(last.rowHeights.every((height) => Math.abs(height - finalRow) <= 0.1), `${label}: wrong final row height`);
+  for (let index = 1; index < motion.navigationCount; index++) {
+    const pitch = last.icons[index].y - last.icons[index - 1].y;
+    assert(Math.abs(pitch - (finalRow + NAV_GAP)) <= 0.1, `${label}: wrong final icon spacing ${pitch}px`);
+  }
   assert(motion.final ? last.opacity <= 0.01 : last.opacity >= 0.99, `${label}: label fade did not finish`);
   if (!reduced) {
     assert(motion.frames.some((frame) => frame.width > collapsed + 1 && frame.width < expanded - 1), `${label}: width transition was removed`);
+    assert(motion.frames.some((frame) => frame.rowHeights[0] > COLLAPSED_ROW + 0.1 && frame.rowHeights[0] < EXPANDED_ROW - 0.1), `${label}: vertical spacing transition was removed`);
   } else {
-    const duration = await sidebar.evaluate((node) => Math.max(...getComputedStyle(node).transitionDuration.split(',').map((value) => parseFloat(value) * 1000)));
+    const duration = await sidebar.evaluate((node) => Math.max(...[node, ...node.querySelectorAll('.tp-workspace-sidebar__item')].flatMap((target) => getComputedStyle(target).transitionDuration.split(',').map((value) => parseFloat(value) * 1000))));
     assert(duration <= 0.02, `${label}: ignored reduced motion preference`);
   }
   if (!reverse) {
     for (let i = 1; i < motion.frames.length; i++) {
       const delta = motion.frames[i].width - motion.frames[i - 1].width;
       assert(motion.final ? delta <= 0.75 : delta >= -0.75, `${label}: width moved in the wrong direction`);
+      for (let index = 0; index < motion.navigationCount; index++) {
+        const dy = motion.frames[i].icons[index].y - motion.frames[i - 1].icons[index].y;
+        assert(motion.final ? dy <= 0.25 : dy >= -0.25, `${label}: vertical spacing moved in the wrong direction`);
+      }
     }
   }
-  console.log(`PASS ${label}: ${motion.frames.length} frames, max icon drift ${maxDrift.toFixed(3)}px`);
+  console.log(`PASS ${label}: ${motion.frames.length} frames, horizontal drift ${maxHorizontalDrift.toFixed(3)}px, vertical path error ${maxVerticalError.toFixed(3)}px, final icon pitch ${finalRow + NAV_GAP}px`);
 }
 
 try {
@@ -111,6 +148,7 @@ try {
       const label = `${route}-${style}-${dark ? 'dark' : 'light'}`;
       await recordMotion(`${label}-collapse`);
       await page.screenshot({ path: join(output, `${label}-collapsed.png`) });
+      await recordMotion(`${label}-reverse-from-collapsed`, { reverse: true });
       // Focusing a collapsed item still reveals its accessible label.
       const item = sidebar.locator('.tp-workspace-sidebar__item').first();
       const accessibleName = await item.getAttribute('aria-label');
@@ -155,6 +193,8 @@ try {
           });
           assert(geometry.left >= -1 && geometry.right <= geometry.viewport + 1, `${route}: clipped mobile drawer ${JSON.stringify(geometry)}`);
           assert(geometry.labels.every((opacity) => opacity === 1), `${route}: collapsed desktop hid mobile labels`);
+          const mobileRows = await sidebar.locator('.tp-workspace-sidebar__item').evaluateAll((items) => items.map((item) => item.getBoundingClientRect().height));
+          assert(mobileRows.every((height) => Math.abs(height - EXPANDED_ROW) <= 0.1), `${route}: desktop compact spacing leaked into mobile drawer`);
           await page.keyboard.press('Escape');
           await page.waitForFunction(() => document.activeElement?.textContent === '打开导航' || document.activeElement?.getAttribute('aria-label') === '打开导航');
           assert(await trigger.evaluate((node) => document.activeElement === node), `${route}: mobile focus not restored`);
