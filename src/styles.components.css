@@ -171,10 +171,15 @@
       height: 40px;
       padding: 0;
       margin-inline: 0;
-      transition: border-radius 200ms ease-out, background-color 120ms ease-out, color 120ms ease-out;
+      transition: height 200ms ease-out, border-radius 200ms ease-out, background-color 120ms ease-out, color 120ms ease-out;
     }
     .tp-workspace-sidebar__icon { justify-self: center; }
-    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__item { border-radius: 20px; }
+    /* Compress only the vertical rhythm, using the same timing as the width.
+       The fixed icon rail must not be re-centered during this transition. */
+    .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__item {
+      height: 36px;
+      border-radius: 18px;
+    }
     .tp-workspace-sidebar__workspace,
     .tp-workspace-sidebar[data-collapsed="true"] .tp-workspace-sidebar__workspace {
       display: grid;
