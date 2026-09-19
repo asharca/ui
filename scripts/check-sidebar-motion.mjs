@@ -141,11 +141,19 @@ try {
           const trigger = page.getByRole('button', { name: '打开导航', exact: true });
           await trigger.click();
           await sidebar.waitFor({ state: 'visible' });
+          // Visibility alone is true before the transform has reached its end,
+          // even with a .01ms reduced-motion transition (it needs a paint frame).
+          await page.waitForFunction(() => {
+            const node = document.querySelector('.tp-workspace-sidebar');
+            const rect = node.getBoundingClientRect();
+            return node.dataset.mobileOpen === 'true' && rect.left >= -1 && rect.right <= innerWidth + 1
+              && [...node.querySelectorAll('.tp-workspace-sidebar__label')].every((label) => Number(getComputedStyle(label).opacity) === 1);
+          }, undefined, { timeout: 5000 });
           const geometry = await sidebar.evaluate((node) => {
             const rect = node.getBoundingClientRect();
             return { left: rect.left, right: rect.right, viewport: innerWidth, labels: [...node.querySelectorAll('.tp-workspace-sidebar__label')].map((label) => Number(getComputedStyle(label).opacity)) };
           });
-          assert(geometry.left >= -1 && geometry.right <= geometry.viewport + 1, `${route}: clipped mobile drawer`);
+          assert(geometry.left >= -1 && geometry.right <= geometry.viewport + 1, `${route}: clipped mobile drawer ${JSON.stringify(geometry)}`);
           assert(geometry.labels.every((opacity) => opacity === 1), `${route}: collapsed desktop hid mobile labels`);
           await page.keyboard.press('Escape');
           await page.waitForFunction(() => document.activeElement?.textContent === '打开导航' || document.activeElement?.getAttribute('aria-label') === '打开导航');
