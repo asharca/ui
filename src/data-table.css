@@ -1,0 +1,30 @@
+@layer components {
+  .ui-table__surface { position: relative; }
+  /* The original th cells still size the table. This overlay is out of flow,
+     so selecting rows cannot move the checkbox, column edges or first body row. */
+  .ui-table__header-content { opacity: 1; transform: translateY(0); transition: opacity 160ms ease-out, transform 180ms ease-out; }
+  .ui-table__surface[data-selection-toolbar="active"] .ui-table__header-content { opacity: 0; transform: translateY(-4px); pointer-events: none; }
+  .ui-table__selection-toolbar {
+    position: absolute; z-index: 1; left: 0; top: 0; width: 0; height: 0;
+    overflow: hidden; opacity: 0; visibility: hidden; pointer-events: none;
+    background: hsl(var(--muted)); color: hsl(var(--foreground));
+    transition: opacity 160ms ease-out, visibility 0s linear 180ms;
+  }
+  .ui-table__surface[data-selection-toolbar="active"] .ui-table__selection-toolbar {
+    opacity: 1; visibility: visible; pointer-events: auto;
+    transition: opacity 160ms ease-out, visibility 0s;
+  }
+  .ui-table__selection-toolbar-content {
+    display: flex; align-items: center; gap: .75rem; height: 100%; padding-inline: 1rem;
+    transform: translateY(4px); transition: transform 180ms ease-out;
+  }
+  .ui-table__surface[data-selection-toolbar="active"] .ui-table__selection-toolbar-content { transform: translateY(0); }
+  .ui-table__selection-count { flex: none; font-size: .75rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .ui-table__selection-actions { display: flex; align-items: center; gap: .5rem; min-width: 0; height: 100%; overflow: auto; padding: 3px; }
+  .ui-table__selection-actions > * { flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .ui-table__header-content, .ui-table__selection-toolbar, .ui-table__selection-toolbar-content {
+      transition-duration: .01ms !important; transition-delay: 0s !important; transform: none !important;
+    }
+  }
+}

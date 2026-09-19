@@ -49,6 +49,8 @@ jobs:
           node "$UI_BROWSER_ROOT/node_modules/playwright/cli.js" install --with-deps chromium
       - name: Check redesigned site, search and navigation
         run: node scripts/check-site-redesign.mjs
+      - name: Check DataTable selection header motion and focus
+        run: node scripts/check-table-toolbar.mjs
       - name: Check sidebar icon stability throughout folding
         run: node scripts/check-sidebar-motion.mjs
       - name: Check application examples, source and charts

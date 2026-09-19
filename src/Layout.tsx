@@ -5,7 +5,7 @@ import type {
 } from 'react';
 
 export { DataTable } from './DataTable.js';
-export type { DataTableHeader, DataTableProps, DataTableSelectionLabels } from './DataTable.js';
+export type { DataTableHeader, DataTableProps, DataTableSelectionLabels, DataTableSelectionContext } from './DataTable.js';
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
