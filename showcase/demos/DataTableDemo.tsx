@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, DataTable, SearchInput } from "../../src/index";
+import { Button, DataTable, SearchInput, Switch } from "../../src/index";
 
 const projects = [
   { id: "design", name: "Design System", status: "已发布", owner: "Ava" },
@@ -8,11 +8,13 @@ const projects = [
 ];
 
 export function DataTableDemo() {
+  const [data, setData] = useState(projects);
+  const [toolbarEnabled, setToolbarEnabled] = useState(true);
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [ascending, setAscending] = useState(true);
   const normalizedQuery = query.trim().toLowerCase();
-  const rows = projects
+  const rows = data
     .filter((project) => `${project.name} ${project.status} ${project.owner}`.toLowerCase().includes(normalizedQuery))
     .sort((left, right) => (ascending ? 1 : -1) * left.name.localeCompare(right.name));
   const visibleSelectedCount = rows.filter((row) => selected.includes(row.id)).length;
@@ -38,8 +40,14 @@ export function DataTableDemo() {
           setSelected([]);
           setQuery("");
           setAscending(true);
+          setData(projects);
+          setToolbarEnabled(true);
         }}>重置示例</Button>
       </div>
+      <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+        <Switch checked={toolbarEnabled} onCheckedChange={setToolbarEnabled} aria-label="选中后显示表头操作栏" />
+        选中后显示表头操作栏
+      </label>
       <p role="status" style={{ margin: 0, fontSize: 13 }}>
         已选择 {selected.length} 项，当前结果中选中 {visibleSelectedCount} 项。
       </p>
@@ -52,6 +60,15 @@ export function DataTableDemo() {
         rowLabels={rows.map((row) => row.name)}
         selectedRowIds={selected}
         onSelectedRowIdsChange={setSelected}
+        selectionToolbar={toolbarEnabled && (({ selectedRowIds, clearSelection }) => (
+          <>
+            <Button size="sm" onClick={() => {
+              setData((current) => current.map((row) => selectedRowIds.includes(row.id) ? { ...row, status: "已发布" } : row));
+              clearSelection();
+            }}>标记已发布</Button>
+            <Button size="sm" variant="ghost" onClick={clearSelection}>取消选择</Button>
+          </>
+        ))}
         minWidth="32rem"
       >
         <tbody>
@@ -66,7 +83,7 @@ export function DataTableDemo() {
       </DataTable>
       {rows.length === 0 && <p>没有匹配的项目，请调整筛选条件。</p>}
       <p style={{ margin: 0, fontSize: 12 }}>
-        使用稳定的业务 ID 保持选择。排序和筛选不会改变已选对象，全选仅影响当前显示的行。
+        使用稳定的业务 ID 保持选择。排序和筛选不会改变已选对象，全选仅影响当前显示的行。开启上方选项可在表头显示批量操作，取消选择后平滑恢复列名。
       </p>
     </div>
   );

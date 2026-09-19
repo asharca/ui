@@ -21,14 +21,23 @@ const choice: ComponentMetadata = {
   notes: 'ChoiceGroup 提供原生 fieldset/legend/disabled。标题与说明不要放链接、按钮或嵌套 label。同组 Radio 必须具有相同 name，不同组必须不同。',
 };
 
+const tableSelectionApi: readonly ApiRow[] = [
+  ['selectionToolbar', 'ReactNode | (DataTableSelectionContext) => ReactNode', '—（关闭）', '选中后覆盖数据列表头；全选框与列宽不变'],
+  ['DataTableSelectionContext', 'selectedRowIds / selectedVisibleRowIds / selectedCount / clearSelection', '—', '全部已选、当前可见已选、去重计数及清空全部选择'],
+  ['selectionLabels.actions / selectedCount', 'string / (count: number) => string', '中文默认文案', '操作组名称与选中数量文案'],
+  ['headers[].ariaLabel', 'string', '—', '图标或复杂表头的可访问列名'],
+];
+
 // Both the rendered site and generated Markdown consume this resolved catalog.
 export const catalogMetadata: ComponentMetadata[] = [...componentMetadata.map((metadata) => ({
   ...metadata,
   demoFile: metadata.name === 'Toolbar' ? 'ToolbarLayoutDemo.tsx' : metadata.demoFile,
-  api: metadata.name === 'ToolPlaneLogo' ? logoApi : metadata.api,
+  api: metadata.name === 'ToolPlaneLogo' ? logoApi : metadata.name === 'DataTable' ? [...metadata.api, ...tableSelectionApi] : metadata.api,
   notes: metadata.name === 'Checkbox' || metadata.name === 'Radio'
     ? `${metadata.notes} 带标题或多行说明时优先组合 ChoiceField / ChoiceGroup，避免空格对齐。`
-    : metadata.notes,
+    : metadata.name === 'DataTable'
+      ? `${metadata.notes} selectionToolbar 不传或 false 保留原表头；列头仍参与宽度计算。操作组使用 Tab 导航，退出时恢复焦点，按钮建议 size=sm；宽操作组可横向滚动。`
+      : metadata.notes,
 })), choice, {
   id: 'chart-container', name: 'ChartContainer', file: 'Chart.tsx', module: 'chart',
   demoFile: 'ChartContainerDemo.tsx', group: '数据与布局',

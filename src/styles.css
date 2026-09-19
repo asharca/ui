@@ -1,4 +1,5 @@
 /* Public stylesheet entry: keep every imported CSS file in the published package. */
 @import "./styles.components.css";
 @import "./choice-field.css";
+@import "./data-table.css";
 @source "../dist/**/*.js";

@@ -84,3 +84,35 @@ curl -I http://localhost:5173/ai/components/checkbox.md
 ## 生成代码后的检查
 
 检查组件和属性存在；示例能够编译；导入了样式；受控值与回调匹配；控件有可访问名称；禁用项不能操作；长中文文字可以换行；在窄屏、深浅主题和键盘操作下验收。构建成功不等于视觉验收通过，也不等于服务端功能已经实现。
+
+
+## DataTable 选中态表头（可选）
+
+`selectionToolbar` 接收 ReactNode 或 `(selection: DataTableSelectionContext) => ReactNode`。
+不传、null 或 false 时关闭；有效可交互选择且全部已选数量大于零时，操作组覆盖数据列表头。
+原生 th 与全选框不会被替换，表头尺寸仍由原内容决定。`headers[].ariaLabel` 可为图标或复杂表头提供明确的列名。
+
+```tsx
+<DataTable
+  label="项目列表"
+  selectable strictSelection
+  headers={[{ label: "项目" }]}
+  rowIds={rows.map((row) => row.id)}
+  selectedRowIds={selected}
+  onSelectedRowIdsChange={setSelected}
+  selectionToolbar={({ selectedRowIds, clearSelection }) => (
+    <>
+      <Button size="sm" onClick={() => archive([...selectedRowIds])}>归档</Button>
+      <Button size="sm" variant="ghost" onClick={clearSelection}>取消选择</Button>
+    </>
+  )}
+>
+  {rows.map((row) => <tr key={row.id}><td>{row.name}</td></tr>)}
+</DataTable>
+```
+
+上下文：`selectedRowIds` 为去重后的全部选择（含跨页/筛选隐藏项），`selectedVisibleRowIds` 仅含当前可见已选项，`selectedCount` 为去重总数，`clearSelection()` 清空全部选择。上下文数组为只读快照。全选框仍只切换当前可见行，跨页选中仍能显示操作组。
+`selectionLabels.selectedCount(count)` 和 `selectionLabels.actions` 可定制计数文案与操作组名称。
+使用小号按钮及菜单放置批量动作；操作组不参与表头高度计算，过多按钮在组内横向滚动。普通 Tab 导航保留；隐藏的一侧 inert，不会拦截点击或接收键盘焦点。操作移除自身选择后，仅在焦点仍属该操作区时返回全选框。
+动画包含透明度与轻微纵向过渡，并尊重 reduced-motion。不得为表头切换重新渲染整个 table / thead、复制全选框或改变列跨度。
+该接口以当前分支源码为准，发布前不要假设已有 npm 版本包含它。

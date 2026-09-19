@@ -323,26 +323,6 @@ export function AdminExample() {
               ))}
             </Select>
           </div>
-          {selected.length > 0 && (
-            <div className="example-selection">
-              <span>已选择 {selected.length} 笔</span>
-              <Button
-                size="sm"
-                disabled={!actionable.length}
-                onClick={() => complete(selected)}
-              >
-                <Check size={14} />
-                标记已完成
-              </Button>
-              <IconButton
-                size="sm"
-                variant="ghost"
-                label="清除订单选择"
-                icon={<X size={14} />}
-                onClick={() => setSelected([])}
-              />
-            </div>
-          )}
           <DataTable
             panel={false}
             label="订单列表"
@@ -353,6 +333,15 @@ export function AdminExample() {
             rowLabels={visible.map((item) => item.id)}
             selectedRowIds={selected}
             onSelectedRowIdsChange={setSelected}
+            selectionLabels={{ selectedCount: (count) => `已选择 ${count} 笔`, actions: "订单批量操作" }}
+            selectionToolbar={({ selectedRowIds, clearSelection }) => (
+              <>
+                <Button size="sm" disabled={!actionable.length} onClick={() => complete([...selectedRowIds])}>
+                  <Check size={14} />标记已完成
+                </Button>
+                <IconButton size="sm" variant="ghost" label="清除订单选择" icon={<X size={14} />} onClick={clearSelection} />
+              </>
+            )}
             headers={[
               { label: "订单 / 客户" },
               { label: "商品" },
