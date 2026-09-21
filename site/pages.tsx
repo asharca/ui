@@ -37,7 +37,9 @@ export function CatalogPage() {
   const query = params.get('q') || '';
   const visible = catalog.filter((entry) => (group === '全部' || entry.group === group) && `${entry.name} ${entry.slug} ${entry.description}`.toLowerCase().includes(query.trim().toLowerCase()));
   function change(key: string, value: string) {
-    const next = new URLSearchParams(params);
+    // BrowserRouter writes history before a concurrent render finishes. Reading
+    // that current URL prevents a fast input event from restoring an old group.
+    const next = new URLSearchParams(window.location.search);
     if (value && value !== '全部') next.set(key, value); else next.delete(key);
     setParams(next, { replace: true });
   }
