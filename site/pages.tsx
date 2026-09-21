@@ -10,13 +10,13 @@ import { publicPath, registryUrl, runners, usePreferences } from './preferences'
 
 type CatalogEntry = (typeof catalog)[number];
 function ComponentCard({ entry }: { entry: CatalogEntry }) {
-  return <article className="component-card">
-    <div className="card-preview"><Preview name={entry.examples[0]} /></div>
+  return <article className="component-card" data-component={entry.slug} data-wide={entry.wide || undefined} style={entry.wide ? { gridColumn: '1 / -1' } : undefined}>
+    <div className="card-preview" style={entry.wide ? { height: 'auto', minHeight: 330, padding: 'clamp(16px, 3vw, 28px)' } : undefined}><Preview name={entry.examples[0]} /></div>
     <div className="card-caption"><div><Link to={`/components/${entry.slug}`}>{entry.name}</Link><p>{entry.description}</p></div><Link className="card-arrow" to={`/components/${entry.slug}`} aria-label={`查看 ${entry.name}`}><ArrowUpRight size={17} /></Link></div>
   </article>;
 }
 export function HomePage() {
-  const featured = ['button', 'tabs', 'switch', 'input', 'checkbox', 'radio-group', 'prompt-input', 'tool-result'];
+  const featured = ['button', 'tabs', 'switch', 'input', 'checkbox', 'radio-group', 'prompt-input', 'tool-result', 'data-table', 'chart-container'];
   return <main id="main-content" tabIndex={-1} className="home-page">
     <section className="hero"><span className="hero-eyebrow"><span />{catalog.length} 个组件 · 开放源码</span><h1>简约的组件。<br />属于你的源码。</h1><p>为 React 与 AI 界面而写。<br className="mobile-break" />预览、安装，直接在项目中修改。</p><div className="hero-actions"><Link to="/components" className="site-cta">浏览组件<ArrowRight size={15} /></Link><Link to="/docs/installation" className="site-cta secondary">开始使用</Link></div></section>
     <section className="home-install" aria-label="安装组件"><p>React · Tailwind CSS · Motion</p><InstallCommand /><Link to="/docs/installation" className="installation-hint">首次使用？先配置项目 <ArrowUpRight size={12} /></Link></section>
@@ -32,17 +32,18 @@ function DocsLayout({ children, toc }: { children: ReactNode; toc?: { id: string
 }
 export function CatalogPage() {
   const [params, setParams] = useSearchParams();
-  const group = params.get('group') || '全部';
+  const requested = params.get('group') || '全部';
+  const group = groups.includes(requested) ? requested : '全部';
   const query = params.get('q') || '';
-  const visible = catalog.filter((entry) => (group === '全部' || entry.group === group) && `${entry.name} ${entry.description}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const visible = catalog.filter((entry) => (group === '全部' || entry.group === group) && `${entry.name} ${entry.slug} ${entry.description}`.toLowerCase().includes(query.trim().toLowerCase()));
   function change(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (value && value !== '全部') next.set(key, value); else next.delete(key);
     setParams(next, { replace: true });
   }
   return <DocsLayout>
-    <div className="page-heading"><span className="eyebrow">COLLECTION</span><h1>{group === 'AI 组件' ? 'AI 组件' : '组件'}</h1><p>按需安装，让源码成为项目的一部分。</p></div>
-    <div className="catalog-toolbar"><div className="category-tabs" role="group" aria-label="组件分类">{['全部', ...groups].map((name) => <button type="button" key={name} aria-pressed={group === name} onClick={() => change('group', name)}>{name}</button>)}</div><label className="catalog-search"><Search size={14} /><span className="sr-only">筛选组件</span><input value={query} onChange={(event) => change('q', event.target.value)} placeholder="筛选组件…" /></label></div>
+    <div className="page-heading"><span className="eyebrow">COLLECTION</span><h1>{group === '全部' ? '组件' : group}</h1><p>按需安装，让源码成为项目的一部分。</p></div>
+    <div className="catalog-toolbar" style={{ flexWrap: 'wrap' }}><div className="category-tabs" role="group" aria-label="组件分类">{['全部', ...groups].map((name) => <button type="button" key={name} aria-pressed={group === name} onClick={() => change('group', name)}>{name}</button>)}</div><label className="catalog-search"><Search size={14} /><span className="sr-only">筛选组件</span><input value={query} onChange={(event) => change('q', event.target.value)} placeholder="筛选组件…" /></label></div>
     <p className="catalog-count" aria-live="polite">{visible.length} 个组件</p><div className="component-grid">{visible.map((entry) => <ComponentCard key={entry.slug} entry={entry} />)}</div>
     {!visible.length && <div className="empty-state"><h2>没有找到组件</h2><button type="button" className="text-button" onClick={() => setParams({})}>清除筛选</button></div>}
   </DocsLayout>;
@@ -57,7 +58,7 @@ export function ComponentPage() {
     <div className="page-heading component-heading"><div><h1>{entry.name}</h1><p>{entry.description}</p></div><a className="registry-link" href={registryUrl(entry.slug)} aria-label="查看组件安装清单"><Code2 size={15} />JSON</a></div>
     <div id="preview">{entry.examples.map((name, index) => <ExampleSection key={name} slug={entry.slug} name={name} title={index === 0 ? '预览' : '状态与反馈'} />)}</div>
     <section id="installation" className="doc-section"><h2>安装</h2><Installation slug={entry.slug} /><p className="small-note">已有 shadcn 项目可以直接添加。首次使用请先完成<Link to="/docs/installation">项目配置</Link>。</p></section>
-    <section id="notes" className="doc-section"><h2>使用约定</h2><p className="reading-note">预览和安装清单使用同一份源码。Usage 是上方演示的完整代码；公共属性类型可在 Code 中直接查看。导入路径根据你的项目配置调整。</p>{entry.group === 'AI 组件' && <p className="reading-note">这里只提供界面与交互。模型调用、权限校验、持久化和流式状态由应用提供；演示不会连接外部模型。</p>}</section>
+    <section id="notes" className="doc-section"><h2>使用约定</h2><p className="reading-note">预览和安装清单使用同一份源码。Usage 是上方演示的完整代码；公共属性类型可在 Code 中直接查看。导入路径根据你的项目配置调整。</p>{entry.group === 'AI 组件' && <p className="reading-note">这里只提供界面与交互。模型调用、权限校验、持久化和流式状态由应用提供；演示不会连接外部模型。</p>}{entry.slug === 'safe-streamdown' && <p className="reading-note">保留原组件名称；源码版使用 react-markdown 与 GFM 重新实现，不依赖旧聊天运行时。默认忽略原始 HTML，远程图片需要显式启用。</p>}{entry.slug === 'workspace-tab-bar' && <p className="reading-note">关闭和重排由应用处理。未保存内容的确认应放在 onClose 中；固定标签和最后一个标签不会直接关闭。</p>}</section>
     <nav className="page-pagination" aria-label="相邻组件">{index > 0 ? <Link to={`/components/${catalog[index - 1].slug}`}>← {catalog[index - 1].name}</Link> : <span />}{index < catalog.length - 1 && <Link to={`/components/${catalog[index + 1].slug}`}>{catalog[index + 1].name} →</Link>}</nav>
   </DocsLayout>;
 }
