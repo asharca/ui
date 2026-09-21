@@ -1,230 +1,84 @@
-# @asharca/ui
+# Asharca UI
 
-[Live documentation](https://asharca.github.io/ui/) · [Application examples](https://asharca.github.io/ui/#/examples)
+简约的 React 组件源码。预览、安装，然后在自己的项目中修改。
 
-`ChatComposerToolbar` (`@asharca/ui/chat-composer-toolbar`) provides a unified
-tool menu and configurable, ordered shortcuts. Pass `tools`, `pinnedIds`, and
-`onPinnedIdsChange`; the consuming app owns actions and preference persistence.
-Use it in `ChatThread.composerTools` with `showAttachmentPicker={false}` to
-replace the default attachment button. The default remains unchanged.
+[组件网站](https://asharca.github.io/ui/) · [安装指南](https://asharca.github.io/ui/docs/installation/) · [llms.txt](https://asharca.github.io/ui/llms.txt)
 
-Reusable React controls, chat thread, conversation sidebar, and responsive shell extracted from ToolPlane. Routing, persistence, authentication, and API handlers stay in the host application.
+## 使用
 
-## Install
+需要 React 19、TypeScript、Tailwind CSS 4，以及已初始化的 shadcn 项目。
 
-```bash
-pnpm add @asharca/ui
-# or: npm install @asharca/ui
+```sh
+npx shadcn@latest init
+npx shadcn@latest add https://asharca.github.io/ui/r/button.json
 ```
-
-pnpm installs missing peer dependencies by default. If automatic peer installation
-is disabled or your package manager leaves peers missing, install them explicitly:
-
-```bash
-pnpm add @asharca/ui @assistant-ui/react@0.15.20 react@^19 react-dom@^19 tailwindcss@^4
-```
-
-For version conflicts, first check that your application and other dependencies
-support these versions. Installing the package does not configure your CSS build.
-
-The package uses React 19 and Tailwind CSS 4. `ChatThread` additionally accepts an assistant-ui `AssistantRuntime`, so transport and persistence stay in the host application.
-
-The runtime peer accepts `@assistant-ui/react@^0.15.18`, paired with
-`@assistant-ui/react-streamdown@0.3.13`. Version `0.2.3` is tested with runtime
-`0.15.20` on September 18, 2026. Existing locked `0.15.18` installations remain
-in the supported range; new installations should use `0.15.20`, which aligns
-the upstream core/cloud dependencies. An unlocked `0.15.18` install can select
-an incompatible cloud peer. Keep strict peer validation enabled.
-Hosts that also use the Streamdown adapter should use `0.3.13` so the renderer
-and host share the same assistant-ui context.
-
-Import the stylesheet once from the host application's global Tailwind stylesheet:
-
-```css
-@import "tailwindcss";
-@import "@asharca/ui/styles.css";
-```
-
-The package stylesheet uses Tailwind's `@source` directive to scan the emitted `dist` files. Importing only the React components will leave their utility classes ungenerated.
-
-## Controls
-
-Import lightweight controls without loading the chat runtime:
 
 ```tsx
-import { useState } from 'react';
-import { Plus } from 'lucide-react';
-import { Button, IconButton, Input, SearchInput } from '@asharca/ui/controls';
+import { Button } from "@/components/asharca/button";
 
-export function Toolbar() {
-  const [query, setQuery] = useState('');
-  return <>
-    <Button variant="primary">Save</Button>
-    <IconButton icon={<Plus />} label="Add item" />
-    <Input name="title" aria-label="Title" />
-    <SearchInput
-      value={query}
-      label="Search conversations"
-      onChange={(event) => setQuery(event.target.value)}
-      onClear={() => setQuery('')}
-    />
-  </>;
+export function Example() {
+  return <Button>开始使用</Button>;
 }
 ```
 
-`Button` supports `primary`, `secondary`, `ghost`, `danger`, and `danger-secondary` variants, `sm`/`md`/`lg` sizes, a loading state, and `asChild` for framework links. Controls also include `Textarea`, `Select`/`NativeSelect`, `Checkbox`, `Radio`, and field labels/descriptions/errors. All controls forward native props and refs.
+安装路径遵循 `components.json` 的 `aliases.components`，上面的 `@/` 是常用示例别名。每个安装条目包含完整的关联文件和所需依赖，不覆盖已有主题。组件页面提供同源的 CLI、手动安装、用法和源码。
 
-## Modules
+> 以上线上入口须在本次重写合并并部署后使用；PR 构建只生成预览产物，不会自动发布。
 
-- `@asharca/ui/workspace-sidebar` provides `WorkspaceSidebar`: controlled `collapsed`
-  and `mobileOpen` states, `items`, `activeId`, `onSelect`, brand/workspace content
-  and a `footer` slot. Items accept `icon`, `label`, `badge`, and `disabled`.
-  Widths use `--workspace-sidebar-width` and `--workspace-sidebar-collapsed-width`.
-  The mobile breakpoint is 850px. Hosts own routing, persistence, the open trigger,
-  scrim, focus trapping/restoration, and background inertness for modal drawers;
-  `mobileCloseRef` exposes the built-in close button for focus management.
+## 组件
 
-- `@asharca/ui/controls` — buttons and native form controls.
-- `@asharca/ui/controls` also provides `Switch`, native `Slider`, and an additive `outline` button variant.
-- `@asharca/ui/avatar` — `Avatar`, `AvatarImage`, and `AvatarFallback`.
-- `@asharca/ui/workspace-tab-bar` — ToolPlane's `WorkspaceTabBar` with host-controlled selection, closing, pinning, drag reordering, and new-window callbacks. The showcase wires these actions to its sidebar and pages; route state stays in the host application.
-- `@asharca/ui/accordion` — `Accordion`, `AccordionItem`, `AccordionTrigger`, and `AccordionContent`.
-- `@asharca/ui/navigation` also provides Radix-backed `Tabs`, `TabsList`, `TabsTrigger`, and `TabsContent` with keyboard navigation. Existing `Tab` / `TabList` exports are unchanged.
-- `@asharca/ui/feedback` also provides native `Progress` and decorative `Skeleton`. Give progress bars and sliders an accessible label; label switches via `htmlFor` or `aria-label`.
-- `@asharca/ui/overlays` also provides `DropdownMenu`, its trigger, portal, content, item, group, label, and separator.
-- `@asharca/ui/forms` — submit, confirm-submit, and copy actions.
-- `@asharca/ui/layout` — page, header, toolbar, section, panel, card, empty state, entity, and data table. `DataTable` supports controlled multi-select with `selectable`, `rowIds`, `selectedRowIds`, and `onSelectedRowIdsChange`.
-- `@asharca/ui/navigation` — tabs, chips, and pagination layout.
-- `@asharca/ui/feedback` — badges, status, alerts, and spinners.
-- `@asharca/ui/dialog` and `@asharca/ui/overlays` — Dialog, Popover, Tooltip, Context Menu, and Hover Card primitives.
-- `@asharca/ui/chat-shell`, `@asharca/ui/chat-thread`, and `@asharca/ui/conversation-sidebar` — chat composition.
-- The root export also includes `ToolPlaneLogo`, `ContentPage`, `RotatingHeadline`, `SafeStreamdown`, `Breadcrumbs`, `NavigationTabs`, and `WorkspaceTabBar`.
+基础组件：Button、Input、Checkbox、Radio Group、Switch、Select、Tabs、Accordion、Badge。
 
-Next.js routing, translations, server actions, authentication, and domain data stay in the host. Pass those through children, labels, callbacks, and thin adapters.
+浮层组件：Dialog、Popover、Tooltip。
 
-## Example
+AI 组件：Prompt Input、Message、Tool Result、Approval Card、Chat Panel。
 
-```tsx
-'use client';
+AI 组件仅负责界面和交互。模型调用、流式状态、鉴权、持久化和权限校验由宿主应用提供。网站中的对话与工具操作是明确标注的本地演示。
 
-import { useState } from 'react';
-import {
-  ChatShell,
-  ChatThread,
-  type ChatThreadProps,
-  ConversationSidebar,
-} from '@asharca/ui';
+## 开发
 
-export function ChatPage({ runtime }: { runtime: ChatThreadProps['runtime'] }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobilePane, setMobilePane] = useState<'sidebar' | 'chat'>('sidebar');
+Node.js 24，pnpm 10。这个仓库是私有发布标记的站点工程，不发布组件包。
 
-  return (
-    <div className="h-dvh">
-      <ChatShell
-        sidebar={(
-          <ConversationSidebar
-            groups={[]}
-            onSelectConversation={() => setMobilePane('chat')}
-          />
-        )}
-        header={<strong>Support assistant</strong>}
-        sidebarOpen={sidebarOpen}
-        onSidebarOpenChange={setSidebarOpen}
-        mobilePane={mobilePane}
-        onMobilePaneChange={setMobilePane}
-        rightPanel={<div>Optional inspector</div>}
-      >
-        <ChatThread
-          runtime={runtime}
-          assistantName="Support assistant"
-        />
-      </ChatShell>
-    </div>
-  );
-}
-```
-
-Build the runtime with AI SDK, assistant-ui local runtime, or another adapter in the host. `sidebarOpen` controls the desktop column. `mobilePane` controls whether narrow screens show the sidebar or the chat. Set `rightPanelOpen={false}` to keep the optional desktop right panel closed, and pass `sidebarLabel` when the sidebar needs a named complementary landmark.
-
-`ChatThread` accepts an optional `components` map for host-specific rendering without replacing the thread layout. Use `AssistantText` for a custom Markdown renderer, `AssistantMessageBefore` / `AssistantMessageAfter` for per-message context, `AssistantActions` for extra message actions, and `SentAttachment` for a host preview flow.
-
-`ConversationSidebar` conversations may also provide optional `meta` content and a `deleting` state, so hosts can keep domain badges and show async delete progress without replacing the list layout.
-
-Pass `onConversationOrderChange(groupId, conversationIds)` to enable same-group
-conversation drag ordering and accessible move-up/down buttons. The callback
-returns the full group order, including items hidden by search. Hosts own the
-reordered state and persistence; selection is unchanged. Disabled/deleting
-conversations cannot be moved. Omitting the callback preserves the default list.
-
-Theme defaults are scoped to package component roots. Override them with HSL-channel variables such as `--toolplane-ui-background`, `--toolplane-ui-foreground`, and `--toolplane-ui-brand`. The older `--chat-ui-*` variables remain supported; `--chat-ui-sidebar-width` and `--chat-ui-right-panel-width` still control chat layout. Add a `.dark` class to an ancestor, or `data-theme="dark"` to a component, to use the dark defaults.
-
-## Component workbench
-
-Run `pnpm dev` and open the local URL printed by Vite. The standalone showcase
-includes interactive controls, forms, tables, overlays, light/dark themes, and
-a local chat demo (no AI service or credentials required). Demo data is kept in
-memory and resets on reload.
-
-`pnpm build:showcase` type-checks and builds the site into `showcase-dist/`.
-The showcase is development-only and is not included in the npm package.
-Open `#/examples` for order administration, analytics, project boards, the
-component workspace, and settings. Each has an in-page style, light/dark and
-density switcher, plus source tabs reading the actual files in
-`showcase/examples/`. See `showcase/examples/README.md` for file locations.
-The chart primitives are exported from `@asharca/ui/chart`; combine them with
-Recharts and the existing styles. Profile photos
-in `showcase/public/avatars` are demo assets from Unsplash (photo IDs
-`1494790108377-be9c29b29330`, `1506794778202-cad84cf45f1d`, and
-`1534528741775-53994a69daeb`); member names and emails are fictional.
-
-## Build and pack
-
-```bash
+```sh
 pnpm install --frozen-lockfile
-pnpm lint
-pnpm build
-pnpm test
-pnpm test:package
-pnpm pack
+pnpm dev
+pnpm check
+pnpm test:consumer
+pnpm exec playwright install chromium
+pnpm test:browser
 ```
 
-Development uses Node 24 and pnpm. Tests run without ToolPlane, Next.js,
-Postgres, or Docker. `test:package` installs the tarball into a temporary consumer
-with strict peer checking and verifies imports, rendering, CSS, and Tailwind
-source scanning.
+`pnpm build` 生成站点、静态页面入口、registry JSON 和单一 UTF-8 `llms.txt`。浏览器测试在已构建站点上运行。消费项目测试使用真正的 shadcn CLI，分别验证标准路径和自定义别名，不是迁移工具。
 
-## Release
-
-This package is maintained in `asharca/ui`, independently from ToolPlane.
-Changes go through a PR with required CI checks; merging to `main` does not
-repeat the full CI run. CI can also be started manually.
-
-To release, update `package.json` in a PR, merge it, and tag the merged commit
-on `main`. Replace `X.Y.Z` with the package version:
-
-```bash
-git tag ui-vX.Y.Z
-git push origin ui-vX.Y.Z
+```text
+registry/ui/          可直接安装的组件源码
+registry/catalog.mjs  唯一组件目录与依赖图
+examples/            网站预览及 Usage 的同一份代码
+site/                展示站布局与文档界面
+scripts/             构建及验证
+public/              静态资源与生成的 registry、llms.txt
 ```
 
-The `publish-ui.yml` workflow checks that the tag matches the package version
-and belongs to `main`, builds and tests the tagged commit, verifies the tarball,
-then publishes that exact version to npm with provenance. Published npm versions
-are immutable; use a new version and tag for each release.
+没有兼容包、旧界面、主题实验室、迁移脚本或 Skill 安装流程。公共 AI 文档只有站点的 `llms.txt`，由真实安装清单生成。
 
-Publishing requires access to the `@asharca` npm scope. Configure npm trusted
-publishing for `asharca/ui` and `publish-ui.yml`, allowing direct
-publishing with `npm publish`. The workflow uses OIDC rather than a long-lived
-npm token. No `NPM_TOKEN` or `NODE_AUTH_TOKEN` repository secret is needed.
+## 部署
 
-Version `0.2.0` is the first release from this repository. It requires
-`@assistant-ui/react@0.15.18`; consumers upgrading from `0.1.x` must update that
-runtime peer as well. Component exports and CSS variables are unchanged by the
-repository migration. Consuming applications update their dependency and rebuild
-to adopt a release.
+GitHub 项目 Pages 使用：
 
-## License
+```sh
+SITE_URL=https://asharca.github.io/ui/ BASE_PATH=/ui/ pnpm build
+```
 
-MIT. See [LICENSE](./LICENSE). This repository preserves the history of the UI
-package extracted from ToolPlane; it does not license the rest of ToolPlane.
+自定义域名使用站点根路径：
+
+```sh
+SITE_URL=https://your-domain.example/ BASE_PATH=/ pnpm build
+```
+
+部署 `dist/`。每个文档路由有独立 HTML 入口，可直接打开和刷新；registry 与 `llms.txt` 是静态文件，不经过 SPA HTML 回退。`SITE_URL` 必须是对外可访问的完整站点地址。安装命令在浏览器中根据当前站点地址生成，不依赖硬编码的开发端口。
+
+## 设计与许可
+
+展示结构、克制的视觉语言和组件交互参考 [beUI](https://beui.dev/)，保留本项目品牌与独立实现；不包含对方的商业推广或用户评价。
+
+MIT License。参考来源与许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

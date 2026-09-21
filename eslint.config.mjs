@@ -1,14 +1,15 @@
 import tseslint from 'typescript-eslint';
-import reactHooks from 'eslint-plugin-react-hooks';
-
+import hooks from 'eslint-plugin-react-hooks';
 export default tseslint.config(
-  { ignores: ['dist/**', 'showcase-dist/**', 'node_modules/**'] },
+  { ignores: ['dist/**', 'public/**', 'node_modules/**', '.consumer/**', 'playwright-report/**', 'test-results/**'] },
   ...tseslint.configs.recommended,
   {
-    plugins: { 'react-hooks': reactHooks },
+    files: ['**/*.{ts,tsx}'],
+    plugins: { 'react-hooks': hooks },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-    },
-  },
+      'react-hooks/exhaustive-deps': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
+    }
+  }
 );

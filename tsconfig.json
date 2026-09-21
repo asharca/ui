@@ -1,31 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowImportingTsExtensions": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "allowJs": false,
-    "declaration": true,
-    "incremental": false,
-    "noEmit": false,
-    "outDir": "dist",
-    "paths": {},
-    "rootDir": "src",
-    "rewriteRelativeImportExtensions": true
+    "target": "ES2022", "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext", "moduleResolution": "Bundler", "jsx": "react-jsx",
+    "strict": true, "skipLibCheck": true, "noEmit": true,
+    "allowJs": true, "checkJs": false, "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true, "esModuleInterop": true,
+    "baseUrl": ".", "paths": { "@/components/asharca/*": ["registry/ui/*"] },
+    "types": ["vite/client", "node", "@testing-library/jest-dom"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
+  "include": ["site", "registry", "examples", "tests/**/*.tsx", "tests/setup.ts", "vite.config.ts", "playwright.config.ts"],
+  "exclude": ["node_modules", "dist", ".consumer"]
 }
