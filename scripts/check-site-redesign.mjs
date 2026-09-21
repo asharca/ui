@@ -40,7 +40,9 @@ try {
     const page = await context.newPage();
     const errors = []; page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(base);
-    await page.getByRole('heading', { level: 1, name: /每个细节/ }).waitFor();
+    await page.getByRole('heading', { level: 1, name: /组件与交互/ }).waitFor();
+    await page.locator('[data-component="dialog"]').scrollIntoViewIfNeeded();
+    await page.getByRole('button', { name: '编辑项目', exact: true }).click();
     const form = page.getByRole('form', { name: '项目配置演示' });
     await form.getByRole('textbox', { name: '项目名称', exact: true }).fill('My product');
     await form.getByRole('radio', { name: '应用界面', exact: true }).check();
@@ -48,6 +50,8 @@ try {
     assert(await form.getByText('配置已保存 · 仅本地演示', { exact: true }).isVisible());
     await form.getByRole('switch', { name: '流式响应' }).click();
     assert(await form.getByRole('button', { name: '保存配置', exact: true }).isVisible());
+    await page.getByRole('dialog', { name: '项目设置' }).getByRole('button', { name: '关闭', exact: true }).click();
+    await page.getByRole('dialog', { name: '项目设置' }).waitFor({ state: 'hidden' });
     await fits(page, width, 'home');
     await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
     await page.screenshot({ path: join(output, `${width}-${mode}-home.png`) });

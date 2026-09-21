@@ -25,14 +25,54 @@ try {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(base);
     await page.getByRole('button', { name: '试试这个按钮', exact: true }).click();
-    assert(await page.getByText('本地状态已更新，再次点击重置', { exact: true }).isVisible());
-    await page.getByRole('button', { name: '查看源码 Metallic Button' }).click();
-    const code = page.getByRole('region', { name: 'Metallic Button 完整示例' });
+    assert(await page.locator('[data-component="material-button"]').getByRole('button', { name: '已保存', exact: true }).isVisible());
+    await page.getByRole('button', { name: '查看 Metallic Button 源码' }).click();
+    const code = page.getByRole('region', { name: 'Metallic Button 用法 TSX' });
     await code.waitFor();
     assert((await code.innerText()).includes('ui-material-button'));
     await page.getByRole('button', { name: '预览 Metallic Button' }).click();
-    assert(await page.getByText('本地状态已更新，再次点击重置', { exact: true }).isVisible());
-    await page.getByRole('button', { name: '重播 Metallic Button' }).click();
+    assert(await page.locator('[data-component="material-button"]').getByRole('button', { name: '已保存', exact: true }).isVisible());
+    await page.getByRole('button', { name: '重置 Metallic Button 预览' }).click();
+    // The collection is deliberately lazy: scroll the stage, then interact with
+    // its real component. Cover mouse, keyboard, portal focus and local state.
+    const saveTile = page.locator('[data-component="button"]');
+    await saveTile.scrollIntoViewIfNeeded();
+    await saveTile.getByRole('button', { name: '保存更改', exact: true }).click();
+    await saveTile.getByRole('button', { name: '已保存', exact: true }).waitFor();
+    const switches = page.locator('[data-component="switch"]');
+    await switches.scrollIntoViewIfNeeded();
+    const autoSave = switches.getByRole('switch', { name: '自动保存', exact: true });
+    await autoSave.click();
+    assert.equal(await autoSave.getAttribute('aria-checked'), 'false');
+    await switches.getByRole('button', { name: '查看 Switch 源码', exact: true }).click();
+    await switches.getByRole('region', { name: 'Switch 用法 TSX', exact: true }).waitFor();
+    await switches.getByRole('button', { name: '预览 Switch', exact: true }).click();
+    assert.equal(await autoSave.getAttribute('aria-checked'), 'false');
+    const avatars = page.locator('[data-component="avatar"]');
+    await avatars.scrollIntoViewIfNeeded();
+    const sam = avatars.getByRole('button', { name: 'Sam', exact: true });
+    await sam.focus(); await page.keyboard.press('Space');
+    assert.equal(await sam.getAttribute('aria-pressed'), 'true');
+    assert.equal(await sam.evaluate((node) => getComputedStyle(node).translate), 'none', 'Reduced motion must suppress avatar travel');
+    const accordion = page.locator('[data-component="accordion"]');
+    await accordion.scrollIntoViewIfNeeded();
+    await accordion.getByRole('button', { name: '通知', exact: true }).click();
+    const notify = accordion.getByRole('switch', { name: '桌面通知', exact: true });
+    await notify.click();
+    assert.equal(await notify.getAttribute('aria-checked'), 'false');
+    const dropdown = page.locator('[data-component="dropdown-menu"]');
+    await dropdown.scrollIntoViewIfNeeded();
+    await dropdown.getByRole('button', { name: '项目操作', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await page.getByRole('menuitem', { name: '创建副本', exact: true }).click();
+    const action = dropdown.getByRole('button', { name: '已创建副本', exact: true });
+    await action.waitFor();
+    await page.waitForFunction(() => document.activeElement?.textContent === '已创建副本');
+    const categories = page.getByRole('group', { name: '展厅分类' });
+    await categories.getByRole('button', { name: 'AI 交互', exact: true }).click();
+    assert.equal(await page.locator('.ref-showroom .ref-tile').count(), 2);
+    await categories.getByRole('button', { name: '全部', exact: true }).click();
+    assert.equal(await page.locator('.ref-showroom .ref-tile').count(), 12);
     const sizes = await page.evaluate(() => {
       const main = document.querySelector('.docs-main');
       return { body: document.documentElement.scrollWidth, main: main.scrollWidth - main.clientWidth };
@@ -55,7 +95,7 @@ try {
     await page.locator('[data-component="button"]').getByRole('button', { name: '保存更改', exact: true }).waitFor();
     await page.screenshot({ path: join(output, `${width}-${mode}-gallery.png`) });
     assert.equal(errors.length, 0, errors.join('\n'));
-    results.local.push({ width, mode, passed: true, previewStatePreserved: true, sizes });
+    results.local.push({ width, mode, passed: true, previewStatePreserved: true, nativeAndKeyboardInteractions: true, sizes });
     await context.close();
   }
   // Reference screenshots are advisory, never a dependency of functional checks.

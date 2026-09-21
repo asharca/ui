@@ -26,7 +26,7 @@ works with Button/asChild, and does not change the Button prop contract.
 `showcase/demos/MaterialButtonDemo.tsx` is the self-contained example; its exact
 source powers the homepage code view. It is included in public consumer checks.
 
-Six high-traffic gallery tiles use dedicated self-contained `Gallery*Demo.tsx`
+Eleven high-traffic gallery tiles use dedicated self-contained `Gallery*Demo.tsx`
 compositions without documentation debugging controls. Other tiles retain their
 canonical demo. Every tile reads its actual rendered composition for source view. A preview
 stays mounted while reading its code; only reset/filter/layout changes remount
@@ -37,3 +37,9 @@ it. The gallery intentionally keeps interactive previews separate from links.
 No dependency/version changes, merge, npm publish or deployment are requested.
 Existing checks stay enabled, including the previously failing preview unit test.
 CI outcomes must be read from the current commit, not inferred from older runs.
+
+## Minimal collection pass
+
+Transitions.dev is the primary layout reference: short centered header, one category row, uniform three-column canvases, and controls beside the component name. The homepage has twelve real examples and no marketing feature/app sections. Home and catalog now share ComponentTile and the exact preview source. beUI remains the attributed source of the metallic material; Beautiful UI informed the compact composer/tool states; RareUI informed isolated interactive previews; shadcn/ui informed the reduced documentation chrome.
+
+The new state swap, accordion, menu/dialog presence and avatar lift CSS is an independent implementation in the shipped optional themes.css. No Transitions recipe, premium content, third-party brand assets or new dependency was copied. Every example imports the public component surface. Keyboard, native form, source/state preservation, reduced-motion and mobile layouts remain required checks.

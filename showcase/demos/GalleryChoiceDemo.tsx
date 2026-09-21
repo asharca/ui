@@ -3,6 +3,6 @@ import { ChoiceField, ChoiceGroup } from '../../src/index';
 
 export function GalleryChoiceDemo() {
   const name = useId();
-  const [mode, setMode] = useState('review');
-  return <ChoiceGroup legend="选择你的工作方式" description="每一种选择，都有清晰的边界。"><ChoiceField type="radio" variant="card" name={name} value="review" label="逐次确认" description="运行前，先查看参数与预期结果。" checked={mode === 'review'} onChange={(event) => setMode(event.target.value)} /><ChoiceField type="radio" variant="card" name={name} value="readonly" label="只读预览" description="只了解信息，不修改任何内容。" checked={mode === 'readonly'} onChange={(event) => setMode(event.target.value)} /></ChoiceGroup>;
+  const [mode, setMode] = useState('personal');
+  return <ChoiceGroup legend="工作空间" style={{ width: '100%', maxWidth: 240 }}><ChoiceField type="radio" variant="card" name={name} value="personal" label="个人" description="专注自己的项目" checked={mode === 'personal'} onChange={(event) => setMode(event.target.value)} /><ChoiceField type="radio" variant="card" name={name} value="team" label="团队" description="和伙伴一起构建" checked={mode === 'team'} onChange={(event) => setMode(event.target.value)} /></ChoiceGroup>;
 }

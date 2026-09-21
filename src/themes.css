@@ -35,3 +35,40 @@
 @media print {
   [data-ui-style], :root[data-ui-style] { --ds-blur: 0px; --ds-surface-alpha: 1; --ds-panel-shadow: none; --ds-elevated-shadow: none; }
 }
+
+/* Purposeful interaction motion, independently implemented after reviewing
+   Transitions.dev. No third-party recipe or premium source is included. */
+@layer components {
+  .ui-state-swap { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; animation: ui-state-arrive 220ms cubic-bezier(.2,.8,.2,1) both; }
+  :where([data-ui-style]) .ui-checkbox:checked::after,
+  :where([data-ui-style]) .ui-radio:checked::after { animation: ui-choice-arrive 180ms ease-out; }
+  :where([data-ui-style]) .ui-accordion-content[data-state="open"] { animation: ui-disclosure-open 240ms cubic-bezier(.2,.8,.2,1); }
+  :where([data-ui-style]) .ui-accordion-content[data-state="closed"] { animation: ui-disclosure-close 180ms ease-in; }
+  :where([data-ui-style]) :is(.ui-dropdown-menu,[data-toolplane-ui="popover-content"],[data-toolplane-ui="hover-card-content"]) { transform-origin: var(--radix-dropdown-menu-content-transform-origin, var(--radix-popover-content-transform-origin, var(--radix-hover-card-content-transform-origin, center))); }
+  :where([data-ui-style]) :is(.ui-dropdown-menu,[data-toolplane-ui="popover-content"],[data-toolplane-ui="hover-card-content"],[data-toolplane-ui="dialog-content"])[data-state="open"] { animation: ui-surface-arrive 220ms cubic-bezier(.2,.8,.2,1); }
+  :where([data-ui-style]) :is(.ui-dropdown-menu,[data-toolplane-ui="popover-content"],[data-toolplane-ui="hover-card-content"],[data-toolplane-ui="dialog-content"])[data-state="closed"] { animation: ui-surface-leave 140ms ease-in; }
+  :where([data-ui-style]) [data-toolplane-ui="dialog-overlay"][data-state="open"] { animation: ui-overlay-arrive 180ms ease-out; }
+  :where([data-ui-style]) [data-toolplane-ui="dialog-overlay"][data-state="closed"] { animation: ui-overlay-arrive 140ms ease-in reverse; }
+  .ui-avatar-stack { display: flex; align-items: center; padding: 8px; }
+  .ui-avatar-stack > button { position: relative; border-radius: 50%; background: transparent; margin-inline-start: -9px; cursor: pointer; transition: translate 260ms cubic-bezier(.2,.8,.2,1); }
+  .ui-avatar-stack > button:first-child { margin-inline-start: 0; }
+  .ui-avatar-stack > button:is(:hover,:focus-visible) { translate: 0 -9px; z-index: 2; }
+  .ui-avatar-stack > button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+  .ui-avatar-stack > button[aria-pressed="true"] { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+  .ui-avatar-stack-label { position: absolute; left: 50%; bottom: calc(100% + 8px); translate: -50% 0; border-radius: 6px; padding: 4px 8px; background: hsl(var(--foreground)); color: hsl(var(--background)); font-size: 11px; opacity: 0; pointer-events: none; transition: opacity 140ms; }
+  .ui-avatar-stack > button:is(:hover,:focus-visible) .ui-avatar-stack-label { opacity: 1; }
+}
+@keyframes ui-state-arrive { from { opacity: 0; translate: 0 4px; filter: blur(2px); } to { opacity: 1; translate: 0 0; filter: blur(0); } }
+@keyframes ui-choice-arrive { from { scale: .6; opacity: .5; } to { scale: 1; opacity: 1; } }
+@keyframes ui-disclosure-open { from { height: 0; opacity: 0; } to { height: var(--radix-accordion-content-height); opacity: 1; } }
+@keyframes ui-disclosure-close { from { height: var(--radix-accordion-content-height); opacity: 1; } to { height: 0; opacity: 0; } }
+@keyframes ui-surface-arrive { from { opacity: 0; scale: .97; } to { opacity: 1; scale: 1; } }
+@keyframes ui-surface-leave { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .98; } }
+@keyframes ui-overlay-arrive { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ui-state-swap, :where([data-ui-style]) :is(.ui-accordion-content,.ui-dropdown-menu,[data-toolplane-ui="popover-content"],[data-toolplane-ui="hover-card-content"],[data-toolplane-ui="dialog-content"],[data-toolplane-ui="dialog-overlay"]),
+  :where([data-ui-style]) :is(.ui-checkbox,.ui-radio)::after { animation: none !important; }
+  .ui-avatar-stack > button, .ui-avatar-stack-label { transition: none; }
+  .ui-avatar-stack > button:is(:hover,:focus-visible) { translate: none; }
+}
+@media (forced-colors: active) { .ui-avatar-stack-label { border: 1px solid CanvasText; } }

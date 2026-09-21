@@ -10,13 +10,15 @@ afterEach(cleanup);
 it('uses the real Button and preserves local state while its exact source is open', async () => {
   const user = userEvent.setup();
   render(<ReferenceShowroom />);
+  await user.click(screen.getByRole('button', { name: '载入 Metallic Button 预览' }));
   await user.click(screen.getByRole('button', { name: '试试这个按钮', exact: true }));
-  expect(screen.getByText('本地状态已更新，再次点击重置')).toBeVisible();
-  await user.click(screen.getByRole('button', { name: '查看源码 Metallic Button' }));
-  expect(await screen.findByRole('region', { name: 'Metallic Button 完整示例' })).toHaveTextContent('ui-material-button');
+  expect(screen.getByRole('button', { name: '已保存', exact: true })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: '查看 Metallic Button 源码' }));
+  expect(await screen.findByRole('region', { name: 'Metallic Button 用法 TSX' })).toHaveTextContent('ui-material-button');
   await user.click(screen.getByRole('button', { name: '预览 Metallic Button' }));
-  expect(screen.getByText('本地状态已更新，再次点击重置')).toBeVisible();
-  await user.click(screen.getByRole('button', { name: '重播 Metallic Button' }));
+  expect(screen.getByRole('button', { name: '已保存', exact: true })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: '重置 Metallic Button 预览' }));
+  await user.click(screen.getByRole('button', { name: '载入 Metallic Button 预览' }));
   expect(screen.getByRole('button', { name: '试试这个按钮', exact: true })).toBeVisible();
 });
 

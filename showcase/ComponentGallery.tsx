@@ -8,7 +8,7 @@ import { DocCode } from './DocCode';
 
 type CatalogEntry = typeof componentDocs[number];
 const sources = import.meta.glob<string>('./demos/*.tsx', { query: '?raw', import: 'default' });
-const priority = ['button', 'tabs', 'choice-field', 'tool-call-card', 'chat-composer-toolbar', 'data-table'];
+const priority = ['button', 'tabs', 'choice-field', 'tool-call-card', 'chat-composer-toolbar', 'data-table', 'switch', 'avatar', 'accordion', 'dropdown-menu', 'dialog'];
 const ordered = [...componentDocs].sort((a, b) => {
   const rank = (id: string) => priority.includes(id) ? priority.indexOf(id) : priority.length;
   return rank(a.id) - rank(b.id);
@@ -19,6 +19,8 @@ const ordered = [...componentDocs].sort((a, b) => {
 const compactFiles: Record<string, string> = {
   button: 'GalleryButtonDemo', tabs: 'GalleryTabsDemo', 'choice-field': 'GalleryChoiceDemo',
   'tool-call-card': 'GalleryToolDemo', 'chat-composer-toolbar': 'GalleryComposerDemo', 'data-table': 'GalleryTableDemo',
+  switch: 'GallerySwitchDemo', avatar: 'GalleryAvatarDemo', accordion: 'GalleryAccordionDemo',
+  'dropdown-menu': 'GalleryDropdownDemo', dialog: 'GalleryDialogDemo',
 };
 const compactLoaders = import.meta.glob<Record<string, ComponentType>>('./demos/Gallery*Demo.tsx');
 const galleryEntries = new Map(componentDocs.map((doc) => {
@@ -59,13 +61,15 @@ function TileSource({ doc }: { doc: CatalogEntry }) {
   return <div className="ref-tile-code">{error ? <p role="alert">源码未能加载，请重新打开代码视图。</p> : source ? <DocCode code={source} label={`${doc.name} 用法 TSX`} /> : <p role="status">正在读取同源示例…</p>}</div>;
 }
 
-export function ComponentTile({ doc: original, list = false }: { doc: CatalogEntry; list?: boolean }) {
+export function ComponentTile({ doc: original, list = false, href }: { doc: CatalogEntry; list?: boolean; href?: string }) {
   const doc = galleryEntries.get(original) ?? original;
   const [revision, setRevision] = useState(0);
   const [code, setCode] = useState(false);
   return <article className="studio-tile ref-tile" data-component={doc.id}>
-    {!list && <div className="ref-tile-surface"><div className="studio-tile-top"><span>{doc.group}</span><div role="group" aria-label={`${doc.name} 展示内容`}><IconButton label={`预览 ${doc.name}`} size="sm" variant="ghost" aria-pressed={!code} icon={<Eye size={14} />} onClick={() => setCode(false)} /><IconButton label={`查看 ${doc.name} 源码`} size="sm" variant="ghost" aria-pressed={code} icon={<Code2 size={14} />} onClick={() => setCode(true)} /><IconButton size="sm" variant="ghost" label={`重置 ${doc.name} 预览`} icon={<RotateCcw size={13} />} onClick={() => { setRevision((value) => value + 1); setCode(false); }} /></div></div><div hidden={code}><DeferredDemo key={revision} doc={doc} /></div>{code && <TileSource doc={doc} />}</div>}
-    <a className="studio-tile-link" href={`#/components/${doc.id}`}><div><h3>{doc.name}</h3><p>{doc.description}</p></div><ArrowUpRight size={17} aria-hidden="true" /></a>
+    {!list && <div className="ref-tile-surface"><div hidden={code}><DeferredDemo key={revision} doc={doc} /></div>{code && <TileSource doc={doc} />}</div>}
+    <div className="ref-tile-footer"><a className="studio-tile-link" href={href ?? `#/components/${doc.id}`}><div><h3>{doc.name}</h3>{list && <p>{doc.description}</p>}</div>{list && <ArrowUpRight size={15} aria-hidden="true" />}</a>
+      {!list && <div className="ref-tile-actions" role="group" aria-label={`${doc.name} 展示内容`}><IconButton label={`预览 ${doc.name}`} size="sm" variant="ghost" aria-pressed={!code} icon={<Eye size={14} />} onClick={() => setCode(false)} /><IconButton size="sm" variant="ghost" label={`重置 ${doc.name} 预览`} icon={<RotateCcw size={13} />} onClick={() => { setRevision((value) => value + 1); setCode(false); }} /><IconButton label={`查看 ${doc.name} 源码`} size="sm" variant="ghost" aria-pressed={code} icon={<Code2 size={14} />} onClick={() => setCode(true)} /></div>}
+    </div>
   </article>;
 }
 
@@ -76,10 +80,9 @@ export function ComponentGallery() {
   const needle = query.trim().toLowerCase();
   const visible = ordered.filter((doc) => (group === '全部' || doc.group === group) && `${doc.id} ${doc.name} ${doc.description} ${doc.group}`.toLowerCase().includes(needle));
   return <div className="studio-gallery ref-gallery">
-    <div className="studio-gallery-heading docs-page-heading"><span className="ref-eyebrow">THE COMPONENT COLLECTION</span><h1 aria-label="组件">组件<span aria-hidden="true" className="ref-count">{componentDocs.length}</span></h1><p>好的细节，不必从头开始。预览、操作，或直接复制代码。</p></div>
-    <div className="studio-gallery-controls"><SearchInput label="筛选组件总览" value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery('')} placeholder="搜索组件、交互或使用场景…" /><Select aria-label="组件分类" value={group} onChange={(event) => setGroup(event.target.value)}>{['全部', ...componentGroups].map((name) => <option key={name}>{name}</option>)}</Select><div className="studio-layout-controls" role="group" aria-label="组件展示方式"><IconButton label="网格展示" variant="ghost" size="sm" aria-pressed={layout === 'grid'} icon={<Grid2X2 size={16} />} onClick={() => setLayout('grid')} /><IconButton label="列表展示" variant="ghost" size="sm" aria-pressed={layout === 'list'} icon={<List size={16} />} onClick={() => setLayout('list')} /></div></div>
-    <div className="studio-filters" role="group" aria-label="按组件分类筛选">{['全部', ...componentGroups].map((name) => <button type="button" key={name} aria-pressed={group === name} onClick={() => setGroup(name)}>{name}<span>{name === '全部' ? componentDocs.length : componentDocs.filter((doc) => doc.group === name).length}</span></button>)}</div>
-    <div className="studio-results"><span role="status">{visible.length} 个组件</span><span>预览可操作 · 代码来自相同示例 · 名称进入文档</span></div>
+    <div className="studio-gallery-heading docs-page-heading"><h1 aria-label="组件">组件<span aria-hidden="true" className="ref-count">{componentDocs.length}</span></h1></div>
+    <div className="studio-gallery-controls"><SearchInput label="筛选组件总览" value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery('')} placeholder="搜索组件…" /><Select aria-label="组件分类" value={group} onChange={(event) => setGroup(event.target.value)}>{['全部', ...componentGroups].map((name) => <option key={name}>{name}</option>)}</Select><div className="studio-layout-controls" role="group" aria-label="组件展示方式"><IconButton label="网格展示" variant="ghost" size="sm" aria-pressed={layout === 'grid'} icon={<Grid2X2 size={16} />} onClick={() => setLayout('grid')} /><IconButton label="列表展示" variant="ghost" size="sm" aria-pressed={layout === 'list'} icon={<List size={16} />} onClick={() => setLayout('list')} /></div></div>
+    <div className="studio-results"><span role="status">{visible.length} 个组件</span></div>
     {visible.length ? <div className="studio-catalog-grid ref-catalog-grid" data-layout={layout}>{visible.map((doc) => <ComponentTile key={doc.id} doc={doc} list={layout === 'list'} />)}</div> : <div className="studio-empty"><Shapes size={30} /><h2>还没有找到匹配的组件</h2><p>试试更短的关键词，或换一个分类。</p><Button variant="outline" onClick={() => { setQuery(''); setGroup('全部'); }}>清除筛选</Button></div>}
   </div>;
 }
