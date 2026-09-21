@@ -7,10 +7,17 @@ test('all restored families are discoverable without changing the site layout', 
   await page.getByRole('button', { name: '工作区', exact: true }).click();
   await expect(page.locator('.catalog-count')).toHaveText('4 个组件');
   await expect(page.locator('.component-card[data-component="workspace-sidebar"]')).toBeVisible();
+  // Intentionally type immediately: a concurrent navigation must not restore
+  // the previous workspace category from an old render's search parameters.
   await page.getByRole('button', { name: '全部', exact: true }).click();
   await page.getByRole('textbox', { name: '筛选组件' }).fill('chart-container');
   await expect(page.locator('.component-card')).toHaveCount(1);
-  await expect(page.getByRole('link', { name: 'Chart Container', exact: true }).last()).toBeVisible();
+  await expect(page.locator('.component-card').getByRole('link', { name: 'Chart Container', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '全部', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(new URL(page.url()).searchParams.has('group')).toBe(false);
+  await page.reload();
+  await expect(page.locator('.component-card')).toHaveCount(1);
+  await expect(page.getByRole('textbox', { name: '筛选组件' })).toHaveValue('chart-container');
 });
 
 test('restored table keeps selections across pages filters and sorting', async ({ page }) => {
@@ -25,8 +32,15 @@ test('restored table keeps selections across pages filters and sorting', async (
   await expect(preview.getByRole('checkbox', { name: '选择行 p1', exact: true })).toBeChecked();
   await expect(preview.getByText('已选 2 项')).toBeVisible();
   await preview.getByRole('button', { name: '清空搜索项目' }).click();
+  // TanStack sorts numbers descending first and strings ascending first.
+  await preview.getByRole('button', { name: '文件数' }).click();
+  await expect(preview.getByRole('columnheader', { name: '文件数' })).toHaveAttribute('aria-sort', 'descending');
+  await expect(preview.locator('tbody tr').first()).toContainText('Eta');
+  await expect(preview.getByRole('checkbox', { name: '选择行 p1', exact: true })).toBeChecked();
   await preview.getByRole('button', { name: '文件数' }).click();
   await expect(preview.getByRole('columnheader', { name: '文件数' })).toHaveAttribute('aria-sort', 'ascending');
+  await expect(preview.locator('tbody tr').first()).toContainText('Zeta');
+  await expect(preview.getByText('已选 2 项')).toBeVisible();
   await preview.getByRole('button', { name: '处理所选' }).click();
   await expect(preview.getByText('已处理 2 个本地示例项目')).toBeVisible();
   await expect(preview.getByText('已选 2 项')).toHaveCount(0);
