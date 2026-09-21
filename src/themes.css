@@ -1,5 +1,6 @@
 /* Optional entry: import after styles.css and opt in with data-ui-style. */
 @import "./theme-tokens.css";
+@import "./material-button.css";
 
 /* Density is independent of the palette, including when both are on html. */
 [data-ui-style][data-ui-density="compact"], :root[data-ui-style][data-ui-density="compact"] { --ds-height: 2.25rem; --ds-space: .75rem; }

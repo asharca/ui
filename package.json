@@ -12,8 +12,8 @@
   "bugs": { "url": "https://github.com/asharca/ui/issues" },
   "packageManager": "pnpm@10.32.1",
   "engines": { "node": ">=20" },
-  "sideEffects": ["./src/styles.css", "./src/styles.base.css", "./src/styles.components.css", "./src/choice-field.css", "./src/data-table.css", "./src/themes.css", "./src/theme-tokens.css", "./src/design-components.css"],
-  "files": ["dist", "src/styles.css", "src/styles.base.css", "src/styles.components.css", "src/choice-field.css", "src/data-table.css", "src/themes.css", "src/theme-tokens.css", "src/design-components.css", "docs/ai", "llms.txt", "README.md", "LICENSE"],
+  "sideEffects": ["./src/styles.css", "./src/styles.base.css", "./src/styles.components.css", "./src/choice-field.css", "./src/data-table.css", "./src/themes.css", "./src/theme-tokens.css", "./src/design-components.css", "./src/material-button.css"],
+  "files": ["dist", "src/styles.css", "src/styles.base.css", "src/styles.components.css", "src/choice-field.css", "src/data-table.css", "src/themes.css", "src/theme-tokens.css", "src/design-components.css", "src/material-button.css", "THIRD_PARTY_NOTICES.md", "docs/ai", "llms.txt", "README.md", "LICENSE"],
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./chart": { "types": "./dist/Chart.d.ts", "import": "./dist/Chart.js" },

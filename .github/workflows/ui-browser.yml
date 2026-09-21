@@ -47,6 +47,16 @@ jobs:
         run: |
           npm install --prefix "$UI_BROWSER_ROOT" --no-package-lock --ignore-scripts playwright@1.58.2
           node "$UI_BROWSER_ROOT/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Check reference gallery and capture comparison sites
+        run: node scripts/capture-reference-gallery.mjs
+      - name: Upload reference gallery review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reference-gallery-review
+          path: ui-browser-artifacts/reference-gallery/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Check redesigned site, search and navigation
         run: node scripts/check-site-redesign.mjs
       - name: Check DataTable selection header motion and focus

@@ -1,5 +1,9 @@
 # Component Studio redesign
 
+> Initial iteration. See [Reference-led rework](./REFERENCE-REWORK.md) for the
+> subsequent redesign and licensed beUI adaptations. Its source ledger
+> supersedes the original no-third-party-code statement.
+
 ## Direction
 
 Replace the single-form landing page and text-first catalog with an editorial
