@@ -1,5 +1,5 @@
 import { createRef, useState } from 'react';
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/Navigation';
@@ -65,17 +65,15 @@ it('switches preview backgrounds without remounting the live demo', async () => 
   await user.click(within(background).getByRole('button', { name: '网格' }));
   expect(within(background).getByRole('button', { name: '网格' })).toHaveAttribute('aria-pressed', 'true');
   expect(input).toHaveValue('Keep this edit');
-  // Native pointer switching is covered in Chromium; use Radix's keyboard
-  // activation contract here rather than relying on jsdom PointerEvent support.
+  // Radix activates on primary mousedown, not click. Dispatch that native
+  // contract explicitly in jsdom; Chromium also covers complete pointer input.
   const codeTab = screen.getByRole('tab', { name: '用法代码' });
-  act(() => codeTab.focus());
-  await user.keyboard('{Enter}');
-  expect(codeTab).toHaveAttribute('aria-selected', 'true');
+  fireEvent.mouseDown(codeTab, { button: 0, ctrlKey: false });
+  await waitFor(() => expect(codeTab).toHaveAttribute('aria-selected', 'true'));
   expect(screen.queryByRole('group', { name: '预览背景' })).not.toBeInTheDocument();
   const previewTab = screen.getByRole('tab', { name: '预览', exact: true });
-  act(() => previewTab.focus());
-  await user.keyboard('{Enter}');
-  expect(previewTab).toHaveAttribute('aria-selected', 'true');
+  fireEvent.mouseDown(previewTab, { button: 0, ctrlKey: false });
+  await waitFor(() => expect(previewTab).toHaveAttribute('aria-selected', 'true'));
   expect(input).toHaveValue('Keep this edit');
 });
 
