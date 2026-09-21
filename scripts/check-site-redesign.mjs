@@ -58,6 +58,12 @@ try {
     // Capture complete real specimens as well as the normal first viewport.
     const full = await page.addStyleTag({ content: 'html, body, #root { height: auto !important; overflow: visible !important; } .docs-site.is-home { height: auto; } .is-home .docs-main { overflow: visible !important; } .is-home .docs-body { min-height: auto; overflow: visible !important; }' });
     await page.waitForFunction(() => Array.from(document.querySelectorAll('.studio-home .studio-tile-preview')).every((node) => node.dataset.previewState === 'ready'));
+    await page.locator('[data-component="accordion"]').getByRole('button', { name: '外观', exact: true }).waitFor();
+    await page.locator('[data-component="tool-call-card"] .ui-tool-call').waitFor();
+    for (const id of ['accordion', 'tool-call-card']) {
+      const stage = await page.locator(`[data-component="${id}"] .studio-tile-preview`).evaluate((node) => ({ height: node.clientHeight, content: node.scrollHeight }));
+      assert(stage.content <= stage.height + 1, `${id}: default preview must fit without vertical clipping ${JSON.stringify(stage)}`);
+    }
     await page.screenshot({ path: join(output, `${width}-${mode}-home-full.png`), fullPage: true });
     await full.evaluate((node) => node.remove());
     await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
@@ -201,6 +207,12 @@ try {
   await page.evaluate(() => { document.documentElement.dir = 'ltr'; });
   await tabs.getByRole('tab', { name: '概览', exact: true }).focus();
   await page.keyboard.press('ArrowRight');
+  // Radix deliberately moves roving focus in setTimeout after keydown. Wait
+  // for that lifecycle, not an arbitrary sleep or an immediate evaluation.
+  await page.waitForFunction(() => {
+    const next = document.querySelector('[aria-label="动效体验"] [role="tab"][data-state="active"]');
+    return next?.textContent === '活动' && document.activeElement === next;
+  }, undefined, { timeout: 5000 });
   assert(await tabs.getByRole('tab', { name: '活动', exact: true }).evaluate((node) => document.activeElement === node), 'Tabs must retain Radix keyboard navigation');
   results.push({ type: 'shared-tab-motion', status: 'passed', samples });
   await motion.close();

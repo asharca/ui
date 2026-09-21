@@ -42,6 +42,7 @@
   .ui-state-swap { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; animation: ui-state-arrive 220ms cubic-bezier(.2,.8,.2,1) both; }
   :where([data-ui-style]) .ui-checkbox:checked::after,
   :where([data-ui-style]) .ui-radio:checked::after { animation: ui-choice-arrive 180ms ease-out; }
+  :where([data-ui-style]) .ui-accordion-content { overflow: hidden; }
   :where([data-ui-style]) .ui-accordion-content[data-state="open"] { animation: ui-disclosure-open 240ms cubic-bezier(.2,.8,.2,1); }
   :where([data-ui-style]) .ui-accordion-content[data-state="closed"] { animation: ui-disclosure-close 180ms ease-in; }
   :where([data-ui-style]) :is(.ui-dropdown-menu,[data-toolplane-ui="popover-content"],[data-toolplane-ui="hover-card-content"]) { transform-origin: var(--radix-dropdown-menu-content-transform-origin, var(--radix-popover-content-transform-origin, var(--radix-hover-card-content-transform-origin, center))); }
