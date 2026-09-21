@@ -1,32 +1,50 @@
-name: ci
-
+name: Validate source registry
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
-
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  group: source-registry-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      BASE_PATH: /ui/
+      SITE_URL: https://asharca.github.io/ui/
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm build
-      - run: pnpm build:showcase
-      - run: node scripts/check-showcase-examples.mjs
-      - run: pnpm test
-      - name: Check real Vite AI document encoding
-        run: node scripts/check-ai-docs-http.mjs
-      - run: pnpm test:package
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Registry, lint, unit tests and site build
+        run: pnpm check
+      - name: Real shadcn consumer installation
+        run: pnpm test:consumer
+      - name: Install browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Browser interactions and responsive screenshots
+        run: pnpm test:browser
+      - name: Upload review artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-registry-review
+          path: |
+            dist
+            test-results
+            playwright-report
+          retention-days: 7
+          if-no-files-found: ignore

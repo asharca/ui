@@ -1,20 +1,11 @@
 # Third-party notices
 
-## beUI / starc007/ui-components
+## beUI design and interaction reference
 
 Source: https://github.com/starc007/ui-components
-Pinned revision: `6ece797917b1365764ce5f339641d641f10ea2c2`.
+Website: https://beui.dev/
 
-Adapted files:
-
-- `components/motion/button/metallic.tsx` → `src/material-button.css`.
-  Preserves the chrome gradient, layered inner surface and reflective shadow.
-  Motion spans become CSS pseudo-elements on the existing Button; no Motion
-  dependency. Reflection is hover/focus-driven, with disabled/reduced-motion guards.
-- `components/app/landing/landing-component-card.tsx` and `app/globals.css`
-  → `showcase/reference-gallery.css`: stage/caption separation, neutral stage
-  palette and rounded surfaces. The full-card link overlay was not retained:
-  previews stay interactive and have their own separate documentation links.
+Asharca UI's site organization, restrained visual language and component interaction direction reference beUI. Components in this repository are rewritten for its own source registry. No beUI branding, sponsored content, endorsements or Pro assets are included. The upstream MIT notice is retained for reference-derived implementation patterns.
 
 MIT License
 
@@ -37,3 +28,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Dependencies
+
+React, Radix Primitives, Motion, Tailwind CSS, shadcn, Lucide, React Router,
+Prism, clsx and tailwind-merge remain under their respective upstream licenses.
+The development lockfile records the exact dependency versions used by CI.

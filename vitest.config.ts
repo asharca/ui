@@ -1,18 +1,8 @@
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
-
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    globals: true,
-    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
-  },
-  resolve: {
-    alias: {
-      '@asharca/ui': fileURLToPath(new URL('./src/index.ts', import.meta.url)),
-    },
-  },
+  resolve: { alias: { '@/components/asharca': fileURLToPath(new URL('./registry/ui', import.meta.url)) } },
+  test: { environment: 'jsdom', setupFiles: ['tests/setup.ts'], include: ['tests/**/*.test.tsx'], restoreMocks: true, clearMocks: true },
 });
