@@ -98,7 +98,7 @@ try {
         assert.equal(await frame.locator('html').evaluate((node) => node.classList.contains('dark')), mode === 'dark');
         assert.equal(await page.evaluate(() => localStorage.getItem('asharca-ui-docs-density')), 'compact', 'Preview must not overwrite parent preferences');
         await page.goto(`${base}#/home`);
-        const cta = page.locator('.ref-browse').getByRole('link', { name: '全部组件', exact: true });
+        const cta = page.locator('.ex-browse').getByRole('link', { name: '浏览全部组件', exact: true });
         await cta.waitFor();
         assert.equal(await cta.getAttribute('href'), '#/components', 'Home must link to the component catalog');
         await page.mouse.move(0, 0);

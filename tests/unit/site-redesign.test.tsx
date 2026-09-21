@@ -33,7 +33,7 @@ it.each(['/', '/#/', '/#/home'])('opens the component gallery at %s with real di
   await user.click(form.getByRole('button', { name: '关闭', exact: true }));
   expect(screen.queryByRole('dialog', { name: '项目设置' })).not.toBeInTheDocument();
   await waitFor(() => expect(trigger).toHaveFocus());
-  expect(showroom.getByRole('link', { name: '浏览全部组件' })).toHaveAttribute('href', '#/components');
+  expect(screen.getByRole('link', { name: '浏览全部组件' })).toHaveAttribute('href', '#/components');
 });
 
 it('opens command search, finds catalog content, and restores focus on Escape', async () => {
@@ -84,6 +84,8 @@ it('collapses categories, reveals search matches, and reopens a newly active cat
 
 it('includes the real integration contract and related components on documentation pages', async () => {
   window.history.replaceState(null, '', '/#/components/input'); render(<DocsApp />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: '使用约定' }));
   const usage = screen.getByRole('heading', { name: '使用约定', level: 2 }).closest('section')!;
   const doc = catalogMetadata.find((item) => item.id === 'input')!;
   expect(usage).toHaveTextContent(doc.notes);

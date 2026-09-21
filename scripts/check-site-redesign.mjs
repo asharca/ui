@@ -93,6 +93,8 @@ try {
     assert(await page.getByRole('heading', { name: '使用约定', exact: true }).count());
     await fits(page, width, 'button docs');
     await page.screenshot({ path: join(output, `${width}-${mode}-button.png`) });
+    // Expand the API to exercise scrolling on content longer than the viewport.
+    await page.getByRole('button', { name: 'API 参考', exact: true }).click();
     const main = page.locator('.docs-main');
     const sidebarTop = await page.locator('.docs-sidebar').evaluate((node) => node.scrollTop);
     await main.hover({ position: { x: 12, y: 80 } });
@@ -104,6 +106,8 @@ try {
     assert.equal(await page.locator('.docs-sidebar').evaluate((node) => node.scrollTop), sidebarTop, 'Content scrolling must not scroll the directory');
     assert.notEqual(await page.locator('.docs-sidebar').evaluate((node) => getComputedStyle(node).scrollbarWidth), 'none', 'Keep the directory scrollbar');
     await main.evaluate((node) => node.scrollTo(0, 0));
+    await page.getByRole('button', { name: 'API 参考', exact: true }).click();
+    await main.evaluate((node) => node.scrollTo(0, 0));
     if (width > 850) {
       const side = page.getByRole('complementary', { name: '文档导航', exact: true });
       const group = side.locator('.docs-nav-group').filter({ has: page.locator('a[href="#/components/button"]') });
@@ -114,8 +118,8 @@ try {
       await filter.clear(); assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
       await toggle.click();
       await page.getByRole('button', { name: 'API 参考', exact: true }).click();
-      await page.waitForFunction(() => document.querySelector('.docs-toc button[aria-current="location"]')?.textContent === 'API 参考');
-      await fits(page, width, 'after table of contents navigation');
+      assert(await page.getByRole('region', { name: 'Button 属性说明' }).isVisible(), 'API details must open accessibly');
+      await fits(page, width, 'after expanding the API');
     }
     await page.goto(`${base}#/components/input`);
     const input = page.getByRole('textbox', { name: '项目名称', exact: true });
@@ -137,6 +141,7 @@ try {
     await page.waitForFunction(() => Array.from(document.querySelectorAll('.studio-gallery .studio-tile-preview')).slice(0, 2).every((node) => node.dataset.previewState === 'ready'));
     await fits(page, width, 'grouped catalog');
     await page.screenshot({ path: join(output, `${width}-${mode}-catalog.png`) });
+    await page.getByRole('button', { name: '搜索组件', exact: true }).click();
     await page.getByRole('combobox', { name: '组件分类' }).selectOption('AI 聊天');
     await page.getByRole('searchbox', { name: '筛选组件总览' }).fill('ChatThread');
     assert.equal(await page.locator('.studio-tile-link').count(), 1, 'Combine category and text filters');

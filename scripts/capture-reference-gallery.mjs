@@ -30,7 +30,7 @@ try {
     const code = page.getByRole('region', { name: 'Metallic Button 用法 TSX' });
     await code.waitFor();
     assert((await code.innerText()).includes('ui-material-button'));
-    await page.getByRole('button', { name: '预览 Metallic Button' }).click();
+    await page.getByRole('button', { name: '关闭源码', exact: true }).click();
     assert(await page.locator('[data-component="material-button"]').getByRole('button', { name: '已保存', exact: true }).isVisible());
     await page.getByRole('button', { name: '重置 Metallic Button 预览' }).click();
     // The collection is deliberately lazy: scroll the stage, then interact with
@@ -45,8 +45,8 @@ try {
     await autoSave.click();
     assert.equal(await autoSave.getAttribute('aria-checked'), 'false');
     await switches.getByRole('button', { name: '查看 Switch 源码', exact: true }).click();
-    await switches.getByRole('region', { name: 'Switch 用法 TSX', exact: true }).waitFor();
-    await switches.getByRole('button', { name: '预览 Switch', exact: true }).click();
+    await page.getByRole('region', { name: 'Switch 用法 TSX', exact: true }).waitFor();
+    await page.getByRole('button', { name: '关闭源码', exact: true }).click();
     assert.equal(await autoSave.getAttribute('aria-checked'), 'false');
     const avatars = page.locator('[data-component="avatar"]');
     await avatars.scrollIntoViewIfNeeded();
@@ -68,11 +68,11 @@ try {
     const action = dropdown.getByRole('button', { name: '已创建副本', exact: true });
     await action.waitFor();
     await page.waitForFunction(() => document.activeElement?.textContent === '已创建副本');
-    const categories = page.getByRole('group', { name: '展厅分类' });
-    await categories.getByRole('button', { name: 'AI 交互', exact: true }).click();
-    assert.equal(await page.locator('.ref-showroom .ref-tile').count(), 2);
+    const categories = page.getByRole('group', { name: '按组件分类筛选' });
+    await categories.getByRole('button', { name: 'AI 聊天', exact: true }).click();
+    assert.equal(await page.locator('.ex-collection .ex-card').count(), 2);
     await categories.getByRole('button', { name: '全部', exact: true }).click();
-    assert.equal(await page.locator('.ref-showroom .ref-tile').count(), 12);
+    assert.equal(await page.locator('.ex-collection .ex-card').count(), 12);
     const sizes = await page.evaluate(() => {
       const main = document.querySelector('.docs-main');
       return { body: document.documentElement.scrollWidth, main: main.scrollWidth - main.clientWidth };
@@ -81,29 +81,36 @@ try {
     await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
     await page.screenshot({ path: join(output, `${width}-${mode}-home.png`) });
     await page.goto(`${base}#/components`);
+    await page.getByRole('button', { name: '搜索组件', exact: true }).click();
     const search = page.getByRole('searchbox', { name: '筛选组件总览' });
     await search.fill('Input');
     const tile = page.locator('[data-component="input"]');
     await tile.scrollIntoViewIfNeeded();
     await tile.getByRole('textbox', { name: '项目名称', exact: true }).fill('Preserve edit');
     await tile.getByRole('button', { name: '查看 Input 源码', exact: true }).click();
-    await tile.getByRole('region', { name: 'Input 用法 TSX', exact: true }).waitFor();
-    await tile.getByRole('button', { name: '预览 Input', exact: true }).click();
+    await page.getByRole('region', { name: 'Input 用法 TSX', exact: true }).waitFor();
+    await page.getByRole('button', { name: '关闭源码', exact: true }).click();
     assert.equal(await tile.getByRole('textbox', { name: '项目名称', exact: true }).inputValue(), 'Preserve edit');
     await search.clear();
     await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
     await page.locator('[data-component="button"]').getByRole('button', { name: '保存更改', exact: true }).waitFor();
     await page.screenshot({ path: join(output, `${width}-${mode}-gallery.png`) });
+    for (const [slug, name] of [['installation', '安装'], ['ai', 'AI 文档'], ['components/button', 'Button']]) {
+      await page.goto(`${base}#/${slug}`);
+      await page.getByRole('heading', { name, exact: true, level: 1 }).waitFor();
+      await page.screenshot({ path: join(output, `${width}-${mode}-${slug.replace('/', '-')}.png`) });
+    }
     assert.equal(errors.length, 0, errors.join('\n'));
     results.local.push({ width, mode, passed: true, previewStatePreserved: true, nativeAndKeyboardInteractions: true, sizes });
     await context.close();
   }
-  // Reference screenshots are advisory, never a dependency of functional checks.
-  // Fresh unauthenticated contexts visit only the five public sites requested.
+  // Reference screenshots are advisory, never a release gate or copied asset.
+  // Fresh unauthenticated contexts visit only the requested reference and its public pages.
   for (const [name, url] of [
-    ['beautifului', 'https://www.beautifului.dev/'], ['beui', 'https://beui.dev/'],
-    ['transitions', 'https://transitions.dev/'], ['rareui', 'https://www.rareui.com/'],
-    ['shadcn', 'https://ui.shadcn.com/'],
+    ['transitions', 'https://transitions.dev/'],
+    ['transitions-detail', 'https://transitions.dev/detail.html?t=card-resize'],
+    ['transitions-installation', 'https://transitions.dev/detail.html?doc=installation'],
+    ['transitions-skill', 'https://transitions.dev/skill.html'],
   ]) {
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, colorScheme: 'light', reducedMotion: 'reduce' });
     try {

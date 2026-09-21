@@ -101,7 +101,7 @@ it('keeps explicit installation and filters the component directory', async () =
   const troubleshooting = screen.getByText('依赖未自动安装或版本冲突？').closest('details'); expect(troubleshooting).not.toHaveAttribute('open');
   await user.click(screen.getByText('依赖未自动安装或版本冲突？'));
   expect(screen.getByRole('region', { name: '完整依赖安装命令' })).toHaveTextContent(`@assistant-ui/react@${pkg.devDependencies['@assistant-ui/react']}`);
-  await user.selectOptions(screen.getByRole('combobox', { name: '包管理器' }), 'npm');
+  await user.click(screen.getByRole('tab', { name: 'npm', exact: true }));
   expect(screen.getByRole('region', { name: '安装命令' }).querySelector('code')).toHaveTextContent(/^npm install @asharca\/ui$/);
   await user.type(screen.getByRole('searchbox', { name: '搜索组件文档' }), 'ChatComposerToolbar');
   expect(screen.getByRole('link', { name: 'ChatComposerToolbar' })).toHaveAttribute('href', '#/components/chat-composer-toolbar');
@@ -109,6 +109,7 @@ it('keeps explicit installation and filters the component directory', async () =
 });
 it('uses independent viewport previews and documents each component API', async () => {
   window.history.replaceState(null, '', '/#/components/input'); const user = userEvent.setup(); render(<DocsApp />);
+  await user.click(screen.getByRole('button', { name: 'API 参考' }));
   expect(screen.getByRole('region', { name: 'Input 属性说明' })).toHaveTextContent('controlSize');
   expect(screen.getByText('查看组件实现').closest('details')).not.toHaveAttribute('open');
   await user.selectOptions(screen.getByRole('combobox', { name: '预览视口' }), '375');
@@ -144,6 +145,7 @@ it('filters the unified catalog by category and text', async () => {
   const main = within(screen.getByRole('main'));
   expect(main.getAllByRole('article')).toHaveLength(componentDocs.length);
   expect(main.getByRole('heading', { name: 'Button', level: 3 })).toBeVisible();
+  await user.click(main.getByRole('button', { name: '搜索组件', exact: true }));
   await user.selectOptions(main.getByRole('combobox', { name: '组件分类' }), 'AI 聊天');
   expect(main.getAllByRole('article')).toHaveLength(componentDocs.filter((doc) => doc.group === 'AI 聊天').length);
   expect(main.queryByRole('heading', { name: 'Button', exact: true })).not.toBeInTheDocument();

@@ -13,12 +13,14 @@ afterEach(() => { cleanup(); vi.useRealTimers(); localStorage.clear(); window.hi
 it('combines catalog filters and changes layout without losing the query', async () => {
   const user = userEvent.setup(); const { container } = render(<ComponentGallery />);
   expect(container.querySelectorAll('.studio-tile-link')).toHaveLength(componentDocs.length);
+  await user.click(screen.getByRole('button', { name: '搜索组件', exact: true }));
   await user.selectOptions(screen.getByRole('combobox', { name: '组件分类' }), 'AI 聊天');
   const query = screen.getByRole('searchbox', { name: '筛选组件总览' });
   await user.type(query, 'ChatThread');
   expect(container.querySelectorAll('.studio-tile-link')).toHaveLength(1);
   await user.click(screen.getByRole('button', { name: '列表展示' }));
-  expect(screen.getByRole('button', { name: '列表展示' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: '网格展示' })).toBeVisible();
+  expect(container.querySelector('[data-layout="list"]')).not.toBeNull();
   expect(query).toHaveValue('ChatThread');
   expect(container.querySelectorAll('.studio-tile-preview')).toHaveLength(0);
   await user.click(screen.getByRole('button', { name: '网格展示' }));

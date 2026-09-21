@@ -3,9 +3,6 @@ import { createRoot } from "react-dom/client";
 import { DocsApp } from "./DocsApp";
 import "./styles.css";
 import "../src/themes.css";
-import "./design-experience.css";
-import "./site-redesign.css";
-import "./reference-gallery.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
