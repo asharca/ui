@@ -29,7 +29,7 @@ test('every payload contains the exact source and its complete dependency closur
 test('basic controls do not install unrelated runtimes', async () => {
   const button = await json('public/r/button.json');
   assert.deepEqual(button.files.map((file) => file.path), ['registry/ui/utils.ts', 'registry/ui/button.tsx']);
-  assert.ok(!button.dependencies.some((name) => /assistant|recharts|streamdown|radix/.test(name)));
+  assert.ok(!button.dependencies.some((name) => /assistant|recharts|streamdown|radix|tanstack|markdown/.test(name)));
 });
 test('all previews have real source files', async () => { for (const entry of catalog) for (const example of entry.examples) await access(`examples/${example}.tsx`); });
 test('exactly one AI documentation endpoint describes the actual catalog', async () => {
@@ -46,5 +46,9 @@ test('repository is a private site, not a publishable component package', async 
 test('catalog rejects dependency cycles and unknown names', () => {
   assert.throws(() => resolveFiles('does-not-exist'), /Unknown/);
   assert.equal(new Set(catalog.map((item) => item.slug)).size, catalog.length);
-  assert.equal(catalog.length, 17);
+  assert.equal(catalog.length, 61);
+  const button = catalog.find((item) => item.slug === 'button');
+  button.needs.push('button');
+  try { assert.throws(() => resolveFiles('button'), /Circular/); }
+  finally { button.needs.pop(); }
 });
