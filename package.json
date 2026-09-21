@@ -11,12 +11,13 @@
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run && node --test tests/registry.test.mjs",
+    "test": "vitest run && node --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "test:consumer": "node scripts/check-consumer.mjs",
     "check": "pnpm registry && pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
+    "@tanstack/react-table": "8.21.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.21.0",
     "motion": "^12.0.0",
@@ -24,7 +25,11 @@
     "radix-ui": "1.6.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-is": "19.2.4",
+    "react-markdown": "10.1.0",
     "react-router-dom": "^7.0.0",
+    "recharts": "3.10.1",
+    "remark-gfm": "4.0.1",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
