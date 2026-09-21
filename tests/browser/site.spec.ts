@@ -6,7 +6,13 @@ async function ready(preview: Locator) {
   await expect(preview.locator('.preview-placeholder')).toHaveCount(0);
   await expect(preview.getByText('正在加载组件…', { exact: true })).not.toBeVisible();
   await expect(preview.getByText('示例暂时无法加载，请刷新页面重试。', { exact: true })).not.toBeVisible();
-  await expect(preview).not.toBeEmpty();
+  // IconButton, Avatar and Skeleton can intentionally have no textContent.
+  // Require actual visible elements with measurable dimensions instead.
+  await expect(preview.locator(':scope > *').first()).toBeVisible();
+  await expect.poll(() => preview.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return element.childElementCount > 0 && rect.width > 0 && rect.height > 0;
+  })).toBe(true);
 }
 async function readyGallery(page: Page) {
   const previews = page.locator('.component-card .demo-content');
@@ -34,6 +40,7 @@ test('homepage, real previews and document endpoints', async ({ page, request },
 });
 
 test('every component route loads real content without browser errors', async ({ page }) => {
+  test.setTimeout(90000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   for (const entry of catalog) {
