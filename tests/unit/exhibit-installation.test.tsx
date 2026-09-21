@@ -38,6 +38,9 @@ it('keeps the demo mounted while reading CSS and installation, with API collapse
   expect(api).not.toBeVisible();
   fireEvent.mouseDown(screen.getByRole('tab', { name: 'CSS', exact: true }), { button: 0 });
   expect(await screen.findByRole('region', { name: '主题 CSS' })).toHaveTextContent('@asharca/ui/themes.css');
+  // Keep measurable geometry for responsive charts while hiding focus/content.
+  expect(input.closest('[role="tabpanel"]')).toHaveStyle({ visibility: 'hidden', position: 'absolute' });
+  expect(input.closest('[role="tabpanel"]')).toHaveAttribute('inert');
   fireEvent.mouseDown(screen.getByRole('tab', { name: '安装', exact: true }), { button: 0 });
   expect(await screen.findByRole('region', { name: '组件安装命令' })).toHaveTextContent('pnpm add @asharca/ui');
   fireEvent.mouseDown(screen.getByRole('tab', { name: '预览', exact: true }), { button: 0 });
