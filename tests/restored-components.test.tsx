@@ -68,7 +68,7 @@ describe('restored form controls', () => {
   it('confirmation failures retain the dialog and can be retried', async () => {
     const confirm = vi.fn().mockRejectedValueOnce(new Error('请重试')).mockResolvedValue(undefined);
     render(<ConfirmSubmitButton title="移除项目" prompt="这是测试" onConfirm={confirm} />);
-    await user().click(screen.getByRole('button', { name: '删除', exact: true }));
+    await user().click(screen.getByRole('button', { name: /^删除$/ }));
     await user().click(screen.getByRole('button', { name: '确认删除' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('请重试');
     await user().click(screen.getByRole('button', { name: '确认删除' }));
@@ -161,7 +161,7 @@ describe('table and navigation behavior', () => {
     const change = vi.fn();
     render(<ConversationSidebar groups={[{ id: 'g', label: '今天', conversations: [{ id: 'a', title: '匹配 A' }, { id: 'hidden', title: '其他内容' }, { id: 'b', title: '匹配 B' }] }]} onSelect={() => undefined} onConversationOrderChange={change} />);
     await user().type(screen.getByRole('searchbox', { name: '搜索会话' }), '匹配');
-    fireEvent.keyDown(screen.getByRole('button', { name: '匹配 B', exact: true }), { key: 'ArrowUp', altKey: true });
+    fireEvent.keyDown(screen.getByRole('button', { name: /^匹配 B$/ }), { key: 'ArrowUp', altKey: true });
     expect(change).toHaveBeenCalledWith('g', ['b', 'a', 'hidden']);
   });
 });
@@ -193,7 +193,7 @@ describe('restored AI and display components', () => {
     let reject!: (cause: Error) => void;
     const select = vi.fn(() => new Promise<void>((_, fail) => { reject = fail; }));
     render(<ChatComposerToolbar tools={[{ id: 'x', label: '检索', onSelect: select }]} pinnedIds={['x']} onPinnedIdsChange={() => undefined} />);
-    const button = screen.getByRole('button', { name: '检索', exact: true });
+    const button = screen.getByRole('button', { name: /^检索$/ });
     fireEvent.click(button); fireEvent.click(button);
     expect(select).toHaveBeenCalledTimes(1);
     await act(async () => { reject(new Error('连接失败')); });
@@ -203,7 +203,7 @@ describe('restored AI and display components', () => {
   it('chat edits preserve the draft when the host rejects an edit', async () => {
     const edit = vi.fn().mockRejectedValue(new Error('保存失败'));
     render(<ChatThread messages={[{ id: 'u', role: 'user', content: '原始内容' }]} onSend={() => undefined} onEdit={edit} />);
-    await user().click(screen.getByRole('button', { name: '编辑', exact: true }));
+    await user().click(screen.getByRole('button', { name: /^编辑$/ }));
     const draft = screen.getByRole('textbox', { name: '编辑消息' });
     await user().clear(draft); await user().type(draft, '新的内容');
     await user().click(screen.getByRole('button', { name: '保存编辑' }));
