@@ -156,6 +156,10 @@ try {
     if (width <= 850) {
       await page.getByRole('button', { name: '打开文档导航' }).click();
       const navigation = page.getByRole('dialog', { name: '文档导航' });
+      await navigation.waitFor();
+      const bounds = await navigation.boundingBox();
+      assert(bounds && bounds.x >= -1 && bounds.y >= -1 && bounds.x + bounds.width <= width + 1, 'Navigation drawer must remain inside the viewport');
+      await page.screenshot({ path: join(output, `${width}-${mode}-mobile-navigation.png`) });
       assert.equal(await navigation.getByRole('button', { name: /AI 聊天/ }).getAttribute('aria-expanded'), 'true');
       await navigation.getByRole('link', { name: '示例', exact: true }).click();
       await navigation.waitFor({ state: 'hidden' });

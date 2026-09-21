@@ -36,9 +36,9 @@ it('all catalog components have generated static Markdown and valid subpath refe
 it('shows discoverable AI documents and truthful integration rules', async () => {
   window.history.replaceState(null, '', '/#/ai');
   render(<DocsApp />);
-  expect(await screen.findByRole('heading', { name: '给 AI 使用的文档' })).toBeVisible();
+  expect(await screen.findByRole('heading', { name: 'AI 文档', level: 1 })).toBeVisible();
   expect(screen.getByRole('link', { name: /llms-full.txt/ })).toHaveAttribute('href', expect.stringMatching(/\/llms-full\.txt$/));
-  expect(screen.getByText('这是 npm 组件库，不是 shadcn CLI 注册表。')).toBeInTheDocument();
+  expect(screen.getByText(/npm 组件库，不是 shadcn 注册表/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '复制 AI 使用指南' })).toBeEnabled();
 });
 it('copies the current component as Markdown rather than an unrelated source file', async () => {
@@ -54,10 +54,11 @@ it('copies the current component as Markdown rather than an unrelated source fil
   expect(clipboard).toContain('ChoiceGroup');
   expect(clipboard).not.toContain('../../src/index');
 });
-it('filters the component overview without changing the sidebar search', async () => {
+it('filters the component overview through its own search', async () => {
   const user = userEvent.setup();
   window.history.replaceState(null, '', '/#/components');
   render(<DocsApp />);
+  await user.click(screen.getByRole('button', { name: '搜索组件', exact: true }));
   await user.type(screen.getByRole('searchbox', { name: '筛选组件总览' }), 'ChoiceField');
   const main = screen.getByRole('main');
   expect(within(main).getByRole('heading', { name: 'ChoiceField' })).toBeInTheDocument();

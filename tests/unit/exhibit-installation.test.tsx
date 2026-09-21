@@ -33,7 +33,9 @@ it('keeps the demo mounted while reading CSS and installation, with API collapse
   const user = userEvent.setup(); render(<DocsApp />);
   const input = await screen.findByRole('textbox', { name: '项目名称', exact: true });
   await user.type(input, 'Keep this');
-  expect(screen.queryByRole('region', { name: 'Input 属性说明' })).not.toBeInTheDocument();
+  const api = screen.getByRole('region', { name: 'Input 属性说明', hidden: true });
+  expect(api.closest('details')).not.toHaveAttribute('open');
+  expect(api).not.toBeVisible();
   fireEvent.mouseDown(screen.getByRole('tab', { name: 'CSS', exact: true }), { button: 0 });
   expect(await screen.findByRole('region', { name: '主题 CSS' })).toHaveTextContent('@asharca/ui/themes.css');
   fireEvent.mouseDown(screen.getByRole('tab', { name: '安装', exact: true }), { button: 0 });

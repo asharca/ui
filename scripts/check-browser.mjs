@@ -102,7 +102,7 @@ try {
         await page.keyboard.press('Escape');
         assert(await trigger.evaluate((node) => node === document.activeElement), 'Mobile trigger focus was not restored');
       }
-      for (const [route, heading] of [['components', '组件'], ['ai', '给 AI 使用的文档'], ['examples/settings', '工作区偏好']]) {
+      for (const [route, heading] of [['components', '组件'], ['ai', 'AI 文档'], ['examples/settings', '工作区偏好']]) {
         await page.goto(`${base}#/${route}`);
         await page.getByRole('heading', { name: heading, exact: true }).waitFor();
         const fits = await page.evaluate(() => {
