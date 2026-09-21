@@ -5,7 +5,7 @@ on:
     branches: [main]
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: source-registry-${{ github.ref }}
   cancel-in-progress: true
@@ -18,22 +18,17 @@ jobs:
       SITE_URL: https://asharca.github.io/ui/
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10.32.1
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-      - name: Record initial lockfile blob
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('node:fs');
-            const { data } = await github.rest.git.createBlob({ ...context.repo, content: fs.readFileSync('pnpm-lock.yaml', 'utf8'), encoding: 'utf-8' });
-            core.notice(`LOCKFILE_BLOB_SHA=${data.sha}`);
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
       - name: Registry, lint, unit tests and site build
         run: pnpm check
       - name: Real shadcn consumer installation

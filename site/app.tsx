@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, BookOpen, ChevronRight, Code2, Github, Home as HomeIcon, Layers, Menu, Moon, Search, SlidersHorizontal, Sun, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, BookOpen, ChevronRight, Code2, Home as HomeIcon, Layers, Menu, Moon, Search, SlidersHorizontal, Sun, X } from 'lucide-react';
+import { Github } from './icons';
 import { Dialog as PrimitiveDialog } from 'radix-ui';
 import { catalog, groups } from '../registry/catalog.mjs';
 import { Dialog, DialogContent } from '../registry/ui/dialog';
@@ -50,13 +51,14 @@ function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
   const id = useId();
   const navigate = useNavigate();
   const entries = [...catalog.map((entry) => ({ ...entry, href: `/components/${entry.slug}` })), { slug: 'installation', name: '安装与开始使用', group: '文档', description: 'shadcn CLI、手动安装与项目配置', href: '/docs/installation' }];
   const results = entries.filter((entry) => `${entry.name} ${entry.group} ${entry.description}`.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8);
   useEffect(() => { if (open) { setQuery(''); setActive(0); } }, [open]);
   function choose(href: string) { onOpenChange(false); navigate(href); }
-  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent title="搜索" description="查找组件或安装说明。" className="site-search-dialog" onOpenAutoFocus={(event) => { event.preventDefault(); input.current?.focus(); }}>
+  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent title="搜索" description="查找组件或安装说明。" className="site-search-dialog" onOpenAutoFocus={(event) => { event.preventDefault(); returnFocus.current = document.activeElement as HTMLElement | null; input.current?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); if (returnFocus.current?.isConnected) returnFocus.current.focus(); }}>
     <label className="sr-only" htmlFor={`${id}-input`}>搜索组件或文档</label><div className="search-input-wrap"><Search size={17} /><input id={`${id}-input`} ref={input} role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls={`${id}-results`} aria-activedescendant={results[active] ? `${id}-${active}` : undefined} value={query} onChange={(event) => { setQuery(event.target.value); setActive(0); }} placeholder="输入组件名称…"
       onKeyDown={(event) => { if (!results.length) return; if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); setActive((index) => (index + (event.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length); } else if (event.key === 'Enter') { event.preventDefault(); if (results[active]) choose(results[active].href); } }} /></div>
     <ul id={`${id}-results`} role="listbox" aria-label="搜索结果" className="search-results">{results.map((entry, index) => <li id={`${id}-${index}`} key={entry.slug} role="option" aria-selected={active === index}><button type="button" tabIndex={-1} onMouseEnter={() => setActive(index)} onClick={() => choose(entry.href)}><span>{entry.name}<small>{entry.group}</small></span><ArrowRight size={15} /></button></li>)}</ul>
@@ -70,7 +72,7 @@ function Dock() {
     <Tooltip content="组件"><NavLink to="/components" aria-label="组件"><Layers size={18} /></NavLink></Tooltip>
     <span className="dock-divider" />
     <Tooltip content="GitHub"><a href={repository} target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={18} /></a></Tooltip>
-    <Tooltip content={dark ? '浅色模式' : '深色模式'}><button type="button" onClick={() => setTheme(dark ? 'light' : 'dark')} aria-label={dark ? '切换浅色模式' : '切换深色模式'}>{dark ? <Sun size={18} /> : <Moon size={18} />}</button></Tooltip>
+    <Tooltip content={dark ? '浅色模式' : '深色模式'}><button type="button" onClick={() => setTheme(dark ? 'light' : 'dark')} aria-label={dark ? '切换浅色模式' : '切换深色模式'}>{dark ? <Sun size={18} /> : <Moon size={18} /></button></Tooltip>
   </nav></div>;
 }
 function Footer() { return <footer className="site-footer"><span>asharca/ui <small>MIT License</small></span><nav aria-label="页脚导航"><Link to="/docs/installation">安装</Link><a href={repository} target="_blank" rel="noreferrer">GitHub</a><a href={publicPath('llms.txt')}>llms.txt</a></nav></footer>; }

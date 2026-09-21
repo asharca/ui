@@ -1,11 +1,12 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, type ReactNode } from 'react';
 import { motion, useReducedMotion, type HTMLMotionProps } from 'motion/react';
 import { LoaderCircle } from 'lucide-react';
 import { cn, focusRing, pressSpring } from './utils';
 
-export interface ButtonProps extends HTMLMotionProps<'button'> {
+export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
+  children?: ReactNode;
   variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg' | 'icon';
   loading?: boolean;
