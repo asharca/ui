@@ -98,14 +98,23 @@ try {
         assert.equal(await frame.locator('html').evaluate((node) => node.classList.contains('dark')), mode === 'dark');
         assert.equal(await page.evaluate(() => localStorage.getItem('asharca-ui-docs-density')), 'compact', 'Preview must not overwrite parent preferences');
         await page.goto(`${base}#/home`);
-        const cta = page.getByRole('link', { name: '开始构建', exact: true });
+        const cta = page.locator('.ref-browse').getByRole('link', { name: '全部组件', exact: true });
         await cta.waitFor();
+        assert.equal(await cta.getAttribute('href'), '#/components', 'Home must link to the component catalog');
         await page.mouse.move(0, 0);
         await fits(page, `${style}/${mode}/${width} home`);
-        const linkColors = await cta.evaluate((node) => ({ text: getComputedStyle(node).color, background: getComputedStyle(node).backgroundColor }));
-        const linkContrast = contrast(rgb(linkColors.text), rgb(linkColors.background));
+        const linkColors = await cta.evaluate((node) => {
+          const backgrounds = [];
+          for (let current = node; current; current = current.parentElement) {
+            backgrounds.unshift(getComputedStyle(current).backgroundColor);
+          }
+          return { text: getComputedStyle(node).color, backgrounds };
+        });
+        // The new text link is transparent; sample its actual ancestor-composited surface.
+        const linkBackground = linkColors.backgrounds.reduce((under, color) => composite(rgb(color), under), [255, 255, 255]);
+        const linkContrast = contrast(composite(rgb(linkColors.text), linkBackground), linkBackground);
         measurements[measurements.length - 1].linkContrast = linkContrast;
-        assert(linkContrast >= 4.5, `Link-style primary text contrast too low: ${style} ${mode} ${linkContrast}`);
+        assert(linkContrast >= 4.5, `Home catalog link text contrast too low: ${style} ${mode} ${linkContrast}`);
         await page.screenshot({ path: join(output, `${width}-${mode}-${style}-home.png`) });
         for (const id of ['checkbox', 'radio', 'chat-thread', 'tool-call-card']) {
           await page.goto(`${base}#/components/${id}`);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it } from 'vitest';
 import { DocsApp } from '../../showcase/DocsApp';
@@ -9,11 +9,18 @@ import { catalogMetadata } from '../../showcase/catalog-data';
 
 afterEach(() => { cleanup(); window.history.replaceState(null, '', '/'); localStorage.clear(); });
 
-it.each(['/', '/#/', '/#/home'])('opens the product homepage at %s with real form controls', async (path) => {
+it.each(['/', '/#/', '/#/home'])('opens the component gallery at %s with real dialog form controls', async (path) => {
   window.history.replaceState(null, '', path);
   const user = userEvent.setup(); render(<DocsApp />);
-  expect(await screen.findByRole('heading', { level: 1, name: /每个细节/ })).toBeVisible();
-  const form = within(screen.getByRole('form', { name: '项目配置演示' }));
+  expect(await screen.findByRole('heading', { level: 1, name: '组件与交互' })).toBeVisible();
+  const showroom = within(screen.getByRole('region', { name: '精选交互展厅' }));
+  expect(showroom.getAllByRole('article')).toHaveLength(12);
+  // The project form now lives in the gallery's real Dialog demo.
+  await user.click(showroom.getByRole('button', { name: '载入 Dialog 预览' }));
+  const trigger = await showroom.findByRole('button', { name: '编辑项目', exact: true });
+  await user.click(trigger);
+  const dialog = await screen.findByRole('dialog', { name: '项目设置' });
+  const form = within(within(dialog).getByRole('form', { name: '项目配置演示' }));
   const input = form.getByRole('textbox', { name: '项目名称' });
   await user.clear(input); await user.type(input, 'My product');
   await user.click(form.getByRole('radio', { name: '应用界面', exact: true }));
@@ -23,7 +30,10 @@ it.each(['/', '/#/', '/#/home'])('opens the product homepage at %s with real for
   await user.click(form.getByRole('switch', { name: '流式响应' }));
   expect(form.queryByText('配置已保存 · 仅本地演示')).not.toBeInTheDocument();
   expect(input).toHaveValue('My product');
-  expect(screen.getByRole('link', { name: '开始构建', exact: true })).toHaveAttribute('href', '#/installation');
+  await user.click(form.getByRole('button', { name: '关闭', exact: true }));
+  expect(screen.queryByRole('dialog', { name: '项目设置' })).not.toBeInTheDocument();
+  await waitFor(() => expect(trigger).toHaveFocus());
+  expect(showroom.getByRole('link', { name: '浏览全部组件' })).toHaveAttribute('href', '#/components');
 });
 
 it('opens command search, finds catalog content, and restores focus on Escape', async () => {
