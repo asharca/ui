@@ -82,3 +82,13 @@ it('labels the AI interaction as local and advances only its simulated state', (
   expect(send).not.toBeDisabled(); expect(screen.getByText('本地演示已完成', { exact: true })).toBeInTheDocument();
   expect(screen.getByText('演示数据 · 不连接模型或外部服务')).toBeVisible();
 });
+
+
+it('preserves explicit RTL keyboard navigation through the Radix direction contract', async () => {
+  const user = userEvent.setup();
+  render(<Tabs dir="rtl" defaultValue="one"><TabsList aria-label="RTL example"><TabsTrigger value="one">One</TabsTrigger><TabsTrigger value="two">Two</TabsTrigger></TabsList><TabsContent value="one">First</TabsContent><TabsContent value="two">Second</TabsContent></Tabs>);
+  screen.getByRole('tab', { name: 'One' }).focus();
+  await user.keyboard('{ArrowLeft}');
+  expect(screen.getByRole('tab', { name: 'Two' })).toHaveFocus();
+  expect(screen.getByRole('tab', { name: 'Two' })).toHaveAttribute('aria-selected', 'true');
+});

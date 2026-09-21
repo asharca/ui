@@ -14,7 +14,7 @@ export function ProjectSpecimen() {
   const [saved, setSaved] = useState(false);
   return <div className="studio-project">
     <div className="studio-specimen-heading"><span className="studio-app-icon"><Layers3 size={19} /></span><div><h3>让想法，有个起点。</h3><p>创建你的下一个工作区</p></div></div>
-    <form onSubmit={(event) => { event.preventDefault(); setSaved(true); }} onChange={() => setSaved(false)}>
+    <form aria-label="项目配置演示" onSubmit={(event) => { event.preventDefault(); setSaved(true); }} onChange={() => setSaved(false)}>
       <label className="studio-field" htmlFor={`${id}-project`}>项目名称<Input id={`${id}-project`} required value={project} onChange={(event) => setProject(event.target.value)} /></label>
       <ChoiceGroup legend="选择起点"><div className="studio-choices">
         <ChoiceField type="radio" name={`${id}-type`} value="app" checked={type === 'app'} onChange={() => setType('app')} label="应用界面" description="专注产品体验" variant="card" />

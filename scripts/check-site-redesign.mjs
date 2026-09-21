@@ -41,17 +41,19 @@ try {
     const errors = []; page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(base);
     await page.getByRole('heading', { level: 1, name: /每个细节/ }).waitFor();
-    await page.getByRole('textbox', { name: '项目名称', exact: true }).fill('My product');
-    await page.getByRole('radio', { name: '应用界面', exact: true }).check();
-    await page.getByRole('button', { name: '保存配置', exact: true }).click();
-    assert(await page.getByText('配置已保存 · 仅本地演示', { exact: true }).isVisible());
-    await page.getByRole('switch', { name: '流式响应' }).click();
-    assert(await page.getByRole('button', { name: '保存配置', exact: true }).isVisible());
+    const form = page.getByRole('form', { name: '项目配置演示' });
+    await form.getByRole('textbox', { name: '项目名称', exact: true }).fill('My product');
+    await form.getByRole('radio', { name: '应用界面', exact: true }).check();
+    await form.getByRole('button', { name: '保存配置', exact: true }).click();
+    assert(await form.getByText('配置已保存 · 仅本地演示', { exact: true }).isVisible());
+    await form.getByRole('switch', { name: '流式响应' }).click();
+    assert(await form.getByRole('button', { name: '保存配置', exact: true }).isVisible());
     await fits(page, width, 'home');
     await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
     await page.screenshot({ path: join(output, `${width}-${mode}-home.png`) });
     // Capture complete real specimens as well as the normal first viewport.
-    const full = await page.addStyleTag({ content: '.docs-site.is-home { height: auto; } .is-home .docs-main { overflow: visible !important; } .is-home .docs-body { min-height: auto; }' });
+    const full = await page.addStyleTag({ content: 'html, body, #root { height: auto !important; overflow: visible !important; } .docs-site.is-home { height: auto; } .is-home .docs-main { overflow: visible !important; } .is-home .docs-body { min-height: auto; overflow: visible !important; }' });
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('.studio-home .studio-tile-preview')).every((node) => node.dataset.previewState === 'ready'));
     await page.screenshot({ path: join(output, `${width}-${mode}-home-full.png`), fullPage: true });
     await full.evaluate((node) => node.remove());
     await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
@@ -122,6 +124,7 @@ try {
     assert.equal(await input.inputValue(), '', 'Explicit reset must clear the demo');
     await page.goto(`${base}#/components`);
     await page.getByRole('heading', { name: '组件', exact: true, level: 1 }).waitFor();
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('.studio-gallery .studio-tile-preview')).slice(0, 2).every((node) => node.dataset.previewState === 'ready'));
     await fits(page, width, 'grouped catalog');
     await page.screenshot({ path: join(output, `${width}-${mode}-catalog.png`) });
     await page.getByRole('combobox', { name: '组件分类' }).selectOption('AI 聊天');
@@ -189,9 +192,12 @@ try {
     const x = new DOMMatrixReadOnly(getComputedStyle(list, '::before').transform).m41;
     return Math.abs(x - (selected.getBoundingClientRect().left - list.getBoundingClientRect().left - list.clientLeft)) < 1;
   });
+  // Inherited DOM direction changes geometry. Radix's keyboard direction is
+  // an explicit dir/DirectionProvider contract, covered by the RTL unit fixture.
+  await page.evaluate(() => { document.documentElement.dir = 'ltr'; });
   await tabs.getByRole('tab', { name: '概览', exact: true }).focus();
-  await page.keyboard.press('ArrowLeft');
-  assert(await tabs.getByRole('tab', { name: '活动', exact: true }).evaluate((node) => document.activeElement === node), 'Radix must retain RTL keyboard navigation');
+  await page.keyboard.press('ArrowRight');
+  assert(await tabs.getByRole('tab', { name: '活动', exact: true }).evaluate((node) => document.activeElement === node), 'Tabs must retain Radix keyboard navigation');
   results.push({ type: 'shared-tab-motion', status: 'passed', samples });
   await motion.close();
 } catch (error) { failure = String(error.stack ?? error); console.error(error); process.exitCode = 1; }

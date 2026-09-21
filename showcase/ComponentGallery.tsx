@@ -18,7 +18,7 @@ function DeferredDemo({ doc }: { doc: CatalogEntry }) {
     observer.observe(root.current);
     return () => observer.disconnect();
   }, [ready]);
-  return <div ref={root} className="studio-tile-preview docs-demo-canvas" role="region" aria-label={`${doc.name} 交互预览`} tabIndex={0}>
+  return <div ref={root} data-preview-state={ready ? 'ready' : 'pending'} className="studio-tile-preview docs-demo-canvas" role="region" aria-label={`${doc.name} 交互预览`} tabIndex={0}>
     {ready ? doc.preview : <Button variant="ghost" size="sm" onClick={() => setReady(true)}><Shapes size={17} />载入 {doc.name} 预览</Button>}
   </div>;
 }
@@ -42,6 +42,6 @@ export function ComponentGallery() {
     <div className="studio-gallery-controls"><SearchInput label="筛选组件总览" value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery('')} placeholder="搜索组件、交互或使用场景…" /><Select aria-label="组件分类" value={group} onChange={(event) => setGroup(event.target.value)}>{['全部', ...componentGroups].map((name) => <option key={name}>{name}</option>)}</Select><div className="studio-layout-controls" role="group" aria-label="组件展示方式"><IconButton label="网格展示" variant="ghost" size="sm" aria-pressed={layout === 'grid'} icon={<Grid2X2 size={16} />} onClick={() => setLayout('grid')} /><IconButton label="列表展示" variant="ghost" size="sm" aria-pressed={layout === 'list'} icon={<List size={16} />} onClick={() => setLayout('list')} /></div></div>
     <div className="studio-filters" role="group" aria-label="按组件分类筛选">{['全部', ...componentGroups].map((name) => <button type="button" key={name} aria-pressed={group === name} onClick={() => setGroup(name)}>{name}<span>{name === '全部' ? componentDocs.length : componentDocs.filter((doc) => doc.group === name).length}</span></button>)}</div>
     <div className="studio-results"><span role="status">{visible.length} 个组件</span><span>可在卡片内操作，点击名称查看代码与 API</span></div>
-    {visible.length ? <div className="docs-catalog-grid studio-catalog-grid" data-layout={layout}>{visible.map((doc) => <ComponentTile key={doc.id} doc={doc} list={layout === 'list'} />)}</div> : <div className="studio-empty"><Shapes size={30} /><h2>还没有找到匹配的组件</h2><p>试试更短的关键词，或换一个分类。</p><Button variant="outline" onClick={() => { setQuery(''); setGroup('全部'); }}>清除筛选</Button></div>}
+    {visible.length ? <div className="studio-catalog-grid" data-layout={layout}>{visible.map((doc) => <ComponentTile key={doc.id} doc={doc} list={layout === 'list'} />)}</div> : <div className="studio-empty"><Shapes size={30} /><h2>还没有找到匹配的组件</h2><p>试试更短的关键词，或换一个分类。</p><Button variant="outline" onClick={() => { setQuery(''); setGroup('全部'); }}>清除筛选</Button></div>}
   </div>;
 }
