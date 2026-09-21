@@ -18,6 +18,8 @@
   --ds-surface-alpha: 1;
   --ds-blur: 0px;
   --ds-duration: 160ms;
+  --ds-travel-duration: 240ms;
+  --ds-press-scale: .975;
   --ds-ease: cubic-bezier(.2, .8, .2, 1);
   --ds-space: 1rem;
   --ds-height: 2.5rem;

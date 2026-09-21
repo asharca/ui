@@ -92,7 +92,8 @@ try {
     const page = await context.newPage();
     const prefix = `${width}-${mode}-${style}`;
     await page.goto(`${base}#/home`);
-    await page.getByRole('link', { name: '开始构建', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: '组件与交互', exact: true }).waitFor();
+    await page.getByRole('button', { name: '试试这个按钮', exact: true }).waitFor();
     await page.screenshot({ path: join(directory, `${prefix}-home.png`) });
     captures.push({ name: `${prefix}-home`, type: 'viewport', width, height: 1000 });
     await page.goto(`${base}#/themes`);

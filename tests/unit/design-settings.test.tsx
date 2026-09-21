@@ -1,4 +1,4 @@
-import { cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, renderHook, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it, vi } from 'vitest';
 import { DocsApp } from '../../showcase/DocsApp';
@@ -41,10 +41,18 @@ it('lets visitors change a skin without discarding their current form edits', as
   expect(document.documentElement).toHaveClass('dark'); expect(input).toHaveValue('我的研究助手');
   expect(localStorage.getItem(STYLE_KEY)).toBe('glass');
 });
-it('provides a real home entry and a keyboard-operable local workspace', async () => {
-  window.history.replaceState(null, '', '/#/home'); render(<DocsApp />);
-  expect(await screen.findByRole('link', { name: '开始构建' })).toHaveAttribute('href', '#/installation');
-  expect(screen.getByRole('link', { name: '探索三套风格' })).toHaveAttribute('href', '#/themes');
+it('provides gallery, installation and keyboard-accessible theme entries', async () => {
+  window.history.replaceState(null, '', '/#/home');
+  const user = userEvent.setup(); render(<DocsApp />);
+  expect(await screen.findByRole('link', { name: '浏览全部组件' })).toHaveAttribute('href', '#/components');
+  const footer = within(screen.getByRole('navigation', { name: '页脚导航' }));
+  expect(footer.getByRole('link', { name: '文档', exact: true })).toHaveAttribute('href', '#/installation');
+  const themes = footer.getByRole('link', { name: '主题', exact: true });
+  expect(themes).toHaveAttribute('href', '#/themes');
+  themes.focus();
+  await user.keyboard('{Enter}');
+  expect(await screen.findByRole('combobox', { name: '视觉风格' })).toBeVisible();
+  expect(window.location.hash).toBe('#/themes');
 });
 it('supports real tab states and a locally cancellable demonstration', async () => {
   const user = userEvent.setup(); render(<DesignShowcase />);

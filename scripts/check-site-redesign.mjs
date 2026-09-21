@@ -40,16 +40,33 @@ try {
     const page = await context.newPage();
     const errors = []; page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(base);
-    await page.getByRole('heading', { level: 1, name: /更少的复杂/ }).waitFor();
-    await page.getByRole('textbox', { name: '项目名称', exact: true }).fill('My product');
-    await page.getByRole('radio', { name: '应用界面', exact: true }).check();
-    await page.getByRole('button', { name: '保存配置', exact: true }).click();
-    assert(await page.getByText('配置已保存 · 仅本地演示', { exact: true }).isVisible());
-    await page.getByRole('switch', { name: '流式响应' }).click();
-    assert(await page.getByRole('button', { name: '保存配置', exact: true }).isVisible());
+    await page.getByRole('heading', { level: 1, name: /组件与交互/ }).waitFor();
+    await page.locator('[data-component="dialog"]').scrollIntoViewIfNeeded();
+    await page.getByRole('button', { name: '编辑项目', exact: true }).click();
+    const form = page.getByRole('form', { name: '项目配置演示' });
+    await form.getByRole('textbox', { name: '项目名称', exact: true }).fill('My product');
+    await form.getByRole('radio', { name: '应用界面', exact: true }).check();
+    await form.getByRole('button', { name: '保存配置', exact: true }).click();
+    assert(await form.getByText('配置已保存 · 仅本地演示', { exact: true }).isVisible());
+    await form.getByRole('switch', { name: '流式响应' }).click();
+    assert(await form.getByRole('button', { name: '保存配置', exact: true }).isVisible());
+    await page.getByRole('dialog', { name: '项目设置' }).getByRole('button', { name: '关闭', exact: true }).click();
+    await page.getByRole('dialog', { name: '项目设置' }).waitFor({ state: 'hidden' });
     await fits(page, width, 'home');
     await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
     await page.screenshot({ path: join(output, `${width}-${mode}-home.png`) });
+    // Capture complete real specimens as well as the normal first viewport.
+    const full = await page.addStyleTag({ content: 'html, body, #root { height: auto !important; overflow: visible !important; } .docs-site.is-home { height: auto; } .is-home .docs-main { overflow: visible !important; } .is-home .docs-body { min-height: auto; overflow: visible !important; }' });
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('.studio-home .studio-tile-preview')).every((node) => node.dataset.previewState === 'ready'));
+    await page.locator('[data-component="accordion"]').getByRole('button', { name: '外观', exact: true }).waitFor();
+    await page.locator('[data-component="tool-call-card"] .ui-tool-call').waitFor();
+    for (const id of ['accordion', 'tool-call-card']) {
+      const stage = await page.locator(`[data-component="${id}"] .studio-tile-preview`).evaluate((node) => ({ height: node.clientHeight, content: node.scrollHeight }));
+      assert(stage.content <= stage.height + 1, `${id}: default preview must fit without vertical clipping ${JSON.stringify(stage)}`);
+    }
+    await page.screenshot({ path: join(output, `${width}-${mode}-home-full.png`), fullPage: true });
+    await full.evaluate((node) => node.remove());
+    await page.locator('.docs-main').evaluate((node) => node.scrollTo(0, 0));
     const trigger = page.getByRole('button', { name: '搜索文档', exact: true });
     await trigger.click();
     const dialog = page.getByRole('dialog', { name: '搜索文档', exact: true });
@@ -103,6 +120,9 @@ try {
     await page.goto(`${base}#/components/input`);
     const input = page.getByRole('textbox', { name: '项目名称', exact: true });
     await input.fill('Release notes');
+    await page.getByRole('group', { name: '预览背景' }).getByRole('button', { name: '网格', exact: true }).click();
+    assert.equal(await input.inputValue(), 'Release notes', 'Background changes must preserve edits');
+    assert.equal(await page.locator('.docs-preview-catalog').getAttribute('data-canvas'), 'grid');
     await page.getByRole('tab', { name: '用法代码', exact: true }).click();
     await page.getByRole('region', { name: '用法 TSX', exact: true }).waitFor();
     assert(!(await input.isVisible()), 'Inactive preview must not be visible or keyboard-accessible');
@@ -114,12 +134,18 @@ try {
     assert.equal(await input.inputValue(), '', 'Explicit reset must clear the demo');
     await page.goto(`${base}#/components`);
     await page.getByRole('heading', { name: '组件', exact: true, level: 1 }).waitFor();
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('.studio-gallery .studio-tile-preview')).slice(0, 2).every((node) => node.dataset.previewState === 'ready'));
     await fits(page, width, 'grouped catalog');
     await page.screenshot({ path: join(output, `${width}-${mode}-catalog.png`) });
     await page.getByRole('combobox', { name: '组件分类' }).selectOption('AI 聊天');
     await page.getByRole('searchbox', { name: '筛选组件总览' }).fill('ChatThread');
-    assert.equal(await page.locator('.docs-catalog-grid a').count(), 1, 'Combine category and text filters');
-    await page.locator('.docs-catalog-grid a').click();
+    assert.equal(await page.locator('.studio-tile-link').count(), 1, 'Combine category and text filters');
+    await page.getByRole('button', { name: '列表展示', exact: true }).click();
+    assert.equal(await page.locator('.studio-tile-preview').count(), 0);
+    assert.equal(await page.getByRole('searchbox', { name: '筛选组件总览' }).inputValue(), 'ChatThread');
+    await page.getByRole('button', { name: '网格展示', exact: true }).click();
+    assert.equal(await page.locator('.studio-tile-preview').count(), 1);
+    await page.locator('.studio-tile-link').click();
     await page.getByRole('heading', { name: 'ChatThread', exact: true, level: 1 }).waitFor();
     await fits(page, width, 'catalog navigation');
     if (width <= 850) {
@@ -150,6 +176,46 @@ try {
     console.log(`PASS redesign ${width}px ${mode}: root homepage, native form, search keyboard/focus, docs, navigation and layout`);
     await context.close();
   }
+  const motion = await browser.newContext({ viewport: { width: 1440, height: 1100 }, reducedMotion: 'no-preference' });
+  const page = await motion.newPage();
+  await page.goto(base);
+  const tabs = page.getByRole('tablist', { name: '动效体验' });
+  await tabs.waitFor(); await tabs.scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => document.querySelector('[aria-label="动效体验"]')?.getAttribute('data-indicator') === 'ready');
+  const position = () => tabs.evaluate((node) => new DOMMatrixReadOnly(getComputedStyle(node, '::before').transform).m41);
+  const start = await position();
+  await tabs.getByRole('tab', { name: '设置', exact: true }).click();
+  const samples = await tabs.evaluate((node) => new Promise((done) => {
+    const values = []; let frame = 0;
+    const sample = () => { values.push(new DOMMatrixReadOnly(getComputedStyle(node, '::before').transform).m41); if (++frame < 24) requestAnimationFrame(sample); else done(values); };
+    requestAnimationFrame(sample);
+  }));
+  const end = samples.at(-1);
+  assert(Math.abs(end - start) > 30, 'Selected marker must move between tabs');
+  assert(samples.some((value) => value > Math.min(start, end) + 2 && value < Math.max(start, end) - 2), 'Marker must interpolate, not jump');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  assert.equal(await tabs.evaluate((node) => getComputedStyle(node, '::before').transitionDuration), '0s', 'Reduced motion must disable marker travel');
+  await page.evaluate(() => { document.documentElement.dir = 'rtl'; });
+  await page.waitForFunction(() => {
+    const list = document.querySelector('[aria-label="动效体验"]');
+    const selected = list.querySelector('[data-state="active"]');
+    const x = new DOMMatrixReadOnly(getComputedStyle(list, '::before').transform).m41;
+    return Math.abs(x - (selected.getBoundingClientRect().left - list.getBoundingClientRect().left - list.clientLeft)) < 1;
+  });
+  // Inherited DOM direction changes geometry. Radix's keyboard direction is
+  // an explicit dir/DirectionProvider contract, covered by the RTL unit fixture.
+  await page.evaluate(() => { document.documentElement.dir = 'ltr'; });
+  await tabs.getByRole('tab', { name: '概览', exact: true }).focus();
+  await page.keyboard.press('ArrowRight');
+  // Radix deliberately moves roving focus in setTimeout after keydown. Wait
+  // for that lifecycle, not an arbitrary sleep or an immediate evaluation.
+  await page.waitForFunction(() => {
+    const next = document.querySelector('[aria-label="动效体验"] [role="tab"][data-state="active"]');
+    return next?.textContent === '活动' && document.activeElement === next;
+  }, undefined, { timeout: 5000 });
+  assert(await tabs.getByRole('tab', { name: '活动', exact: true }).evaluate((node) => document.activeElement === node), 'Tabs must retain Radix keyboard navigation');
+  results.push({ type: 'shared-tab-motion', status: 'passed', samples });
+  await motion.close();
 } catch (error) { failure = String(error.stack ?? error); console.error(error); process.exitCode = 1; }
 finally {
   writeFileSync(join(output, 'results.json'), JSON.stringify({ results, failure }, null, 2));

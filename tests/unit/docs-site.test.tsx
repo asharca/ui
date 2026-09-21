@@ -10,9 +10,16 @@ import pkg from '../../package.json';
 
 afterEach(() => { cleanup(); window.history.replaceState(null, '', '/'); });
 
-it.each(['#/home', '#/installation', '#/components/button', '#/ai'])('keeps %s version guidance in sync with the package', async (hash) => {
+it.each(['#/home', '#/installation', '#/components/button', '#/ai'])('keeps %s version guidance accessible and in sync with the package', async (hash) => {
   window.history.replaceState(null, '', `/${hash}`);
+  const user = userEvent.setup();
   render(<DocsApp />);
+  if (hash === '#/home') {
+    // The minimal gallery links to versioned installation guidance instead of repeating it.
+    const footer = await screen.findByRole('navigation', { name: '页脚导航' });
+    await user.click(within(footer).getByRole('link', { name: '文档', exact: true }));
+    expect(await screen.findByRole('heading', { name: '安装', level: 1 })).toBeVisible();
+  }
   const main = screen.getByRole('main');
   await waitFor(() => expect(main).toHaveTextContent(`文档 v${pkg.version}`));
   expect(main).not.toHaveTextContent(/尚未发布|开发分支/);
@@ -131,15 +138,17 @@ it('preserves demo edits across code tabs and resets only when requested', async
   expect(await screen.findByRole('textbox', { name: '项目名称' })).toHaveValue('');
 });
 
-it('groups the catalog and combines category and text filters', async () => {
+it('filters the unified catalog by category and text', async () => {
   window.history.replaceState(null, '', '/#/components');
   const user = userEvent.setup(); render(<DocsApp />);
   const main = within(screen.getByRole('main'));
-  expect(main.getByRole('region', { name: '基础控件' })).toBeVisible();
+  expect(main.getAllByRole('article')).toHaveLength(componentDocs.length);
+  expect(main.getByRole('heading', { name: 'Button', level: 3 })).toBeVisible();
   await user.selectOptions(main.getByRole('combobox', { name: '组件分类' }), 'AI 聊天');
+  expect(main.getAllByRole('article')).toHaveLength(componentDocs.filter((doc) => doc.group === 'AI 聊天').length);
   expect(main.queryByRole('heading', { name: 'Button', exact: true })).not.toBeInTheDocument();
   expect(main.getByRole('heading', { name: 'ChatThread', level: 3 })).toBeVisible();
   await user.type(main.getByRole('searchbox'), '不存在的组件');
   expect(main.getByRole('status')).toHaveTextContent('0 个组件');
-  expect(main.queryByRole('region', { name: 'AI 聊天' })).not.toBeInTheDocument();
+  expect(main.queryAllByRole('article')).toHaveLength(0);
 });
