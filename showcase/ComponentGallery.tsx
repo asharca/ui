@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type ComponentType } from 'react';
 import { ArrowUpRight, Code2, Eye, Grid2X2, List, RotateCcw, Shapes } from 'lucide-react';
 import { Button, IconButton, SearchInput, Select } from '../src/Controls';
 import { componentDocs } from './ComponentDemos';
@@ -13,6 +13,20 @@ const ordered = [...componentDocs].sort((a, b) => {
   const rank = (id: string) => priority.includes(id) ? priority.indexOf(id) : priority.length;
   return rank(a.id) - rank(b.id);
 });
+
+// Gallery compositions are deliberately smaller than the full documentation
+// playgrounds. The code view reads this exact composition, not a different demo.
+const compactFiles: Record<string, string> = {
+  button: 'GalleryButtonDemo', tabs: 'GalleryTabsDemo', 'choice-field': 'GalleryChoiceDemo',
+  'tool-call-card': 'GalleryToolDemo', 'chat-composer-toolbar': 'GalleryComposerDemo', 'data-table': 'GalleryTableDemo',
+};
+const compactLoaders = import.meta.glob<Record<string, ComponentType>>('./demos/Gallery*Demo.tsx');
+const galleryEntries = new Map(componentDocs.map((doc) => {
+  const file = compactFiles[doc.id];
+  if (!file) return [doc, doc] as const;
+  const Demo = lazy(async () => ({ default: (await compactLoaders[`./demos/${file}.tsx`]())[file] }));
+  return [doc, { ...doc, demoFile: `${file}.tsx`, preview: <Suspense fallback={<span role="status">加载预览…</span>}><Demo /></Suspense> }] as const;
+}));
 
 function DeferredDemo({ doc }: { doc: CatalogEntry }) {
   const root = useRef<HTMLDivElement>(null);
@@ -45,7 +59,8 @@ function TileSource({ doc }: { doc: CatalogEntry }) {
   return <div className="ref-tile-code">{error ? <p role="alert">源码未能加载，请重新打开代码视图。</p> : source ? <DocCode code={source} label={`${doc.name} 用法 TSX`} /> : <p role="status">正在读取同源示例…</p>}</div>;
 }
 
-export function ComponentTile({ doc, list = false }: { doc: CatalogEntry; list?: boolean }) {
+export function ComponentTile({ doc: original, list = false }: { doc: CatalogEntry; list?: boolean }) {
+  const doc = galleryEntries.get(original) ?? original;
   const [revision, setRevision] = useState(0);
   const [code, setCode] = useState(false);
   return <article className="studio-tile ref-tile" data-component={doc.id}>

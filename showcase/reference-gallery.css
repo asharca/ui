@@ -36,10 +36,10 @@
 .ref-exhibit-tools button { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; }
 .ref-exhibit-tools button:hover { color: inherit; background: hsl(0 0% 50% / .12); }
 .ref-exhibit-tools button[aria-pressed="true"] { background: hsl(0 0% 50% / .14); }
-.ref-exhibit-stage { display: grid; align-items: center; justify-items: center; min-height: 254px; padding: 16px 24px 32px; }
+.ref-exhibit-stage { display: grid; align-items: center; justify-items: center; min-height: 268px; padding: 16px 24px 32px; }
 .ref-exhibit-stage[hidden] { display: none; }
 .ref-exhibit-stage > * { min-width: 0; max-width: 100%; }
-.ref-exhibit-code { height: 254px; overflow: auto; font-size: 12px; }
+.ref-exhibit-code { height: 268px; overflow: auto; font-size: 12px; }
 .ref-exhibit-code .docs-code { margin: 0 12px 12px; }
 .ref-exhibit-caption { display: flex; align-items: start; justify-content: space-between; gap: 12px; padding: 14px 4px 0; }
 .ref-exhibit-caption h3 { font-size: 14px; font-weight: 600; letter-spacing: -.015em; }
@@ -49,7 +49,7 @@
 .ref-exhibit[data-tone="silver"] .ref-exhibit-surface { background: radial-gradient(ellipse at 50% 20%, var(--ref-paper), transparent 80%), var(--ref-stage-alt); }
 .ref-exhibit[data-tone="silver"] .ui-material-button { min-height: 46px; font-size: 14px; border-radius: 12px; }
 .ref-exhibit[data-tone="pearl"] .ref-exhibit-surface { background: linear-gradient(140deg, var(--ref-stage), var(--ref-paper)); }
-.ref-exhibit .studio-motion { padding: 8px 0 0; width: 100%; }
+.ref-exhibit .studio-motion { padding: 0; width: 100%; }
 .ref-exhibit .studio-motion .ui-tabs-list { box-shadow: 0 2px 5px hsl(0 0% 0% / .04); }
 .ref-exhibit .studio-motion-orbit { width: 48px; height: 48px; border-radius: 14px; margin-bottom: 17px; }
 .ref-exhibit[data-tone="ink"] .ref-exhibit-surface { background: #202020; color: #fafafa; }
@@ -115,8 +115,8 @@
 @media (max-width: 700px) {
   .ref-hero { align-items: start; flex-direction: column; gap: 20px; padding: 30px 0 24px; }
   .ref-hero h1 { font-size: 37px; }
-  .ref-hero-aside > p { margin-bottom: 13px; }
   .ref-hero-aside > p br { display: none; }
+  .ref-hero-aside > p { margin-bottom: 13px; }
   .ref-collection-bar { padding-bottom: 18px; }
   .ref-collection-bar > span { display: none; }
   .ref-collection-bar button { padding: 7px 11px; }

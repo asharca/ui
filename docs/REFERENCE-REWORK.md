@@ -26,7 +26,9 @@ works with Button/asChild, and does not change the Button prop contract.
 `showcase/demos/MaterialButtonDemo.tsx` is the self-contained example; its exact
 source powers the homepage code view. It is included in public consumer checks.
 
-The full catalog uses each canonical `doc.demoFile` for source view. A preview
+Six high-traffic gallery tiles use dedicated self-contained `Gallery*Demo.tsx`
+compositions without documentation debugging controls. Other tiles retain their
+canonical demo. Every tile reads its actual rendered composition for source view. A preview
 stays mounted while reading its code; only reset/filter/layout changes remount
 it. The gallery intentionally keeps interactive previews separate from links.
 
