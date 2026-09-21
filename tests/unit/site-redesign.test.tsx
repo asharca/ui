@@ -12,7 +12,7 @@ afterEach(() => { cleanup(); window.history.replaceState(null, '', '/'); localSt
 it.each(['/', '/#/', '/#/home'])('opens the product homepage at %s with real form controls', async (path) => {
   window.history.replaceState(null, '', path);
   const user = userEvent.setup(); render(<DocsApp />);
-  expect(await screen.findByRole('heading', { level: 1, name: /更少的复杂/ })).toBeVisible();
+  expect(await screen.findByRole('heading', { level: 1, name: /每个细节/ })).toBeVisible();
   const input = screen.getByRole('textbox', { name: '项目名称' });
   await user.clear(input); await user.type(input, 'My product');
   await user.click(screen.getByRole('radio', { name: '应用界面', exact: true }));

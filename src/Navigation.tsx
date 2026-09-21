@@ -1,7 +1,7 @@
 'use client';
 
 import { Slot, Tabs as TabsPrimitive } from 'radix-ui';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import type {
   ButtonHTMLAttributes,
   ComponentPropsWithoutRef,
@@ -17,7 +17,52 @@ export const Tabs = TabsPrimitive.Root;
 
 export const TabsList = forwardRef<ComponentRef<typeof TabsPrimitive.List>, ComponentPropsWithoutRef<typeof TabsPrimitive.List>>(
   function TabsList({ className, ...props }, ref) {
-    return <TabsPrimitive.List {...props} ref={ref} data-toolplane-ui="tabs-list" className={cx('ui-tabs-list', className)} />;
+    const node = useRef<ComponentRef<typeof TabsPrimitive.List>>(null);
+    useImperativeHandle(ref, () => node.current!, []);
+    useEffect(() => {
+      const list = node.current;
+      if (!list || typeof requestAnimationFrame === 'undefined') return;
+      // A CSS pseudo-element keeps the public DOM, asChild, refs and Radix
+      // roving-focus semantics intact. Unmeasurable/unstyled lists keep their
+      // original active-tab presentation (including SSR and hidden panels).
+      let frame = 0;
+      let observed: HTMLElement[] = [];
+      const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+      const measure = () => {
+        const tabs = Array.from(list.querySelectorAll<HTMLElement>('[role="tab"]')).filter((tab) => tab.closest('[role="tablist"]') === list);
+        if (tabs.length !== observed.length || tabs.some((tab, index) => tab !== observed[index])) {
+          resize?.disconnect(); resize?.observe(list); tabs.forEach((tab) => resize?.observe(tab));
+          observed = tabs;
+        }
+        const active = tabs.find((tab) => tab.dataset.state === 'active');
+        if (!active || !list.offsetWidth || !active.offsetWidth) { delete list.dataset.indicator; return; }
+        const bounds = list.getBoundingClientRect();
+        const selected = active.getBoundingClientRect();
+        const scaleX = bounds.width / list.offsetWidth || 1;
+        const scaleY = bounds.height / list.offsetHeight || 1;
+        const values = {
+          x: (selected.left - bounds.left) / scaleX + list.scrollLeft - list.clientLeft,
+          y: (selected.top - bounds.top) / scaleY + list.scrollTop - list.clientTop,
+          width: selected.width / scaleX,
+          height: selected.height / scaleY,
+        };
+        for (const [name, value] of Object.entries(values)) list.style.setProperty(`--ui-tabs-${name}`, `${value}px`);
+        list.dataset.indicator = 'ready';
+      };
+      function schedule() { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); }
+      const mutations = typeof MutationObserver === 'undefined' ? null : new MutationObserver(schedule);
+      mutations?.observe(list, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['data-state', 'data-orientation', 'dir', 'class'] });
+      // Direction can be inherited from any host, including a runtime RTL toggle.
+      for (let parent = list.parentElement; parent; parent = parent.parentElement) mutations?.observe(parent, { attributes: true, attributeFilter: ['dir'] });
+      window.addEventListener('resize', schedule);
+      measure();
+      return () => {
+        cancelAnimationFrame(frame); resize?.disconnect(); mutations?.disconnect();
+        window.removeEventListener('resize', schedule); delete list.dataset.indicator;
+        for (const name of ['x', 'y', 'width', 'height']) list.style.removeProperty(`--ui-tabs-${name}`);
+      };
+    }, []);
+    return <TabsPrimitive.List {...props} ref={node} data-toolplane-ui="tabs-list" className={cx('ui-tabs-list', className)} />;
   },
 );
 
