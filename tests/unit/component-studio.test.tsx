@@ -65,9 +65,17 @@ it('switches preview backgrounds without remounting the live demo', async () => 
   await user.click(within(background).getByRole('button', { name: '网格' }));
   expect(within(background).getByRole('button', { name: '网格' })).toHaveAttribute('aria-pressed', 'true');
   expect(input).toHaveValue('Keep this edit');
-  await user.click(screen.getByRole('tab', { name: '用法代码' }));
+  // Native pointer switching is covered in Chromium; use Radix's keyboard
+  // activation contract here rather than relying on jsdom PointerEvent support.
+  const codeTab = screen.getByRole('tab', { name: '用法代码' });
+  act(() => codeTab.focus());
+  await user.keyboard('{Enter}');
+  expect(codeTab).toHaveAttribute('aria-selected', 'true');
   expect(screen.queryByRole('group', { name: '预览背景' })).not.toBeInTheDocument();
-  await user.click(screen.getByRole('tab', { name: '预览', exact: true }));
+  const previewTab = screen.getByRole('tab', { name: '预览', exact: true });
+  act(() => previewTab.focus());
+  await user.keyboard('{Enter}');
+  expect(previewTab).toHaveAttribute('aria-selected', 'true');
   expect(input).toHaveValue('Keep this edit');
 });
 
