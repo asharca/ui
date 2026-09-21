@@ -97,12 +97,19 @@ try {
     await page.getByRole('button', { name: 'API 参考', exact: true }).click();
     const main = page.locator('.docs-main');
     const sidebarTop = await page.locator('.docs-sidebar').evaluate((node) => node.scrollTop);
+    // Clicking the API summary scrolls it into view. Start each input check at
+    // the top, otherwise wheel input may reach the bottom before PageDown.
+    await main.evaluate((node) => node.scrollTo(0, 0));
+    await page.waitForFunction(() => document.querySelector('.docs-main').scrollTop === 0);
+    const range = await main.evaluate((node) => node.scrollHeight - node.clientHeight);
+    assert(range > 0, 'Expanded API must provide scrollable content');
     await main.hover({ position: { x: 12, y: 80 } });
-    await page.mouse.wheel(0, 400);
+    await page.mouse.wheel(0, Math.min(200, range / 3));
     await page.waitForFunction(() => document.querySelector('.docs-main').scrollTop > 0);
-    const wheelTop = await main.evaluate((node) => node.scrollTop);
-    await main.focus(); await page.keyboard.press('PageDown');
-    await page.waitForFunction((previous) => document.querySelector('.docs-main').scrollTop > previous, wheelTop);
+    await main.evaluate((node) => { node.focus({ preventScroll: true }); node.scrollTo(0, 0); });
+    await page.waitForFunction(() => document.querySelector('.docs-main').scrollTop === 0);
+    await page.keyboard.press('PageDown');
+    await page.waitForFunction(() => document.querySelector('.docs-main').scrollTop > 0);
     assert.equal(await page.locator('.docs-sidebar').evaluate((node) => node.scrollTop), sidebarTop, 'Content scrolling must not scroll the directory');
     assert.notEqual(await page.locator('.docs-sidebar').evaluate((node) => getComputedStyle(node).scrollbarWidth), 'none', 'Keep the directory scrollbar');
     await main.evaluate((node) => node.scrollTo(0, 0));
