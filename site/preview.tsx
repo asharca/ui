@@ -20,10 +20,11 @@ export function Preview({ name, eager = false }: { name: string; eager?: boolean
     if (ready) return;
     if (!ref.current || typeof IntersectionObserver === 'undefined') { setReady(true); return; }
     const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setReady(true); observer.disconnect(); } }, { rootMargin: '200px' });
-    observer.observe(ref.current); return () => observer.disconnect();
+    observer.observe(ref.current);
+    return () => observer.disconnect();
   }, [ready]);
   const Demo = demos[name];
-  return <div ref={ref} className="demo-content"><PreviewBoundary key={name}><Suspense fallback={<span role="status" className="small-note">正在加载组件…</span>}>{ready && Demo ? <Demo /> : <span className="preview-placeholder" aria-hidden="true" />}</Suspense></PreviewBoundary></div>;
+  return <div ref={ref} className={`demo-content${eager ? '' : ' self-start min-h-full'}`}><PreviewBoundary key={name}><Suspense fallback={<span role="status" className="small-note">正在加载组件…</span>}>{ready && Demo ? <Demo /> : <span className="preview-placeholder" aria-hidden="true" />}</Suspense></PreviewBoundary></div>;
 }
 function Usage({ name }: { name: string }) {
   const [code, setCode] = useState('');

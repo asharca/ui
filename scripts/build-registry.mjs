@@ -4,6 +4,7 @@ import { registryItemSchema, registrySchema } from 'shadcn/schema';
 import { allEntries, catalog, resolveFiles } from '../registry/catalog.mjs';
 
 const root = resolve(import.meta.dirname, '..');
+try { process.loadEnvFile(resolve(root, '.env')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
 const site = new URL(process.env.SITE_URL || 'https://asharca.github.io/ui/');
 if (!['https:', 'http:'].includes(site.protocol) || site.search || site.hash) throw new Error('SITE_URL must be an HTTP(S) deployment URL.');
 if (!site.pathname.endsWith('/')) site.pathname += '/';
@@ -35,7 +36,7 @@ const text = [
   '> 简约的 React 组件源码。通过 shadcn 安装，然后在自己的项目中修改。', '',
   '## Endpoints', '',
   `- Registry index: ${url('registry.json')}`,
-  `- Component source and dependencies: ${url('r/{slug}.json')}`,
+  `- Component source and dependencies: ${url('r/')}{slug}.json`,
   `- Installation guide: ${url('docs/installation/')}`, '',
   '## Installation', '',
   'Requires React 19, TypeScript, Tailwind CSS 4 and a project initialized with shadcn. Existing shadcn theme tokens are reused; installing a component does not replace the project theme.', '',
