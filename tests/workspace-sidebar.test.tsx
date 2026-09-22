@@ -16,7 +16,7 @@ describe('workspace sidebar stable motion structure', () => {
     const user = userEvent.setup();
     const { container } = render(<Harness />);
     const sidebar = screen.getByRole('complementary', { name: '示例侧栏' });
-    const item = screen.getByRole('button', { name: '概览', exact: true });
+    const item = screen.getByRole('button', { name: '概览' });
     const icon = item.querySelector('[data-slot="workspace-icon"]');
     const label = item.querySelector('[data-slot="workspace-label"]');
     const badge = item.querySelector('[data-slot="workspace-badge"]');
@@ -27,7 +27,7 @@ describe('workspace sidebar stable motion structure', () => {
     expect(sidebar).toHaveAttribute('data-collapsed', 'true');
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
-    expect(screen.getByRole('button', { name: '概览', exact: true })).toBe(item);
+    expect(screen.getByRole('button', { name: '概览' })).toBe(item);
     expect(item.querySelector('[data-slot="workspace-icon"]')).toBe(icon);
     expect(item.querySelector('[data-slot="workspace-label"]')).toBe(label);
     expect(item.querySelector('[data-slot="workspace-badge"]')).toBe(badge);
@@ -44,9 +44,9 @@ describe('workspace sidebar stable motion structure', () => {
   it('keeps native links, disabled states and accessible names when compact', async () => {
     const select = vi.fn();
     render(<WorkspaceSidebar title="示例" groups={groups} activeId="home" onSelect={select} collapsed onCollapsedChange={() => undefined} />);
-    const item = screen.getByRole('button', { name: '概览', exact: true });
+    const item = screen.getByRole('button', { name: '概览' });
     expect(item).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: '文档', exact: true })).toHaveAttribute('href', '/docs');
+    expect(screen.getByRole('link', { name: '文档' })).toHaveAttribute('href', '/docs');
     await userEvent.setup().click(screen.getByRole('button', { name: '不可用' }));
     expect(select).not.toHaveBeenCalled();
     fireEvent.click(item); expect(select).toHaveBeenCalledExactlyOnceWith('home');
