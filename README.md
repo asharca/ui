@@ -21,23 +21,34 @@ export function Example() {
 }
 ```
 
-安装路径遵循 `components.json` 的 `aliases.components`，上面的 `@/` 是常用示例别名。每个安装条目包含完整的关联文件和所需依赖，不覆盖已有主题。组件页面提供同源的 CLI、手动安装、用法和源码。
+安装路径遵循 `components.json` 的 `aliases.components`，上面的 `@/` 是示例别名。每个安装条目包含完整的关联文件和所需依赖，不覆盖已有主题。组件页面提供同源的 CLI、手动安装、用法和源码。
 
-> 以上线上入口须在本次重写合并并部署后使用；PR 构建只生成预览产物，不会自动发布。
+分支新加入的组件需要合并并部署后才会出现在上述线上安装源；PR 构建不会自动部署。
 
 ## 组件
 
-基础组件：Button、Input、Checkbox、Radio Group、Switch、Select、Tabs、Accordion、Badge。
+当前目录包含 **61 项**：恢复重写前全部 55 项组件入口，并保留源码站新增的 6 项组件。组件统一使用当前的中性色、圆角、边框与交互风格，不加载旧展示站样式。
 
-浮层组件：Dialog、Popover、Tooltip。
+| 分类 | 数量 | 内容 |
+| --- | ---: | --- |
+| 基础组件 | 14 | 按钮、图标按钮、输入、多行输入、搜索、单选、多选、选项卡片、开关、选择器、滑块、Tabs、Accordion |
+| 表单与反馈 | 10 | Field、提交与确认提交、复制、徽标、状态徽标、Alert、进度、Skeleton、Spinner |
+| 数据与布局 | 12 | Card、Page、Section、Panel、Toolbar、EmptyState、Entity、Avatar、DataTable、ChartContainer、ContentPage、RotatingHeadline |
+| 导航与浮层 | 10 | NavigationTabs、Chip、Breadcrumbs、Pagination、Dialog、DropdownMenu、ContextMenu、HoverCard、Popover、Tooltip |
+| AI 组件 | 11 | PromptInput、Message、ToolResult、ApprovalCard、ChatPanel、SafeStreamdown、ToolCallCard、ChatComposerToolbar、ConversationSidebar、ChatShell、ChatThread |
+| 工作区 | 4 | WorkspaceTabBar、WorkspaceSidebar、SidebarActionRail、ToolPlaneLogo |
 
-AI 组件：Prompt Input、Message、Tool Result、Approval Card、Chat Panel。
+表格、图表、聊天与工作区使用适合复杂内容的宽画布；预览和安装源码一致，Usage 读取实际示例。
 
-AI 组件仅负责界面和交互。模型调用、流式状态、鉴权、持久化和权限校验由宿主应用提供。网站中的对话与工具操作是明确标注的本地演示。
+DataTable 通过 TanStack Table 提供排序、搜索、分页和稳定 ID 选择。ChartContainer 可组合 Recharts 的图表、提示和图例。这些依赖只进入需要它们的安装条目，不随 Button 等基础组件安装。
+
+AI 组件仅负责界面和交互。模型调用、流式状态、鉴权、持久化和权限校验由宿主应用提供。完整聊天组件恢复工具记录、审批、思考折叠、附件、编辑、重新生成和分支回调；网页示例均为本地模拟，不执行真实工具。
+
+SafeStreamdown 保留原来的组件名称，源码版使用 react-markdown + GFM 重新实现，默认忽略原始 HTML，图片须显式启用。恢复的是原有组件能力和目录入口，不是旧 npm 包的 API 兼容层。
 
 ## 开发
 
-Node.js 24，pnpm 10。这个仓库是私有发布标记的站点工程，不发布组件包。
+Node.js 24，pnpm 10。仓库保留 `private: true`，仅维护网站与源码安装清单，不发布组件包。
 
 ```sh
 pnpm install --frozen-lockfile
@@ -48,7 +59,7 @@ pnpm exec playwright install chromium
 pnpm test:browser
 ```
 
-`pnpm build` 生成站点、静态页面入口、registry JSON 和单一 UTF-8 `llms.txt`。浏览器测试在已构建站点上运行。消费项目测试使用真正的 shadcn CLI，分别验证标准路径和自定义别名，不是迁移工具。
+`pnpm build` 生成站点、静态路由、registry JSON 和单一 UTF-8 `llms.txt`。浏览器测试在已构建站点上运行。消费项目测试使用真实 shadcn CLI，验证标准目录和自定义别名，不是迁移工具。
 
 ```text
 registry/ui/          可直接安装的组件源码
@@ -56,29 +67,31 @@ registry/catalog.mjs  唯一组件目录与依赖图
 examples/            网站预览及 Usage 的同一份代码
 site/                展示站布局与文档界面
 scripts/             构建及验证
-public/              静态资源与生成的 registry、llms.txt
+public/              静态资源及生成的 registry、llms.txt
 ```
 
-没有兼容包、旧界面、主题实验室、迁移脚本或 Skill 安装流程。公共 AI 文档只有站点的 `llms.txt`，由真实安装清单生成。
+`tests/restored-inventory.test.mjs` 保存重写前的独立 55 项目录基线，防止后续整理时误删组件；同时检查每个 Usage 引用的本地文件与外部依赖都包含在安装清单里。
+
+不提供兼容包、旧界面、主题实验室、迁移脚本或 Skill 安装流程。公共 AI 文档仅有 `llms.txt`。
 
 ## 部署
 
-GitHub 项目 Pages 使用：
+GitHub 项目 Pages：
 
 ```sh
 SITE_URL=https://asharca.github.io/ui/ BASE_PATH=/ui/ pnpm build
 ```
 
-自定义域名使用站点根路径：
+自定义域名：
 
 ```sh
 SITE_URL=https://your-domain.example/ BASE_PATH=/ pnpm build
 ```
 
-部署 `dist/`。每个文档路由有独立 HTML 入口，可直接打开和刷新；registry 与 `llms.txt` 是静态文件，不经过 SPA HTML 回退。`SITE_URL` 必须是对外可访问的完整站点地址。安装命令在浏览器中根据当前站点地址生成，不依赖硬编码的开发端口。
+部署 `dist/`。每个文档路由有独立 HTML 入口，可直接打开和刷新；registry 与 `llms.txt` 是静态文件，不经过 SPA HTML 回退。`SITE_URL` 是对外可访问的完整地址；浏览器中的安装命令根据当前站点生成。
 
 ## 设计与许可
 
-展示结构、克制的视觉语言和组件交互参考 [beUI](https://beui.dev/)，保留本项目品牌与独立实现；不包含对方的商业推广或用户评价。
+展示结构、克制的视觉语言和组件交互参考 [beUI](https://beui.dev/)，保留本项目品牌与独立实现，不包含对方的商业推广或用户评价。
 
 MIT License。参考来源与许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
