@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { ContextMenu as Context } from 'radix-ui';
 import { ArrowLeft, ArrowRight, ExternalLink, MoreHorizontal, Pin, PinOff, Plus, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
@@ -50,7 +50,7 @@ export function WorkspaceTabBar({
   variant = 'default', className,
 }: WorkspaceTabBarProps) {
   const refs = useRef(new Map<string, HTMLButtonElement>());
-  const menuRefs = useRef(new Map<string, HTMLButtonElement>());
+  const [menuTab, setMenuTab] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const closing = useRef<string | null>(null);
   const inset = variant === 'inset';
@@ -125,7 +125,9 @@ export function WorkspaceTabBar({
               onClick={() => onSelect(tab.id)} onAuxClick={(event) => { if (event.button === 1 && closeOnMiddleClick) { event.preventDefault(); close(tab); } }}
               onDoubleClick={() => { if (closeOnDoubleClick) close(tab); }}
               onKeyDown={(event) => {
-                if (hasMenu && (event.key === 'ContextMenu' || event.shiftKey && event.key === 'F10')) { event.preventDefault(); menuRefs.current.get(tab.id)?.click(); return; }
+                if (hasMenu && (event.key === 'ContextMenu' || event.shiftKey && event.key === 'F10')) {
+                  event.preventDefault(); event.stopPropagation(); setMenuTab(tab.id); return;
+                }
                 if (event.key === 'Delete') { event.preventDefault(); close(tab); return; }
                 if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                   event.preventDefault();
@@ -140,8 +142,8 @@ export function WorkspaceTabBar({
               <span className="truncate" title={tab.title}>{tab.title}</span>
               {tab.dirty && <span aria-label="未保存" className="size-1.5 rounded-full bg-current" />}
             </button>
-            {hasMenu && <DropdownMenu>
-              <DropdownMenuTrigger asChild><IconButton ref={(node) => { if (node) menuRefs.current.set(tab.id, node); else menuRefs.current.delete(tab.id); }} label={`${tab.title}操作`} icon={<MoreHorizontal />} className="size-6" /></DropdownMenuTrigger>
+            {hasMenu && <DropdownMenu open={menuTab === tab.id} onOpenChange={(open) => setMenuTab(open ? tab.id : null)}>
+              <DropdownMenuTrigger asChild><IconButton label={`${tab.title}操作`} icon={<MoreHorizontal />} className="size-6" /></DropdownMenuTrigger>
               <DropdownMenuContent align="start" onCloseAutoFocus={restoreFocus}>{items.map((item) => <DropdownMenuItem key={item.key} disabled={item.disabled} onSelect={item.run}>{item.icon}{item.label}</DropdownMenuItem>)}</DropdownMenuContent>
             </DropdownMenu>}
             {onClose && !tab.pinned && <IconButton label={`关闭 ${tab.title}`} icon={<X />} disabled={!canClose(tab)} className="mr-1 size-6" onClick={() => close(tab)} />}
@@ -151,7 +153,7 @@ export function WorkspaceTabBar({
             <Context.Portal><Context.Content collisionPadding={12} onCloseAutoFocus={restoreFocus} className="z-50 min-w-44 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg">
               {items.map((item) => <Context.Item key={item.key} disabled={item.disabled} onSelect={item.run} className="flex cursor-default select-none items-center gap-2 rounded-lg px-2.5 py-2 text-xs outline-none data-[highlighted]:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-40 [&_svg]:size-3.5">{item.icon}{item.label}</Context.Item>)}
             </Context.Content></Context.Portal>
-          </Context.Root> : <div key={tab.id} className="contents">{row}</div>;
+          </Context.Root> : <Fragment key={tab.id}>{row}</Fragment>;
         })}
       </div>
     </div>

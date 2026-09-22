@@ -5,6 +5,7 @@ import { WorkspaceTabBar } from '../registry/ui/workspace-tab-bar';
 import { openWorkspaceWindow } from '../registry/ui/workspace-shell';
 
 const tabs = [{ id: 'home', title: '概览', pinned: true }, { id: 'doc', title: '文档' }];
+const middleClick = (element: HTMLElement) => fireEvent(element, new MouseEvent('auxclick', { bubbles: true, cancelable: true, button: 1 }));
 afterEach(() => vi.restoreAllMocks());
 
 describe('workspace window transport', () => {
@@ -77,17 +78,17 @@ describe('workspace tab actions', () => {
     fireEvent.keyDown(screen.getByRole('tab'), { key: 'Delete' });
     expect(close).not.toHaveBeenCalled();
     rerender(<WorkspaceTabBar tabs={[tabs[0], { ...tabs[1], closable: false }]} activeTabId="doc" onSelect={() => undefined} onClose={close} />);
-    fireEvent.auxClick(screen.getByRole('tab', { name: '文档' }), { button: 1 });
+    middleClick(screen.getByRole('tab', { name: '文档' }));
     expect(close).not.toHaveBeenCalled();
   });
   it('provides the new-tab action and optional middle/double-click closing', async () => {
     const close = vi.fn(); const add = vi.fn();
     const { rerender } = render(<WorkspaceTabBar tabs={tabs} activeTabId="doc" onSelect={() => undefined} onClose={close} onNewTab={add} />);
     await userEvent.setup().click(screen.getByRole('button', { name: '新建标签' })); expect(add).toHaveBeenCalledOnce();
-    fireEvent.auxClick(screen.getByRole('tab', { name: '文档' }), { button: 1 }); expect(close).toHaveBeenCalledExactlyOnceWith('doc');
+    middleClick(screen.getByRole('tab', { name: '文档' })); expect(close).toHaveBeenCalledExactlyOnceWith('doc');
     fireEvent.doubleClick(screen.getByRole('tab', { name: '文档' })); expect(close).toHaveBeenCalledOnce();
     rerender(<WorkspaceTabBar tabs={tabs} activeTabId="doc" onSelect={() => undefined} onClose={close} closeOnMiddleClick={false} closeOnDoubleClick />);
-    fireEvent.auxClick(screen.getByRole('tab', { name: '文档' }), { button: 1 }); expect(close).toHaveBeenCalledOnce();
+    middleClick(screen.getByRole('tab', { name: '文档' })); expect(close).toHaveBeenCalledOnce();
     fireEvent.doubleClick(screen.getByRole('tab', { name: '文档' })); expect(close).toHaveBeenCalledTimes(2);
   });
 });
