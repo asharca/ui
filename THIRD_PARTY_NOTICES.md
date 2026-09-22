@@ -34,3 +34,14 @@ SOFTWARE.
 React, Radix Primitives, Motion, Tailwind CSS, shadcn, Lucide, React Router,
 Prism, clsx and tailwind-merge remain under their respective upstream licenses.
 The development lockfile records the exact dependency versions used by CI.
+
+## Documentation UI reference
+
+The fixed independent navigation rail, Copy Page split-button / provider marks,
+and API extraction approach reference beUI at commit
+`6ece797917b1365764ce5f339641d641f10ea2c2`:
+`components/app/chrome/three-column-layout.tsx`,
+`components/app/docs/copy-page.tsx`, `components/app/docs/props-table.tsx`,
+and `lib/props-extractor.ts`. The upstream MIT notice above also applies to
+these adapted patterns and SVG marks. Provider links do not imply endorsement
+or an API integration.

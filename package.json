@@ -5,8 +5,8 @@
   "packageManager": "pnpm@10.32.1",
   "engines": { "node": ">=22.14" },
   "scripts": {
-    "dev": "node scripts/build-registry.mjs && vite --host 0.0.0.0",
-    "registry": "node scripts/build-registry.mjs",
+    "dev": "pnpm registry && vite --host 0.0.0.0",
+    "registry": "node scripts/build-registry.mjs && node scripts/build-docs.mjs",
     "build": "pnpm registry && tsc --noEmit && vite build && node scripts/static-routes.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
@@ -46,6 +46,7 @@
     "eslint": "^9.39.0",
     "eslint-plugin-react-hooks": "^7.0.0",
     "jsdom": "^29.1.1",
+    "react-docgen-typescript": "2.4.0",
     "shadcn": "4.21.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.0.0",
