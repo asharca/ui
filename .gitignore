@@ -11,3 +11,10 @@ test-results/
 !.env.example
 .DS_Store
 *.tsbuildinfo
+
+# Generated page documentation, not a second authored AI documentation tree.
+.generated/
+public/api-reference/
+public/components/
+public/components.md
+public/docs/
