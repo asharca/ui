@@ -59,6 +59,7 @@ export const catalog = [
   entry('conversation-sidebar', 'Conversation Sidebar', 'AI 组件', '会话搜索、分组、重命名、删除和完整顺序调整。', ['lucide-react'], ['button', 'icon-button', 'input', 'search-input', 'dialog', 'dropdown-menu']),
   entry('chat-shell', 'Chat Shell', 'AI 组件', '桌面侧栏与移动面板，组合自己的聊天工作区。', ['lucide-react'], ['icon-button'], ['chat-shell'], true),
   entry('chat-thread', 'Chat Thread', 'AI 组件', '恢复工具、思考、附件、编辑、重新生成与消息分支。', ['lucide-react'], ['chat-panel', 'button', 'textarea', 'safe-streamdown', 'tool-call-card', 'chat-composer-toolbar'], ['chat-thread'], true),
+  entry('workspace-shell', 'Workspace Shell', '工作区', '共享底色、内嵌圆角面板与无分隔线导航，组成连贯的应用工作区。', [], ['workspace-sidebar', 'workspace-tab-bar'], ['workspace-shell', 'workspace-shell-simple'], true),
   entry('workspace-tab-bar', 'Workspace Tab Bar', '工作区', '固定、关闭、拖动或用键盘调整标签顺序。', ['lucide-react'], ['dropdown-menu', 'icon-button'], ['workspace-tab-bar'], true),
   entry('workspace-sidebar', 'Workspace Sidebar', '工作区', '折叠导航、状态徽标和焦点受控的手机抽屉。', ['radix-ui', 'lucide-react'], ['icon-button'], ['workspace-sidebar'], true),
   entry('sidebar-action-rail', 'Sidebar Action Rail', '工作区', '鼠标与键盘都能操作的条目快捷动作。', [], ['icon-button']),

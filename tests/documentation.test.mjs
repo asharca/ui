@@ -7,8 +7,8 @@ import { cell, fence, propsMarkdown, normalizeProps } from '../scripts/docs-supp
 
 const json = async (path) => JSON.parse(await readFile(path, 'utf8'));
 const api = (slug) => json(`public/api-reference/${slug}.json`);
-test('all 61 components document every named public component export from its actual source', async () => {
-  assert.equal(catalog.length, 61);
+test('all 62 components document every named public component export from its actual source', async () => {
+  assert.equal(catalog.length, 62);
   for (const entry of catalog) {
     const doc = await api(entry.slug);
     assert.equal(doc.slug, entry.slug);
