@@ -2,10 +2,11 @@ import { test, expect } from '@playwright/test';
 
 test('all restored families are discoverable without changing the site layout', async ({ page }) => {
   await page.goto('components/');
-  await expect(page.locator('.catalog-count')).toHaveText('61 个组件');
-  await expect(page.locator('.component-card')).toHaveCount(61);
+  await expect(page.locator('.catalog-count')).toHaveText('62 个组件');
+  await expect(page.locator('.component-card')).toHaveCount(62);
   await page.getByRole('button', { name: '工作区', exact: true }).click();
-  await expect(page.locator('.catalog-count')).toHaveText('4 个组件');
+  await expect(page.locator('.catalog-count')).toHaveText('5 个组件');
+  await expect(page.locator('.component-card[data-component="workspace-shell"]')).toBeVisible();
   await expect(page.locator('.component-card[data-component="workspace-sidebar"]')).toBeVisible();
   // Intentionally type immediately: a concurrent navigation must not restore
   // the previous workspace category from an old render's search parameters.

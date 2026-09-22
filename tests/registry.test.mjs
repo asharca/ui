@@ -46,7 +46,7 @@ test('repository is a private site, not a publishable component package', async 
 test('catalog rejects dependency cycles and unknown names', () => {
   assert.throws(() => resolveFiles('does-not-exist'), /Unknown/);
   assert.equal(new Set(catalog.map((item) => item.slug)).size, catalog.length);
-  assert.equal(catalog.length, 61);
+  assert.equal(catalog.length, 62);
   const button = catalog.find((item) => item.slug === 'button');
   button.needs.push('button');
   try { assert.throws(() => resolveFiles('button'), /Circular/); }

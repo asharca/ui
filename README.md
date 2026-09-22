@@ -27,7 +27,7 @@ export function Example() {
 
 ## 组件
 
-当前目录包含 **61 项**：恢复重写前全部 55 项组件入口，并保留源码站新增的 6 项组件。组件统一使用当前的中性色、圆角、边框与交互风格，不加载旧展示站样式。
+当前目录包含 **62 项**：恢复重写前全部 55 项组件入口，保留源码站新增的 6 项组件，并新增 WorkspaceShell。组件统一使用当前的中性色、圆角、边框与交互风格，不加载旧展示站样式。
 
 | 分类 | 数量 | 内容 |
 | --- | ---: | --- |
@@ -36,9 +36,11 @@ export function Example() {
 | 数据与布局 | 12 | Card、Page、Section、Panel、Toolbar、EmptyState、Entity、Avatar、DataTable、ChartContainer、ContentPage、RotatingHeadline |
 | 导航与浮层 | 10 | NavigationTabs、Chip、Breadcrumbs、Pagination、Dialog、DropdownMenu、ContextMenu、HoverCard、Popover、Tooltip |
 | AI 组件 | 11 | PromptInput、Message、ToolResult、ApprovalCard、ChatPanel、SafeStreamdown、ToolCallCard、ChatComposerToolbar、ConversationSidebar、ChatShell、ChatThread |
-| 工作区 | 4 | WorkspaceTabBar、WorkspaceSidebar、SidebarActionRail、ToolPlaneLogo |
+| 工作区 | 5 | WorkspaceShell、WorkspaceTabBar、WorkspaceSidebar、SidebarActionRail、ToolPlaneLogo |
 
 表格、图表、聊天与工作区使用适合复杂内容的宽画布；预览和安装源码一致，Usage 读取实际示例。
+
+WorkspaceShell 提供 ToolPlane 式内嵌布局：侧栏与外壳共享底色，活动标签与圆角正文同色衔接，无贯穿式分隔线。搭配 WorkspaceSidebar / WorkspaceTabBar 的 `variant="inset"`，现有默认外观不变。外层需明确高度；`scroll="content"` 只滚动正文，`scroll="none"` 由子区域管理滚动。支持固定标题、底部、移动导航入口与可访问性关联，路由和状态仍由应用管理。`--workspace-shell-background`、`--workspace-surface`、`--workspace-gap`、`--workspace-radius` 可局部自定义，不改写全局主题。安装 `workspace-shell` 会包含侧栏、标签栏及其依赖，示例含完整工作台和不带标签栏的轻量消息布局。
 
 DataTable 通过 TanStack Table 提供排序、搜索、分页和稳定 ID 选择。ChartContainer 可组合 Recharts 的图表、提示和图例。这些依赖只进入需要它们的安装条目，不随 Button 等基础组件安装。
 
