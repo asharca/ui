@@ -25,3 +25,22 @@ for (const width of [375, 1440]) for (const dark of [false, true]) {
     await page.screenshot({ path: testInfo.outputPath(`focused-api-${width}-${dark ? 'dark' : 'light'}.png`) });
   });
 }
+for (const width of [375, 1440]) {
+  test(`page menu preserves fully loaded previews ${width}`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 950 });
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+    await page.goto('components/button/');
+    const preview = page.locator('.detail-preview').first();
+    await expect(preview.getByRole('button', { name: '开始构建' })).toBeVisible();
+    await expect(page.locator('.detail-preview').last().getByRole('button', { name: '保存更改' })).toBeVisible();
+    await page.evaluate(async () => { await document.fonts.ready; });
+    await page.getByRole('button', { name: 'More page actions' }).click();
+    await expect(page.getByRole('menu', { name: 'Page actions' })).toBeVisible();
+    await expect(preview.getByText('正在加载组件…', { exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.screenshot({ path: testInfo.outputPath(`loaded-page-actions-${width}-dark.png`) });
+    await page.keyboard.press('Escape');
+    await expect(preview.getByRole('button', { name: '开始构建' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'More page actions' })).toBeFocused();
+  });
+}
