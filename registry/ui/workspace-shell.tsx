@@ -23,18 +23,25 @@ function hasSlot(node: ReactNode) { return node != null && typeof node !== 'bool
 
 /**
  * 共享底色上的内嵌式工作区。外层需明确高度，例如 className="h-dvh"。
- * --workspace-shell-background、--workspace-surface 控制背景；
- * --workspace-gap 控制标签栏与正文的同一条左右对齐线；--workspace-radius 控制圆角。
+ * --workspace-shell-background、--workspace-surface 控制背景；--workspace-radius 控制圆角。
+ * 默认外侧留白为 8px，桌面有侧栏时左侧不重复加留白，保证收起后的图标到内容边界同样居中。
+ * 显式设置 --workspace-gap 可统一覆盖所有边距；标签栏与正文始终使用同一条左右对齐线。
  * 不接管路由、持久化或未保存确认，弹出页面由 WorkspaceTabBar 的 onOpenInNewWindow 接入。
  */
 export function WorkspaceShell({ sidebar, tabBar, mobileHeader, header, footer, scroll = 'content', contentProps, children, className, ...props }: WorkspaceShellProps) {
+  // Like ToolPlane's desktop ml-0: a second left inset would make a centered
+  // icon rail LOOK off-center against the adjacent content card. Mobile and
+  // layouts without a sidebar retain the normal outer inset. An explicitly
+  // configured gap remains an opt-in uniform override for existing consumers.
+  const sidebarInset = hasSlot(sidebar) && 'sm:ml-[var(--workspace-gap,0px)]';
   return <div {...props} data-slot="workspace-shell" className={cn('flex h-full w-full min-h-0 min-w-0 overflow-hidden bg-[var(--workspace-shell-background,var(--muted))] text-foreground', className)}>
     {sidebar}
     <div data-slot="workspace-body" className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       {hasSlot(mobileHeader) && <div data-slot="workspace-mobile-header" className="flex min-h-14 shrink-0 items-center gap-3 px-3 sm:hidden">{mobileHeader}</div>}
-      {hasSlot(tabBar) && <div data-slot="workspace-shell-tabs" className="peer/workspace-tabs mx-[var(--workspace-gap,0.5rem)] min-w-0 shrink-0">{tabBar}</div>}
+      {hasSlot(tabBar) && <div data-slot="workspace-shell-tabs" className={cn('peer/workspace-tabs mx-[var(--workspace-gap,0.5rem)] min-w-0 shrink-0', sidebarInset)}>{tabBar}</div>}
       <div data-slot="workspace-surface" className={cn(
         'm-[var(--workspace-gap,0.5rem)] flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[var(--workspace-radius,0.75rem)] bg-[var(--workspace-surface,var(--background))]',
+        sidebarInset,
         hasSlot(tabBar) && 'mt-0 peer-has-[[data-leading-active=true]]/workspace-tabs:rounded-tl-none',
       )}>
         {hasSlot(header) && <div data-slot="workspace-shell-header" className="min-w-0 shrink-0">{header}</div>}
