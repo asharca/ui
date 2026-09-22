@@ -26,6 +26,9 @@ export default function WorkspaceTabBarDemo() {
     if (!popup) { setError('浏览器拦截了弹出窗口，原标签已保留。请允许弹窗后重试。'); return; }
     try {
       popup.opener = null;
+      // A new browsing context may start with a copy of its opener's session
+      // storage. Clear only the child copy, then write this demo tab's payload.
+      popup.sessionStorage.clear();
       popup.sessionStorage.setItem(`asharca:workspace-window:${key}`, JSON.stringify({ version: 1, id, title: tab.title, note: `这是「${tab.title}」的本地演示页面。` }));
       popup.location.replace(url.href);
       setError(''); remove(id);

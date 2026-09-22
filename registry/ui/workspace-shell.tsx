@@ -47,7 +47,9 @@ export function WorkspaceShell({ sidebar, tabBar, mobileHeader, header, footer, 
 
 /**
  * 在用户点击的同步回调中打开同源页面。被浏览器拦截时返回 null，不应移除原标签。
- * prepare 可在导航前把该标签的最小状态写入子窗口 sessionStorage；不要把凭据或整个应用状态传过去。
+ * prepare 可在导航前同步写入该标签的最小状态；不要传递凭据或整个应用状态。
+ * 浏览器可能自动复制 opener 的 sessionStorage；需要隔离时，在 prepare 中清理或筛选子窗口副本，
+ * 再写入最小快照。工具不会自动清空宿主可能依赖的登录状态；示例使用独立的最小快照。
  * 新窗口在导航前清除 opener；prepare 或导航失败会关闭空白窗口并抛错。
  * 页面必须有可直接访问的路由；刷新恢复、原标签移除和未保存确认由宿主负责。
  * 浏览器最终可能选择新标签页而不是独立窗口。

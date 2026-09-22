@@ -94,7 +94,13 @@ export default function WorkspaceShellDemo() {
       const url = new URL(window.location.href);
       url.search = ''; url.hash = ''; url.searchParams.set(windowParam, key);
       const snapshot: WindowSnapshot = { version: 1, id: tab.id, title: tab.title, note: notes[id] ?? '' };
-      const popup = openWorkspaceWindow(url, (child) => child.sessionStorage.setItem(storagePrefix + key, JSON.stringify(snapshot)));
+      const popup = openWorkspaceWindow(url, (child) => {
+        // about:blank can inherit a COPY of its opener's session storage.
+        // Clear only the child copy; unrelated parent state must not travel
+        // with this demo tab, and the original window must remain unchanged.
+        child.sessionStorage.clear();
+        child.sessionStorage.setItem(storagePrefix + key, JSON.stringify(snapshot));
+      });
       if (!popup) { setError('浏览器拦截了弹出窗口。原标签和便签已保留，请允许弹窗后重试。'); return; }
       remove(id);
     } catch { setError('独立窗口未能打开。原标签和便签已保留，请重试。'); }

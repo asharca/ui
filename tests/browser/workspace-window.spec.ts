@@ -116,18 +116,33 @@ test('right-click and keyboard menus target the correct inactive tab', async ({ 
   await page.goto('components/workspace-shell/');
   const shell = page.locator(shellSelector);
   const target = shell.getByRole('tab', { name: 'MCP 服务', exact: true });
+  await target.click();
+  await shell.getByRole('textbox', { name: '工作区便签' }).fill('MCP 独立便签');
+  const home = shell.getByRole('tab', { name: '概览', exact: true });
+  await home.click();
+  await shell.getByRole('textbox', { name: '工作区便签' }).fill('概览保留在原窗口');
+  const homeId = await home.getAttribute('id');
   await target.click({ button: 'right' });
   await expect(page.getByRole('menuitem', { name: '在独立窗口打开' })).toBeVisible();
-  await expect(shell.getByRole('tab', { name: '概览', exact: true })).toHaveAttribute('aria-selected', 'true');
+  // Radix's modal context menu intentionally hides the background from the
+  // accessibility tree. Check the existing DOM selection, not a visible-role
+  // query that cannot find the background until the menu closes.
+  await expect(shell.locator('[role="tab"][aria-selected="true"]')).toHaveAttribute('id', homeId!);
   const opened = page.waitForEvent('popup');
   await page.getByRole('menuitem', { name: '在独立窗口打开' }).click();
   const popup = await opened;
   await expect(popup.getByRole('heading', { name: 'MCP 服务', exact: true })).toBeVisible();
+  await expect(popup.getByRole('textbox', { name: '工作区便签' })).toHaveValue('MCP 独立便签');
+  await expect(target).toHaveCount(0);
+  await expect(home).toHaveAttribute('aria-selected', 'true');
+  await expect(shell.getByRole('textbox', { name: '工作区便签' })).toHaveValue('概览保留在原窗口');
   await popup.close();
   const agents = shell.getByRole('tab', { name: 'Agents', exact: true });
   await agents.focus(); await page.keyboard.press('Shift+F10');
   await expect(page.getByRole('menuitem', { name: '在独立窗口打开' })).toBeVisible();
+  await expect(shell.locator('[role="tab"][aria-selected="true"]')).toHaveAttribute('id', homeId!);
   await page.keyboard.press('Escape'); await expect(agents).toBeFocused();
+  await expect(home).toHaveAttribute('aria-selected', 'true');
 });
 
 test('detaching the last tab leaves a usable replacement rather than an empty shell', async ({ page }) => {
@@ -180,3 +195,24 @@ test('invalid detached state shows recovery UI instead of a blank or fabricated 
   await page.getByRole('link', { name: '返回组件页面' }).click();
   await expect(page.getByRole('heading', { name: 'Workspace Shell', exact: true })).toBeVisible();
 });
+
+for (const [slug, title] of [['workspace-shell', 'Agents'], ['workspace-tab-bar', '设计文档']]) {
+  test(`detached ${slug} copies only its snapshot, not inherited parent session data`, async ({ page }) => {
+    await page.goto(`components/${slug}/`);
+    await page.evaluate(() => sessionStorage.setItem('parent-only-sentinel', 'keep-in-parent'));
+    await page.locator('.detail-preview').getByRole('button', { name: `${title}操作`, exact: true }).click();
+    const opened = page.waitForEvent('popup');
+    await page.getByRole('menuitem', { name: '在独立窗口打开', exact: true }).click();
+    const popup = await opened;
+    await expect(popup.locator('[data-demo="workspace-detached"]')).toBeVisible();
+    const state = await popup.evaluate(() => {
+      const key = `asharca:workspace-window:${new URLSearchParams(location.search).get('__workspaceWindow')}`;
+      return { keys: Object.keys(sessionStorage), key, snapshot: JSON.parse(sessionStorage.getItem(key) || '{}') };
+    });
+    expect(state.keys).toEqual([state.key]);
+    expect(state.snapshot.title).toBe(title);
+    expect(Object.keys(state.snapshot).sort()).toEqual(['id', 'note', 'title', 'version']);
+    expect(await page.evaluate(() => sessionStorage.getItem('parent-only-sentinel'))).toBe('keep-in-parent');
+    await popup.close();
+  });
+}
