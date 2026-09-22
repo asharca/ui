@@ -6,7 +6,7 @@ import { allEntries, catalog, resolveFiles } from '../registry/catalog.mjs';
 const json = async (path) => JSON.parse(await readFile(path, 'utf8'));
 
 test('all registry items validate against the official shadcn schema', async () => {
-  registrySchema.parse(await json('public/registry.json'));
+  registrySchema.parse(await json('public/r/registry.json'));
   for (const entry of allEntries) registryItemSchema.parse(await json(`public/r/${entry.slug}.json`));
 });
 test('every payload contains the exact source and its complete dependency closure', async () => {

@@ -63,7 +63,8 @@ test('table, chart and Markdown heavy dependencies are scoped to their source en
 test('the single llms index and built item count match the expanded catalog', async () => {
   const llms = await readFile('public/llms.txt', 'utf8');
   const items = await readdir('public/r');
-  assert.equal(items.filter((item) => item.endsWith('.json')).length, 62);
+  assert.ok(items.includes('registry.json'));
+  assert.equal(items.filter((item) => item.endsWith('.json') && item !== 'registry.json').length, 62);
   for (const slug of original) assert.ok(llms.includes(`/r/${slug}.json`), `llms.txt omits ${slug}`);
   assert.doesNotMatch(llms, /@asharca\/ui(?:\/|["'])/);
 });

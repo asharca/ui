@@ -10,6 +10,8 @@ if (!['https:', 'http:'].includes(site.protocol) || site.search || site.hash) th
 if (!site.pathname.endsWith('/')) site.pathname += '/';
 const url = (path) => new URL(path, site).href;
 await rm(resolve(root, 'public/r'), { recursive: true, force: true });
+// Remove the previous generated index when rebuilding an existing checkout.
+await rm(resolve(root, 'public/registry.json'), { force: true });
 await mkdir(resolve(root, 'public/r'), { recursive: true });
 const items = [];
 for (const entry of allEntries) {
@@ -26,22 +28,31 @@ for (const entry of allEntries) {
     files, categories: [entry.group],
     docs: 'Requires React 19, TypeScript, Tailwind CSS 4 and shadcn theme tokens. Files are installed below aliases.components/asharca. No global styles or existing theme values are overwritten. Model calls and authentication belong to your app.',
   });
+  // Installation endpoints retain the complete, unchanged source payload.
   await writeFile(resolve(root, `public/r/${entry.slug}.json`), JSON.stringify(item, null, 2) + '\n');
-  items.push(item);
+  // The public directory index carries metadata, never duplicated file content.
+  items.push({
+    ...item,
+    files: item.files.map((file) => Object.fromEntries(Object.entries(file).filter(([key]) => key !== 'content'))),
+  });
 }
 const registry = registrySchema.parse({ $schema: 'https://ui.shadcn.com/schema/registry.json', name: 'asharca', homepage: site.href, items });
-await writeFile(resolve(root, 'public/registry.json'), JSON.stringify(registry, null, 2) + '\n');
+await writeFile(resolve(root, 'public/r/registry.json'), JSON.stringify(registry, null, 2) + '\n');
 const text = [
   '# Asharca UI', '',
   '> 简约的 React 组件源码。通过 shadcn 安装，然后在自己的项目中修改。', '',
   '## Endpoints', '',
-  `- Registry index: ${url('registry.json')}`,
+  `- Registry index: ${url('r/registry.json')}`,
   `- Component source and dependencies: ${url('r/')}{slug}.json`,
   `- Installation guide: ${url('docs/installation/')}`, '',
   '## Installation', '',
   'Requires React 19, TypeScript, Tailwind CSS 4 and a project initialized with shadcn. Existing shadcn theme tokens are reused; installing a component does not replace the project theme.', '',
   `npx shadcn@latest add ${url('r/button.json')}`, '',
-  'Each JSON payload contains the complete local dependency closure: copy every files[].content to the path described by files[].target and install all dependencies. @components/ resolves to aliases.components in components.json, not a literal folder. Relative imports must stay relative; keep all installed files in the same asharca directory.', '',
+  'For namespace commands before public directory acceptance, merge this registries field into the consumer project components.json; preserve all other configuration:', '',
+  JSON.stringify({ registries: { '@asharca': `${url('r/')}{name}.json` } }, null, 2), '',
+  'npx shadcn@latest add @asharca/button', '',
+  'Do not assume public directory acceptance. The namespace above works after project configuration; direct URL installation does not require directory registration.', '',
+  'The registry index contains metadata only. To install, fetch the individual r/{slug}.json payload, copy every files[].content to files[].target and install all dependencies. Each item contains its complete local dependency closure. @components/ resolves to aliases.components in components.json, not a literal folder. Relative imports must stay relative; keep all installed files in the same asharca directory.', '',
   'Example with the conventional @/ alias:', '',
   'import { Button } from "@/components/asharca/button";', '',
   'Use project-local imports. Read the actual TypeScript prop types in the payload instead of inventing APIs. Follow the host project aliases when they differ from @/. Do not silently overwrite locally modified files. CLI and manual installation use identical source.', '',
@@ -54,4 +65,4 @@ const text = [
   'MIT. Visual direction: beui.dev. See THIRD_PARTY_NOTICES.md for attribution.', '',
 ].join('\n');
 await writeFile(resolve(root, 'public/llms.txt'), text, 'utf8');
-console.log(`Built ${catalog.length} components, ${items.length} validated registry items and one UTF-8 llms.txt.`);
+console.log(`Built ${catalog.length} components, ${items.length} validated registry items, a metadata-only r/registry.json and one UTF-8 llms.txt.`);
