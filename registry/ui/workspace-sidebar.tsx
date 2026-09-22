@@ -10,6 +10,8 @@ import { cn, focusRing } from './utils';
 export interface WorkspaceSidebarItem { id: string; label: string; icon?: ReactNode; badge?: ReactNode; href?: string; disabled?: boolean }
 export interface WorkspaceSidebarGroup { id: string; title?: string; items: WorkspaceSidebarItem[] }
 export interface WorkspaceSidebarProps {
+  /** default：独立面板；inset：融入 WorkspaceShell 底色。手机抽屉始终保持独立浮层。 */
+  variant?: 'default' | 'inset';
   groups: WorkspaceSidebarGroup[];
   activeId?: string;
   onSelect?: (id: string) => void;
@@ -31,7 +33,7 @@ export interface WorkspaceSidebarProps {
 const geometry = 'motion-safe:duration-200 motion-safe:ease-[ease-out] motion-reduce:transition-none';
 const textFade = 'motion-safe:transition-opacity motion-safe:duration-[120ms] motion-safe:ease-[ease-out] motion-reduce:transition-none';
 
-export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onCollapsedChange, mobileOpen = false, onMobileOpenChange, title = '工作区', footer, className }: WorkspaceSidebarProps) {
+export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onCollapsedChange, mobileOpen = false, onMobileOpenChange, title = '工作区', footer, variant = 'default', className }: WorkspaceSidebarProps) {
   const id = useId();
   const toggle = useRef<HTMLButtonElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
@@ -45,8 +47,9 @@ export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onColl
 
   function content(compact: boolean, mobile: boolean) {
     const fade = cn(textFade, compact ? 'opacity-0' : 'opacity-100');
+    const inset = variant === 'inset' && !mobile;
     return <>
-      <header data-slot="workspace-header" className="flex h-14 shrink-0 items-center border-b border-border px-3">
+      <header data-slot="workspace-header" className={cn('flex h-14 shrink-0 items-center px-3', !inset && 'border-b border-border')}>
         <span data-slot="workspace-title" aria-hidden={compact || undefined} className={cn('min-w-0 flex-1 truncate whitespace-nowrap text-sm font-semibold', fade)}>{title}</span>
         {mobile ? <Primitive.Close asChild><IconButton label="关闭工作区导航" icon={<X />} /></Primitive.Close> : <IconButton
           ref={toggle} label={compact ? '展开工作区侧栏' : '折叠工作区侧栏'}
@@ -67,7 +70,8 @@ export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onColl
                 'grid w-full shrink-0 grid-cols-[var(--workspace-icon-rail)_minmax(0,1fr)] items-center overflow-hidden p-0 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground motion-safe:transition-[height,border-radius,background-color,color]',
                 geometry, focusRing, 'focus-visible:ring-inset focus-visible:ring-offset-0',
                 compact ? 'h-9 rounded-[18px]' : 'h-10 rounded-lg',
-                activeId === item.id && 'bg-muted text-foreground', item.disabled && 'cursor-not-allowed opacity-40',
+                inset && 'hover:bg-background/60',
+                activeId === item.id && (inset ? 'bg-[var(--workspace-surface,var(--background))] text-foreground' : 'bg-muted text-foreground'), item.disabled && 'cursor-not-allowed opacity-40',
               );
               const children = <>
                 <span data-slot="workspace-icon" aria-hidden="true" className="inline-grid size-4 shrink-0 place-items-center justify-self-center [&_svg]:size-4">{item.icon ?? <span className="size-1.5 rounded-full bg-current" />}</span>
@@ -88,16 +92,18 @@ export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onColl
           </div>)}
         </nav>
       </TooltipPrimitive.Provider>
-      {footer && <div ref={mobile ? undefined : footerRef} data-slot="workspace-footer" aria-hidden={compact || undefined} inert={compact} className="shrink-0 overflow-hidden border-t border-border p-3">
+      {footer && <div ref={mobile ? undefined : footerRef} data-slot="workspace-footer" aria-hidden={compact || undefined} inert={compact} className={cn('shrink-0 overflow-hidden p-3', !inset && 'border-t border-border')}>
         {/* Keep the expanded footer's height and local state during folding. */}
-        <div className={cn(mobile ? 'w-full' : 'w-[calc(var(--workspace-sidebar-width,14rem)-1.5rem-1px)]', fade)}>{footer}</div>
+        <div className={cn(mobile ? 'w-full' : 'w-[calc(var(--workspace-sidebar-width,14rem)-1.5rem-var(--workspace-sidebar-border,1px))]', fade)}>{footer}</div>
       </div>}
     </>;
   }
 
   return <>
-    <aside aria-label={`${title}侧栏`} data-slot="workspace-sidebar" data-collapsed={collapsed}
-      className={cn('hidden h-full min-h-0 w-[var(--workspace-sidebar-width,14rem)] shrink-0 flex-col overflow-hidden border-r border-border bg-background sm:flex data-[collapsed=true]:w-[var(--workspace-sidebar-collapsed-width,4rem)] [--workspace-icon-rail:calc(var(--workspace-sidebar-collapsed-width,4rem)_-_1.5rem_-_1px)] motion-safe:transition-[width]', geometry, className)}>
+    <aside aria-label={`${title}侧栏`} data-slot="workspace-sidebar" data-variant={variant} data-collapsed={collapsed}
+      className={cn('hidden h-full min-h-0 w-[var(--workspace-sidebar-width,14rem)] shrink-0 flex-col overflow-hidden sm:flex data-[collapsed=true]:w-[var(--workspace-sidebar-collapsed-width,4rem)] [--workspace-icon-rail:calc(var(--workspace-sidebar-collapsed-width,4rem)_-_1.5rem_-_var(--workspace-sidebar-border,1px))] motion-safe:transition-[width]',
+        variant === 'inset' ? '[--workspace-sidebar-border:0px] bg-[var(--workspace-shell-background,var(--muted))]' : '[--workspace-sidebar-border:1px] border-r border-border bg-background',
+        geometry, className)}>
       {content(collapsed, false)}
     </aside>
     <Primitive.Root open={mobileOpen} onOpenChange={onMobileOpenChange}>
