@@ -1,11 +1,14 @@
 /** Markdown and docgen normalization shared by the static builder and tests. */
-const common = new Set(['children', 'className', 'style', 'id', 'disabled', 'name', 'required', 'value', 'defaultValue', 'checked', 'defaultChecked', 'onChange', 'onClick', 'type', 'ref']);
+const common = new Set(['children', 'className', 'ref', 'disabled']);
 const origins = (prop) => [prop.parent, ...(prop.declarations || [])].filter(Boolean);
+const local = (prop) => origins(prop).some(({ fileName }) => fileName.replaceAll('\\', '/').includes('/registry/ui/'));
+const semanticLibrary = (prop) => origins(prop).some(({ fileName }) => {
+  const path = fileName.replaceAll('\\', '/');
+  // Recharts' util/types defines adapted DOM events, not chart-specific APIs.
+  return /\/node_modules\/(?:@radix-ui\/|radix-ui\/|recharts\/types\/component\/)/.test(path);
+});
 export function isPrimaryProp(prop) {
-  const declarations = origins(prop);
-  return declarations.some(({ fileName }) => fileName.replaceAll('\\', '/').includes('/registry/ui/')) ||
-    declarations.some(({ fileName }) => /\/node_modules\/(?:@radix-ui\/|radix-ui\/|recharts\/)/.test(fileName.replaceAll('\\', '/'))) ||
-    common.has(prop.name);
+  return local(prop) || semanticLibrary(prop) || common.has(prop.name);
 }
 export function formatPropType(prop) {
   return prop.type?.name === 'enum' && Array.isArray(prop.type.value)
@@ -21,7 +24,8 @@ export function formatDefault(prop, explicit) {
 export function normalizeProps(doc, defaults = {}) {
   const props = Object.values(doc.props);
   const hasOrigins = props.some((prop) => origins(prop).length);
-  return props.map((prop) => ({
+  const rank = (prop) => common.has(prop.name) ? 3 : local(prop) ? 0 : Object.hasOwn(defaults, prop.name) ? 1 : semanticLibrary(prop) ? 2 : 4;
+  return props.sort((a, b) => rank(a) - rank(b)).map((prop) => ({
     name: prop.name,
     type: formatPropType(prop),
     required: prop.required,

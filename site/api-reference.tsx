@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { publicPath } from './preferences';
 import { CodeBlock } from './code';
 
@@ -19,6 +19,12 @@ function PropsTable({ name, props }: { name: string; props: PropDoc[] }) {
       <div role="cell" className="api-default"><span className="api-mobile-label">Default: </span><code>{prop.defaultValue ?? '—'}</code></div>
     </div>)}
   </div>;
+}
+function ApiDetails({ label, className, children }: { label: ReactNode; className: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return <details className={className} open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <summary>{label}</summary>{open && children}
+  </details>;
 }
 export function ApiReference({ slug }: { slug: string }) {
   const [data, setData] = useState<ApiDocument | null>(null);
@@ -46,10 +52,10 @@ export function ApiReference({ slug }: { slug: string }) {
           <h3>{component.name}</h3>
           {component.description && <p className="reading-note">{component.description}</p>}
           {own.length ? <PropsTable name={component.name} props={own} /> : <p className="small-note">没有额外的组件参数。</p>}
-          {inherited.length > 0 && <details className="api-inherited"><summary>继承属性 <span>{inherited.length}</span></summary><PropsTable name={`${component.name} inherited`} props={inherited} /></details>}
+          {inherited.length > 0 && <ApiDetails className="api-inherited" label={<>继承属性 <span>{inherited.length}</span></>}><PropsTable name={`${component.name} inherited`} props={inherited} /></ApiDetails>}
         </div>;
       })}
-      {data.relatedTypes.length + data.helpers.length > 0 && <details className="api-related"><summary>关联类型与辅助函数</summary>{[...data.relatedTypes, ...data.helpers].map((type) => <CodeBlock key={type.name} code={type.code} label={type.name} language="typescript" />)}</details>}
+      {data.relatedTypes.length + data.helpers.length > 0 && <ApiDetails className="api-related" label="关联类型与辅助函数">{[...data.relatedTypes, ...data.helpers].map((type) => <CodeBlock key={type.name} code={type.code} label={type.name} language="typescript" />)}</ApiDetails>}
     </>}
   </section>;
 }
