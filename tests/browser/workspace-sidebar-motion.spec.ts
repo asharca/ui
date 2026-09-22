@@ -85,6 +85,9 @@ for (const dark of [false, true]) {
     const sidebar = page.locator('.detail-preview [data-slot="workspace-sidebar"]');
     await expect(sidebar.getByRole('button', { name: '折叠工作区侧栏' })).toBeVisible();
     await sidebar.scrollIntoViewIfNeeded();
+    await expect(sidebar).toHaveCSS('transition-duration', '0.2s');
+    await expect(sidebar).toHaveCSS('transition-timing-function', 'ease-out');
+    await expect(sidebar.locator('[data-slot="workspace-label"]').first()).toHaveCSS('transition-duration', '0.12s');
     const rounds = [];
     for (const reverse of [false, true, false, true]) { const result = await record(sidebar, reverse); checkMotion(result, { reverse }); rounds.push(result); }
     await sidebar.evaluate((node) => { node.style.setProperty('--workspace-sidebar-width', '304px'); node.style.setProperty('--workspace-sidebar-collapsed-width', '80px'); });
@@ -101,9 +104,12 @@ for (const dark of [false, true]) {
 test('compact tooltips, selection and keyboard toggle preserve focus', async ({ page }) => {
   await page.goto('components/workspace-sidebar/');
   const sidebar = page.locator('.detail-preview [data-slot="workspace-sidebar"]');
-  const toggle = sidebar.getByRole('button', { name: '折叠工作区侧栏' });
+  // The accessible name correctly changes after the click, so retain a stable locator.
+  const toggle = sidebar.locator('header button');
+  await expect(toggle).toHaveAccessibleName('折叠工作区侧栏');
   await toggle.focus(); await page.keyboard.press('Enter');
   await expect(sidebar).toHaveCSS('width', '64px');
+  await expect(toggle).toHaveAccessibleName('展开工作区侧栏');
   await expect(toggle).toBeFocused();
   const project = sidebar.getByRole('button', { name: '项目', exact: true });
   await project.focus(); await expect(page.getByRole('tooltip', { name: '项目', exact: true })).toBeVisible();

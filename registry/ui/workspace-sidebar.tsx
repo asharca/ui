@@ -27,8 +27,9 @@ export interface WorkspaceSidebarProps {
 // Restore the pre-rewrite fixed icon rail and 200ms ease-out geometry, with a
 // shorter 120ms text fade. Never swap justification, use sr-only, or unmount
 // text when toggling: those cause first-frame jumps during a width transition.
-const geometry = 'motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none';
-const textFade = 'motion-safe:transition-opacity motion-safe:duration-[120ms] motion-safe:ease-out motion-reduce:transition-none';
+// Use CSS ease-out explicitly, rather than Tailwind's different --ease-out curve.
+const geometry = 'motion-safe:duration-200 motion-safe:ease-[ease-out] motion-reduce:transition-none';
+const textFade = 'motion-safe:transition-opacity motion-safe:duration-[120ms] motion-safe:ease-[ease-out] motion-reduce:transition-none';
 
 export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onCollapsedChange, mobileOpen = false, onMobileOpenChange, title = '工作区', footer, className }: WorkspaceSidebarProps) {
   const id = useId();
