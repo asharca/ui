@@ -183,7 +183,8 @@ test('shared surface tokens and custom sidebar widths work without global CSS', 
   await expect(sidebar).toHaveCSS('width', '288px');
   await expect(sidebar).toHaveCSS('background-color', 'rgb(232, 232, 236)');
   await expect(surface).toHaveCSS('margin-left', '12px');
-  await expect(surface).toHaveCSS('border-top-left-radius', '18px');
+  // The leading active tab joins the top-left corner; the other corners retain the token.
+  await expect(surface).toHaveCSS('border-top-right-radius', '18px');
   await expect(surface).toHaveCSS('background-color', 'rgb(250, 250, 252)');
   await expect(shell.locator('[data-slot="workspace-tab"][data-active="true"]')).toHaveCSS('background-color', 'rgb(250, 250, 252)');
   await sidebar.getByRole('button', { name: '折叠工作区侧栏' }).click();
