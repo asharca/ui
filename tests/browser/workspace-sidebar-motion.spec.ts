@@ -145,14 +145,23 @@ test('mobile drawer slides in and out, ignores desktop collapse and restores foc
   await expect(dialog.locator('[data-slot="workspace-label"]').first()).toHaveCSS('opacity', '1');
   await expect(dialog.locator('[data-slot="workspace-item"]').first()).toHaveCSS('height', '40px');
   await page.screenshot({ path: testInfo.outputPath('workspace-drawer-mobile.png') });
-  await dialog.getByRole('button', { name: '关闭工作区导航' }).click();
-  const xs: number[] = [];
-  for (let i = 0; i < 12; i++) {
-    if (!await dialog.count()) break;
-    const left = await dialog.evaluate((node) => node.getBoundingClientRect().left).catch(() => null);
-    if (left !== null) xs.push(left);
-    await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => done())));
-  }
+  // Resolve before closing, then sample that node inside the browser. Separate
+  // count()/evaluate() calls race with unmount and auto-wait for a gone dialog.
+  const close = await dialog.getByRole('button', { name: '关闭工作区导航' }).elementHandle();
+  const xs = await dialog.evaluate(async (node, closeButton) => {
+    if (!closeButton) throw new Error('The drawer close button is missing.');
+    const button = closeButton as HTMLButtonElement;
+    button.focus({ preventScroll: true });
+    const samples = [node.getBoundingClientRect().left];
+    const start = performance.now();
+    button.click();
+    while (node.isConnected && performance.now() - start < 600) {
+      await new Promise<void>((done) => requestAnimationFrame(() => done()));
+      if (node.isConnected) samples.push(node.getBoundingClientRect().left);
+    }
+    return samples;
+  }, close);
+  await close?.dispose();
   expect(xs.some((x) => x < -1 && x > -303)).toBe(true);
   await expect(dialog).toHaveCount(0); await expect(opener).toBeFocused();
   await expect(page.locator('[data-slot="workspace-backdrop"]')).toHaveCount(0);
