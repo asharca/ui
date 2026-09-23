@@ -1,0 +1,65 @@
+/* Preview chrome is site-only. None of these rules is shipped to consumers. */
+.example-workbench {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+.example-section .workbench-toolbar {
+  min-height: 49px;
+  margin: 0;
+  padding: 4px 12px 0;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.workbench-actions, .workbench-width {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.workbench-actions { padding-bottom: 4px; }
+.workbench-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.workbench-tool[aria-pressed='true'] { background: var(--muted); color: var(--foreground); }
+.workbench-tool:disabled { cursor: not-allowed; opacity: .35; }
+.workbench-tool:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.workbench-tool > span { display: inline-flex; }
+.workbench-divider { width: 1px; height: 16px; margin-inline: 5px; background: var(--border); }
+.example-workbench > .detail-preview {
+  margin: 0;
+  border: 0;
+  border-radius: 0 0 14px 14px;
+  padding: clamp(20px, 3vw, 36px);
+  background: color-mix(in srgb, var(--muted) 12%, var(--card));
+}
+.example-workbench > .workbench-source { margin: 0; padding: 16px; min-width: 0; }
+.preview-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+}
+@media (hover: hover) {
+  .workbench-tool:hover:not(:disabled) { background: var(--muted); color: var(--foreground); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .workbench-tool { transition: background-color 150ms, color 150ms; }
+  .preview-canvas { transition: max-width 240ms cubic-bezier(.16, 1, .3, 1); }
+}
+@media (max-width: 420px) {
+  .example-section .workbench-toolbar { padding-inline: 8px; }
+  .workbench-tool { width: 30px; height: 32px; }
+  .workbench-actions { margin-left: auto; }
+}

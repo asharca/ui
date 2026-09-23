@@ -1,9 +1,9 @@
 'use client';
 
 import { forwardRef, type ReactNode } from 'react';
-import { motion, useReducedMotion, type HTMLMotionProps } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion, type HTMLMotionProps } from 'motion/react';
 import { LoaderCircle } from 'lucide-react';
-import { cn, focusRing, pressSpring } from './utils';
+import { cn, fadeTransition, focusRing, pressSpring } from './utils';
 
 export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
   children?: ReactNode;
@@ -12,26 +12,39 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>
   loading?: boolean;
 }
 const variants = {
-  default: 'border-transparent bg-primary text-primary-foreground hover:opacity-90',
-  secondary: 'border-transparent bg-muted text-foreground hover:bg-muted/75',
-  outline: 'border-border bg-background text-foreground hover:bg-muted',
+  default: 'border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+  secondary: 'border-border/50 bg-muted text-foreground hover:bg-muted/75',
+  outline: 'border-border bg-background text-foreground shadow-xs hover:border-foreground/20 hover:bg-muted/50',
   ghost: 'border-transparent bg-transparent text-foreground hover:bg-muted',
-  danger: 'border-transparent bg-destructive text-white hover:opacity-90',
+  danger: 'border-transparent bg-destructive text-white shadow-xs hover:bg-destructive/90',
 };
 const sizes = { sm: 'h-8 px-3 text-xs', md: 'h-10 px-4 text-sm', lg: 'h-11 px-5 text-sm', icon: 'size-9 p-0' };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'default', size = 'md', loading = false, disabled, type = 'button', className, children, ...props }, ref,
+  { variant = 'default', size = 'md', loading = false, disabled, type = 'button', className, children, whileTap, transition, ...props }, ref,
 ) {
   const reduce = useReducedMotion();
+  const blocked = disabled || loading;
   return (
     <motion.button
-      {...props} ref={ref} type={type} disabled={disabled || loading} aria-busy={loading || undefined}
-      whileTap={reduce || disabled || loading ? undefined : { scale: 0.97 }} transition={pressSpring}
-      className={cn('inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border font-medium motion-safe:transition-[color,background-color,border-color,opacity] disabled:pointer-events-none disabled:opacity-45 [&_svg]:shrink-0', focusRing, variants[variant], sizes[size], className)}
+      {...props} ref={ref} type={type} disabled={blocked} aria-busy={loading || undefined}
+      whileTap={reduce || blocked ? undefined : (whileTap ?? { scale: 0.98 })}
+      transition={transition ?? pressSpring}
+      className={cn('relative inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] border font-medium motion-safe:transition-[color,background-color,border-color,box-shadow] motion-safe:duration-150 disabled:pointer-events-none disabled:opacity-45 [&_svg]:shrink-0', focusRing, variants[variant], sizes[size], className)}
     >
-      {loading && <LoaderCircle aria-hidden="true" className="size-4 motion-safe:animate-spin" />}
-      {children}
+      {/* Keep the original label in flow and in the accessibility tree. Inherit
+          host gap/alignment so loading support does not break layout utilities. */}
+      <motion.span data-slot="button-label" initial={false} animate={{ opacity: loading ? 0 : 1 }} transition={fadeTransition}
+        className="inline-flex min-w-0 flex-1 [align-items:inherit] [flex-direction:inherit] [gap:inherit] [justify-content:inherit]">
+        {children}
+      </motion.span>
+      <AnimatePresence initial={false}>
+        {loading && <motion.span key="spinner" aria-hidden="true" data-slot="button-spinner"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={fadeTransition}
+          className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <LoaderCircle className="size-4 motion-safe:animate-spin" />
+        </motion.span>}
+      </AnimatePresence>
     </motion.button>
   );
 });

@@ -1,8 +1,11 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState, type ComponentType, type LazyExoticComponent, type ReactNode } from 'react';
-import { RotateCcw } from 'lucide-react';
+import { Monitor, RotateCcw, Smartphone } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../registry/ui/tabs';
+import { fadeTransition } from '../registry/ui/utils';
 import { CodeBlock } from './code';
 import { RegistryFiles, useRegistry } from './registry';
+import './preview.css';
 
 const modules = import.meta.glob<{ default: ComponentType }>('../examples/*.tsx');
 const rawModules = import.meta.glob<string>('../examples/*.tsx', { query: '?raw', import: 'default' });
@@ -41,13 +44,29 @@ function Usage({ name }: { name: string }) {
 export function ExampleSection({ slug, name, title }: { slug: string; name: string; title: string }) {
   const [tab, setTab] = useState('preview');
   const [revision, setRevision] = useState(0);
+  const [width, setWidth] = useState<'full' | 'narrow'>('full');
+  const reduce = useReducedMotion();
   const { payload, error, retry } = useRegistry(slug);
-  return <section className="example-section"><h2>{title}</h2><Tabs value={tab} onValueChange={setTab}>
-    <div className="preview-toolbar"><TabsList aria-label={`${title}显示方式`}><TabsTrigger value="preview">Preview</TabsTrigger><TabsTrigger value="usage">Usage</TabsTrigger><TabsTrigger value="code">Code</TabsTrigger></TabsList>
-      <button type="button" className="icon-button" aria-label="重置预览" title="重置预览" onClick={() => setRevision((value) => value + 1)}><RotateCcw size={15} /></button>
+  return <section className="example-section"><h2>{title}</h2><Tabs value={tab} onValueChange={setTab} className="example-workbench">
+    <div className="preview-toolbar workbench-toolbar">
+      <TabsList variant="underline" aria-label={`${title}显示方式`} className="gap-3 border-0">
+        <TabsTrigger value="preview">Preview</TabsTrigger><TabsTrigger value="usage">Usage</TabsTrigger><TabsTrigger value="code">Code</TabsTrigger>
+      </TabsList>
+      <div className="workbench-actions">
+        <div role="group" aria-label="预览宽度" className="workbench-width">
+          <button type="button" className="workbench-tool" aria-label="宽屏预览" title="宽屏预览" aria-pressed={width === 'full'} disabled={tab !== 'preview'} onClick={() => setWidth('full')}><Monitor size={15} aria-hidden="true" /></button>
+          <button type="button" className="workbench-tool" aria-label="窄屏预览" title="窄屏预览（容器宽度 360px，并非设备模拟）" aria-pressed={width === 'narrow'} disabled={tab !== 'preview'} onClick={() => setWidth('narrow')}><Smartphone size={15} aria-hidden="true" /></button>
+        </div>
+        <span aria-hidden="true" className="workbench-divider" />
+        <button type="button" className="workbench-tool" aria-label="重置预览" title="重置预览" disabled={tab !== 'preview'} onClick={() => setRevision((value) => value + 1)}>
+          <motion.span initial={false} animate={{ rotate: reduce ? 0 : revision * -180 }} transition={fadeTransition}><RotateCcw size={15} aria-hidden="true" /></motion.span>
+        </button>
+      </div>
     </div>
-    <TabsContent value="preview" forceMount hidden={tab !== 'preview'} inert={tab !== 'preview'} className="detail-preview data-[state=inactive]:hidden"><Preview key={revision} name={name} eager /></TabsContent>
-    <TabsContent value="usage"><Usage name={name} /></TabsContent>
-    <TabsContent value="code">{error ? <p role="alert">源码加载失败：{error} <button type="button" onClick={retry}>重试</button></p> : payload ? <RegistryFiles payload={payload} slug={slug} /> : <p role="status" className="small-note">正在读取源码…</p>}</TabsContent>
+    <TabsContent value="preview" forceMount hidden={tab !== 'preview'} inert={tab !== 'preview'} className="detail-preview data-[state=inactive]:hidden">
+      <div data-preview-width={width} className="preview-canvas" style={{ maxWidth: width === 'narrow' ? 360 : '100%' }}><Preview key={revision} name={name} eager /></div>
+    </TabsContent>
+    <TabsContent value="usage" className="workbench-source"><Usage key={name} name={name} /></TabsContent>
+    <TabsContent value="code" className="workbench-source">{error ? <p role="alert">源码加载失败：{error} <button type="button" onClick={retry}>重试</button></p> : payload ? <RegistryFiles payload={payload} slug={slug} /> : <p role="status" className="small-note">正在读取源码…</p>}</TabsContent>
   </Tabs></section>;
 }
