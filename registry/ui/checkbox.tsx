@@ -18,10 +18,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   useImperativeHandle(ref, () => input.current!, []);
   useEffect(() => { if (input.current) input.current.indeterminate = indeterminate; }, [indeterminate]);
   const describedBy = [props['aria-describedby'], description && `${id}-description`].filter(Boolean).join(' ') || undefined;
+  const labelledBy = props['aria-labelledby'] ?? (props['aria-label'] ? undefined : `${id}-label`);
   return (
     <label htmlFor={id} className={cn('grid cursor-pointer grid-cols-[1.125rem_minmax(0,1fr)] items-start gap-x-3 text-sm has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50', wrapperClassName)}>
       <span className="relative mt-[3px] inline-grid size-[1.125rem] place-items-center">
-        <input {...props} id={id} ref={input} type="checkbox" aria-describedby={describedBy}
+        <input {...props} id={id} ref={input} type="checkbox" aria-labelledby={labelledBy} aria-describedby={describedBy}
           className={cn('peer m-0 size-[1.125rem] appearance-none rounded-[5px] border border-border bg-background shadow-xs enabled:hover:border-foreground/40 checked:border-primary checked:bg-primary indeterminate:border-primary indeterminate:bg-primary motion-safe:transition-[background-color,border-color,box-shadow] motion-safe:duration-150 forced-colors:appearance-auto', focusRing, className)} />
         {/* Native :checked remains the source of truth, including form.reset(). */}
         <svg aria-hidden="true" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
@@ -33,7 +34,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
           <path d="M5 9h8" />
         </svg>
       </span>
-      <span className="min-w-0 leading-6"><span className="font-medium">{label}</span>{description && <span id={`${id}-description`} className="mt-0.5 block text-xs leading-5 text-muted-foreground">{description}</span>}</span>
+      <span className="min-w-0 leading-6"><span id={`${id}-label`} className="font-medium">{label}</span>{description && <span id={`${id}-description`} className="mt-0.5 block text-xs leading-5 text-muted-foreground">{description}</span>}</span>
     </label>
   );
 });
