@@ -14,11 +14,11 @@ export const Accordion = forwardRef<ElementRef<typeof Primitive.Root>, Component
   // Keep the original discriminated single/multiple API and let Radix retain
   // roving focus, disabled items, orientation and collapsible semantics.
   const root = props.type === 'multiple'
-    ? <Primitive.Root {...props} ref={ref} value={Array.isArray(current) ? current : []} onValueChange={(next) => {
+    ? <Primitive.Root {...props} ref={ref} value={Array.isArray(current) ? current : []} onValueChange={(next: string[]) => {
       if (props.value === undefined) setInternal(next);
       props.onValueChange?.(next);
     }} />
-    : <Primitive.Root {...props} ref={ref} value={typeof current === 'string' ? current : ''} onValueChange={(next) => {
+    : <Primitive.Root {...props} ref={ref} value={typeof current === 'string' ? current : ''} onValueChange={(next: string) => {
       if (props.value === undefined) setInternal(next);
       props.onValueChange?.(next);
     }} />;

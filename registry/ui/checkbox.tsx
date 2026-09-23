@@ -24,13 +24,14 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
       <span className="relative mt-[3px] inline-grid size-[1.125rem] place-items-center">
         <input {...props} id={id} ref={input} type="checkbox" aria-labelledby={labelledBy} aria-describedby={describedBy}
           className={cn('peer m-0 size-[1.125rem] appearance-none rounded-[5px] border border-border bg-background shadow-xs enabled:hover:border-foreground/40 checked:border-primary checked:bg-primary indeterminate:border-primary indeterminate:bg-primary motion-safe:transition-[background-color,border-color,box-shadow] motion-safe:duration-150 forced-colors:appearance-auto', focusRing, className)} />
-        {/* Native :checked remains the source of truth, including form.reset(). */}
+        {/* Native :checked remains the source of truth, including form.reset().
+            Tailwind 4 scale utilities use the individual CSS scale property. */}
         <svg aria-hidden="true" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-          className="pointer-events-none absolute size-[1.125rem] scale-75 text-primary-foreground opacity-0 peer-checked:scale-100 peer-checked:opacity-100 peer-checked:[&_path]:[stroke-dashoffset:0] peer-indeterminate:scale-75 peer-indeterminate:opacity-0 motion-safe:transition-[opacity,transform] motion-safe:duration-150 forced-colors:hidden">
+          className="pointer-events-none absolute size-[1.125rem] scale-75 text-primary-foreground opacity-0 peer-checked:scale-100 peer-checked:opacity-100 peer-checked:[&_path]:[stroke-dashoffset:0] peer-indeterminate:scale-75 peer-indeterminate:opacity-0 motion-safe:transition-[opacity,scale] motion-safe:duration-150 forced-colors:hidden">
           <path d="m4.5 9 3 3 6-6" pathLength="1" strokeDasharray="1" strokeDashoffset="1" className="motion-safe:transition-[stroke-dashoffset] motion-safe:duration-200 motion-safe:ease-out" />
         </svg>
         <svg aria-hidden="true" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
-          className="pointer-events-none absolute size-[1.125rem] scale-75 text-primary-foreground opacity-0 peer-indeterminate:scale-100 peer-indeterminate:opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-150 forced-colors:hidden">
+          className="pointer-events-none absolute size-[1.125rem] scale-75 text-primary-foreground opacity-0 peer-indeterminate:scale-100 peer-indeterminate:opacity-100 motion-safe:transition-[opacity,scale] motion-safe:duration-150 forced-colors:hidden">
           <path d="M5 9h8" />
         </svg>
       </span>
