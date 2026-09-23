@@ -30,12 +30,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {...props} ref={ref} type={type} disabled={blocked} aria-busy={loading || undefined}
       whileTap={reduce || blocked ? undefined : (whileTap ?? { scale: 0.98 })}
       transition={transition ?? pressSpring}
-      className={cn('relative inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[10px] border font-medium motion-safe:transition-[color,background-color,border-color,box-shadow] motion-safe:duration-150 disabled:pointer-events-none disabled:opacity-45 [&_svg]:shrink-0', focusRing, variants[variant], sizes[size], className)}
+      className={cn('relative inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] border font-medium motion-safe:transition-[color,background-color,border-color,box-shadow] motion-safe:duration-150 disabled:pointer-events-none disabled:opacity-45 [&_svg]:shrink-0', focusRing, variants[variant], sizes[size], className)}
     >
-      {/* Keep the original label in flow and in the accessibility tree. Loading
-          must neither resize the button nor remove its accessible name. */}
+      {/* Keep the original label in flow and in the accessibility tree. Inherit
+          host gap/alignment so loading support does not break layout utilities. */}
       <motion.span data-slot="button-label" initial={false} animate={{ opacity: loading ? 0 : 1 }} transition={fadeTransition}
-        className="inline-flex min-w-0 items-center justify-center gap-2">
+        className="inline-flex min-w-0 flex-1 [align-items:inherit] [flex-direction:inherit] [gap:inherit] [justify-content:inherit]">
         {children}
       </motion.span>
       <AnimatePresence initial={false}>
