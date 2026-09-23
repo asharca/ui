@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useId, type ComponentPropsWithoutRef, type ReactNode } from 'react';
-import { cn, focusRing } from './utils';
+import { cn, fieldControl, focusRing } from './utils';
 
 export interface InputProps extends ComponentPropsWithoutRef<'input'> {
   label: ReactNode;
@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <div className={cn('grid w-full gap-2 text-sm', wrapperClassName)}>
       <label htmlFor={id} className="font-medium leading-5">{label}</label>
       <input {...props} ref={ref} id={id} aria-invalid={error ? true : props['aria-invalid']} aria-describedby={describedBy}
-        className={cn('h-10 min-w-0 w-full rounded-xl border border-border bg-background px-3 text-foreground placeholder:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive motion-safe:transition-colors', focusRing, className)} />
+        className={cn(focusRing, fieldControl, 'h-10', className)} />
       {description && <p id={`${id}-description`} className="text-xs leading-5 text-muted-foreground">{description}</p>}
       {error && <p id={`${id}-error`} role="alert" className="text-xs leading-5 text-destructive">{error}</p>}
     </div>
