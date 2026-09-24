@@ -8,6 +8,7 @@ import { ExampleSection, Preview } from './preview';
 import { Installation, InstallCommand } from './registry';
 import { publicPath, registryUrl, runners, usePreferences } from './preferences';
 
+const exampleTitles: Record<string, string> = { 'safe-streamdown-rich': '表格与 Mermaid 图', 'chat-thread-rich': '用户消息与 AI 富文本', 'tabs-variants': '标签样式' };
 type CatalogEntry = (typeof catalog)[number];
 function ComponentCard({ entry }: { entry: CatalogEntry }) {
   return <article className="component-card" data-component={entry.slug} data-wide={entry.wide || undefined} style={entry.wide ? { gridColumn: '1 / -1' } : undefined}>
@@ -51,9 +52,11 @@ export function ComponentPage() {
   return <article>
     <div className="breadcrumb"><Link to="/components">组件</Link><ChevronRight size={12} /><span>{entry.group}</span></div>
     <div className="page-heading component-heading"><div><h1>{entry.name}</h1><p>{entry.description}</p></div><div className="component-page-actions"><PageActions route={`/components/${entry.slug}`} /><a className="registry-link" href={registryUrl(entry.slug)} aria-label="查看组件安装清单"><Code2 size={15} />JSON</a></div></div>
-    <div id="preview">{entry.examples.map((name, index) => <ExampleSection key={name} slug={entry.slug} name={name} title={index === 0 ? '预览' : entry.slug === 'workspace-shell' ? '不带标签栏的工作区' : '状态与反馈'} />)}</div>
+    <div id="preview">{entry.examples.map((name, index) => <ExampleSection key={name} slug={entry.slug} name={name} title={exampleTitles[name] ?? (index === 0 ? '预览' : entry.slug === 'workspace-shell' ? '不带标签栏的工作区' : '状态与反馈')} />)}</div>
     <section id="installation" className="doc-section"><h2>安装</h2><Installation slug={entry.slug} /><p className="small-note">已有 shadcn 项目可以直接添加。首次使用请先完成<Link to="/docs/installation">项目配置</Link>。</p><p className="small-note">已经安装或定制过？先检查全部关联文件的差异，再<Link to="/docs/updating">更新组件</Link>，不要直接覆盖本地修改。</p></section>
     <ApiReference key={entry.slug} slug={entry.slug} />
+    {entry.slug === "data-table" && <section className="doc-section"><h2>表头批量操作</h2><p className="reading-note">勾选后列标题在原有高度内切换为已选数量与批量选项，清空后恢复排序状态。selectionToolbar 的参数仍是 selectedIds 和 clearSelection。需要保留原有独立工具栏时，设置 selectionPresentation="toolbar"。默认模式选中期间不从列标题排序；批量业务执行和确认由应用提供。</p></section>}
+    {(entry.slug === "safe-streamdown" || entry.slug === "chat-thread") && <section className="doc-section"><h2>用户输入与 AI 输出</h2><p className="reading-note"><Link to="/components/chat-thread">ChatThread</Link> 是完整对话，Message 区分用户与助手，PromptInput 接收正在编辑的输入。<Link to="/components/safe-streamdown">SafeStreamdown</Link> 渲染正文中的 Markdown 表格和 Mermaid 图；完整对话通过 markdownOptions 的 allowMermaid 选项开启，单独正文设置 allowMermaid。</p><p className="reading-note">Mermaid 默认关闭，开启后从本地依赖按需加载。流式回复结束后才渲染；错误、超限及不允许的语法保留源码。图表支持源码、复制和缩放，不允许 HTML、外部资源、配置指令或交互链接。远程 Markdown 图片由另一个 allowImages 选项控制。Mermaid 12 面向现代浏览器；严格 CSP 禁止 data: 图片时可查看源码。</p></section>}
     <section id="notes" className="doc-section"><h2>使用约定</h2><p className="reading-note">预览和安装清单使用同一份源码。Usage 是上方演示的完整代码；API Reference 与 Markdown 从同一份类型信息生成。导入路径根据你的项目配置调整。</p>{entry.group === 'AI 组件' && <p className="reading-note">这里只提供界面与交互。模型调用、权限校验、持久化和流式状态由应用提供；演示不会连接外部模型。</p>}{entry.slug === 'safe-streamdown' && <p className="reading-note">保留原组件名称；源码版使用 react-markdown 与 GFM 重新实现，不依赖旧聊天运行时。默认忽略原始 HTML，远程图片需要显式启用。</p>}{entry.slug === 'workspace-shell' && <p className="reading-note">为 WorkspaceShell 提供明确高度，并给 WorkspaceSidebar 与 WorkspaceTabBar 设置 variant="inset"。不带标签栏时自动保留顶部留白。scroll="content" 只滚动正文；聊天、编辑器或分栏使用 scroll="none" 并由子区域管理滚动。通过 contentProps 传入面板 id、role 和 aria-labelledby，路由与未保存确认仍由应用负责。背景、圆角和留白可用 --workspace-shell-background、--workspace-surface、--workspace-radius 与 --workspace-gap 调整，不覆盖全局主题。</p>}{entry.slug === 'workspace-tab-bar' && <p className="reading-note">关闭和重排由应用处理。未保存内容的确认应放在 onClose 中；固定标签和最后一个标签不会直接关闭。</p>}</section>
     <nav className="page-pagination" aria-label="相邻组件">{index > 0 ? <Link to={`/components/${catalog[index - 1].slug}`}>← {catalog[index - 1].name}</Link> : <span />}{index < catalog.length - 1 && <Link to={`/components/${catalog[index + 1].slug}`}>{catalog[index + 1].name} →</Link>}</nav>
   </article>;

@@ -108,7 +108,7 @@ export function DataTable<T>({ data, columns, getRowId, label, pageSize = 5, sea
     wasSelecting.current = selecting;
   }, [selecting]);
   const actions = <SelectionActions selectedIds={selectedIds} clearSelection={clearSelection} containerRef={actionsRef} inset={selectionPresentation === 'header'}>
-    {selectionToolbar?.({ selectedIds, clearSelection })}
+    {selecting ? selectionToolbar?.({ selectedIds, clearSelection }) : null}
   </SelectionActions>;
   return <div data-slot="data-table" className={cn('grid w-full min-w-0 gap-3 text-sm', className)}>
     {searchable && <SearchInput label={`搜索${label}`} value={query} onChange={(event) => { setQuery(event.target.value); table.setPageIndex(0); }} onClear={() => { setQuery(''); table.setPageIndex(0); }} placeholder="搜索数据…" className="w-full max-w-xs" />}

@@ -125,3 +125,13 @@ SITE_URL=https://your-domain.example/ BASE_PATH=/ pnpm build
 展示结构、克制的视觉语言和组件交互参考 [beUI](https://beui.dev/)，保留本项目品牌与独立实现，不包含对方的商业推广或用户评价。
 
 MIT License。参考来源与许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+## 表头批量操作与富文本消息
+
+DataTable 默认勾选后在表头原位置展示数量和批量操作，取消选择后恢复；selectionToolbar 接口不变，selectionPresentation="toolbar" 可保留旧展示方式。
+
+用户输入与 AI 输出的完整组件是 ChatThread，正文渲染是 SafeStreamdown，输入编辑器是 PromptInput。正文支持 GFM 表格；通过 SafeStreamdown 的 allowMermaid 或 ChatThread 的 markdownOptions={{ allowMermaid: true }} 启用本地 Mermaid 图表。图表支持源码切换、复制、缩放和失败回退；流式回复结束后绘制。远程图片仍单独 opt-in。详情见 [设计与边界](docs/table-and-rich-messages.md)。
+
+- [DataTable 演示](https://asharca.github.io/ui/components/data-table/)
+- [完整富文本对话](https://asharca.github.io/ui/components/chat-thread/)
+- [表格、流程图与时序图](https://asharca.github.io/ui/components/safe-streamdown/)

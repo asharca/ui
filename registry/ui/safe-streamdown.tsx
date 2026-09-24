@@ -1,6 +1,6 @@
 'use client';
-import { Children, isValidElement, useEffect, useId, useRef, useState } from 'react';
-import Markdown from 'react-markdown';
+import { Children, isValidElement, useEffect, useId, useMemo, useRef, useState } from 'react';
+import Markdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn, focusRing } from './utils';
 
@@ -121,8 +121,7 @@ function MermaidBlock({ code, pending, theme }: { code: string; pending: boolean
  * Remote images and plain Mermaid diagrams are separate, explicit opt-ins.
  */
 export function SafeStreamdown({ children, mode = 'static', allowImages = false, allowMermaid = false, mermaidTheme = 'auto', className }: SafeStreamdownProps) {
-  return <div aria-busy={mode === 'streaming'} className={cn('min-w-0 max-w-full break-words text-sm leading-7 [&_p]:my-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h1]:my-4 [&_h1]:text-xl [&_h1]:font-semibold [&_h2]:my-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:my-3 [&_h3]:font-semibold [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs [&_pre]:my-4 [&_pre]:max-w-full [&_pre]:overflow-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-muted/40 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_th]:border-b [&_th]:border-border [&_th]:bg-muted/40 [&_th]:px-3 [&_th]:py-2.5 [&_th]:text-left [&_th]:font-medium [&_td]:border-b [&_td]:border-border [&_td]:px-3 [&_td]:py-2.5 [&_tbody_tr:last-child_td]:border-b-0 [&_hr]:my-5 [&_hr]:border-border', className)}>
-    <Markdown skipHtml remarkPlugins={[remarkGfm]} components={{
+  const components = useMemo<Components>(() => ({
       a: ({ children: text, href, title }) => href ? <a href={href} title={title} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">{text}</a> : <span>{text}</span>,
       img: ({ src, alt }) => allowImages && typeof src === 'string' ? <img src={src} alt={alt ?? ''} loading="lazy" referrerPolicy="no-referrer" className="max-h-80 max-w-full rounded-xl object-contain" /> : <span className="text-xs text-muted-foreground">[图片：{alt || '未加载'}]</span>,
       table: ({ children: rows }) => <div role="region" aria-label="Markdown 表格，可横向滚动" tabIndex={0} className={cn('my-4 max-w-full overflow-x-auto rounded-xl border border-border', focusRing)}><table className="w-full border-collapse text-xs"><caption className="sr-only">Markdown 表格</caption>{rows}</table></div>,
@@ -133,6 +132,8 @@ export function SafeStreamdown({ children, mode = 'static', allowImages = false,
         }
         return <pre tabIndex={0}>{content}</pre>;
       },
-    }}>{children}</Markdown>
+  }), [allowImages, allowMermaid, mermaidTheme, mode]);
+  return <div aria-busy={mode === 'streaming'} className={cn('min-w-0 max-w-full break-words text-sm leading-7 [&_p]:my-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h1]:my-4 [&_h1]:text-xl [&_h1]:font-semibold [&_h2]:my-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:my-3 [&_h3]:font-semibold [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs [&_pre]:my-4 [&_pre]:max-w-full [&_pre]:overflow-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-muted/40 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_th]:border-b [&_th]:border-border [&_th]:bg-muted/40 [&_th]:px-3 [&_th]:py-2.5 [&_th]:text-left [&_th]:font-medium [&_td]:border-b [&_td]:border-border [&_td]:px-3 [&_td]:py-2.5 [&_tbody_tr:last-child_td]:border-b-0 [&_hr]:my-5 [&_hr]:border-border', className)}>
+    <Markdown skipHtml remarkPlugins={[remarkGfm]} components={components}>{children}</Markdown>
   </div>;
 }

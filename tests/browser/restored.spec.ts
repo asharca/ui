@@ -24,6 +24,7 @@ test('all restored families are discoverable without changing the site layout', 
 test('restored table keeps selections across pages filters and sorting', async ({ page }) => {
   await page.goto('components/data-table/');
   const preview = page.locator('.detail-preview');
+  await preview.getByRole('button', { name: '独立工具栏', exact: true }).click();
   await preview.getByRole('checkbox', { name: '选择行 p1', exact: true }).check();
   await preview.getByRole('button', { name: '下一页' }).click();
   await preview.getByRole('checkbox', { name: '选择行 p5', exact: true }).check();

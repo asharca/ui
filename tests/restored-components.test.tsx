@@ -103,7 +103,7 @@ const columns: ColumnDef<Row>[] = [{ accessorKey: 'name', header: '名称' }, { 
 
 describe('table and navigation behavior', () => {
   it('table selections survive filtering, page changes and sorting by stable IDs', async () => {
-    render(<DataTable data={rows} columns={columns} getRowId={(row) => row.id} label="项目" pageSize={2} />);
+    render(<DataTable data={rows} columns={columns} getRowId={(row) => row.id} label="项目" pageSize={2} selectionPresentation="toolbar" />);
     await user().click(screen.getByRole('checkbox', { name: '选择行 a' }));
     await user().click(screen.getByRole('button', { name: '下一页' }));
     await user().click(screen.getByRole('checkbox', { name: '选择行 c' }));
