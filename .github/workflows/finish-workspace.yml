@@ -1,0 +1,58 @@
+name: Apply reviewed native beUI workspace changes
+on:
+  push:
+    branches: [rebuild/beui-workspace]
+    paths: [.github/workflows/finish-workspace.yml]
+permissions:
+  contents: write
+concurrency:
+  group: finish-beui-workspace
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.repository == 'asharca/ui' && github.ref == 'refs/heads/rebuild/beui-workspace'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Apply the reviewed source patch with its exact checksum
+        run: |
+          python3 - <<'PY'
+          import gzip, hashlib, pathlib, subprocess, shutil
+          source = b''.join(pathlib.Path(f'.workspace-transfer/part-{i}.gz').read_bytes() for i in range(7))
+          patch = gzip.decompress(source)
+          assert hashlib.sha256(patch).hexdigest() == '257b5012bbe09f38e4d71ffcfe95abccbfa5bda7deef2439faae43f2b335eef4'
+          subprocess.run(['git','apply','--index','-'], input=patch, check=True)
+          shutil.rmtree('.workspace-transfer')
+          pathlib.Path('.github/workflows/finish-workspace.yml').unlink()
+          PY
+      - name: Install the browser test runner and verify the native source
+        run: |
+          bun install --frozen-lockfile --ignore-scripts
+          bun add --dev --exact --ignore-scripts @playwright/test@1.63.0
+          bun run check
+      - name: Commit the result only to the requested rebuild branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'feat(workspace): compose the Asharca shell and tabs from native beUI components'
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:refs/heads/rebuild/beui-workspace
+          git rev-parse HEAD > "$RUNNER_TEMP/workspace-commit.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workspace-source-commit
+          path: ${{ runner.temp }}/workspace-commit.txt
