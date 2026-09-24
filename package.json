@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.32.1",
-  "engines": { "node": ">=22.14" },
+  "engines": {
+    "node": ">=22.14"
+  },
   "scripts": {
     "dev": "pnpm registry && vite --host 0.0.0.0",
     "registry": "node scripts/build-registry.mjs && node scripts/build-docs.mjs",
@@ -19,7 +21,9 @@
   "dependencies": {
     "@tanstack/react-table": "8.21.3",
     "clsx": "^2.1.1",
+    "dompurify": "3.4.16",
     "lucide-react": "^1.21.0",
+    "mermaid": "12.0.0",
     "motion": "^12.0.0",
     "prismjs": "1.30.0",
     "radix-ui": "1.6.2",
