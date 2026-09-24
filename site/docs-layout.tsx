@@ -1,7 +1,11 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { catalog } from '../registry/catalog.mjs';
+import updateTemplate from '../docs/updating.md?raw';
+import { splitUpdateGuide } from '../scripts/update-guide.mjs';
 import { Sidebar } from './chrome';
+
+const updateToc = splitUpdateGuide(updateTemplate).sections.map((section) => ({ id: section.id, label: section.title.replace(/^\d+\.\s*/, '') }));
 
 /** Fixed independent rail, matching beUI's three-column-layout.tsx (MIT).
  * The document remains the only main-content scroller. No wheel forwarding.
@@ -17,7 +21,8 @@ export function DocsLayout() {
   ] : normalized === '/docs/installation' ? [
     { id: 'requirements', label: '准备项目' }, { id: 'add', label: '添加组件' },
     { id: 'use', label: '本地导入' }, { id: 'namespace', label: '命名空间' },
-  ] : [];
+    { id: 'updating', label: '安装后的更新' },
+  ] : normalized === '/docs/updating' ? updateToc : [];
   useLayoutEffect(() => {
     const container = rail.current;
     const active = container?.querySelector<HTMLElement>('[aria-current="page"]');

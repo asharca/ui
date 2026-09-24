@@ -2,7 +2,7 @@
 
 简约的 React 组件源码。预览、安装，然后在自己的项目中修改。
 
-[组件网站](https://asharca.github.io/ui/) · [安装指南](https://asharca.github.io/ui/docs/installation/) · [llms.txt](https://asharca.github.io/ui/llms.txt)
+[组件网站](https://asharca.github.io/ui/) · [安装指南](https://asharca.github.io/ui/docs/installation/) · [更新指南](https://asharca.github.io/ui/docs/updating/) · [llms.txt](https://asharca.github.io/ui/llms.txt)
 
 ## 使用
 
@@ -24,6 +24,33 @@ export function Example() {
 安装路径遵循 `components.json` 的 `aliases.components`，上面的 `@/` 是示例别名。每个安装条目包含完整的关联文件和所需依赖，不覆盖已有主题。组件页面提供同源的 CLI、手动安装、用法和源码。
 
 分支新加入的组件需要合并并部署后才会出现在上述线上安装源；PR 构建不会自动部署。
+
+## 更新已安装的组件
+
+源码属于业务项目，升级 Motion、Radix 等 npm 依赖不会自动更新本地组件的样式、布局或动画。`shadcn@latest` 是 CLI 版本，不是 Asharca 组件版本。
+
+先保存现有工作、确认工作区干净，在**业务项目中**创建更新分支。已有 `components.json` 不要重新初始化，不要为了更新组件重置主题或切换预设。
+
+```sh
+git status --short
+git switch -c chore/update-asharca-ui
+git rev-parse HEAD
+
+npx shadcn@latest add https://asharca.github.io/ui/r/button.json --dry-run
+npx shadcn@latest add https://asharca.github.io/ui/r/button.json --diff button.tsx
+npx shadcn@latest add https://asharca.github.io/ui/r/button.json --diff utils.ts
+npx shadcn@latest add https://asharca.github.io/ui/r/button.json --view button.tsx
+```
+
+根据项目包管理器，也可用 `pnpm dlx shadcn@latest`、现代 Yarn 的 `yarn dlx shadcn@latest` 或 `bunx --bun shadcn@latest`。配置过 `registries.@asharca` 后可将完整 URL 换成 `@asharca/button`；不要省略来源写成官方的 `add button`。
+
+**检查整个依赖闭包，而不只看一个组件文件。** Button 包含 `utils.ts`，WorkspaceShell 包含侧栏、标签栏及其关联组件。限定 `--diff` 的文件，不会限定随后安装的覆盖范围。
+
+有定制时，逐文件合并上游变更，保留业务 API、事件、状态、主题和布局；没有基线或冲突无法确定时，先人工确认。只有确认完整影响范围都可以覆盖、并获得明确许可后，才使用 `add <同一条目地址> --overwrite`。它是覆盖，不是自动合并，不应出现在默认更新命令中。
+
+检查 `package.json`、锁文件与新增文件，运行业务项目已有的类型检查、测试和构建，保留独立更新提交。回退时同时考虑源码、依赖和锁文件，避免丢弃其他业务修改。当前 HTTP Registry 跟随部署变化，不提供不可变版本快照；请保留安装后的源码及锁文件以便复现。
+
+[完整更新指南](https://asharca.github.io/ui/docs/updating/)包括无定制更新、保留定制、可复制的 Agent 提示词、验证、回退和常见问题。网页与导出的 Markdown 来自同一份 `docs/updating.md` 模板，构建时解析安装源。工具行为参考 [官方 CLI](https://ui.shadcn.com/docs/cli) 和 [官方更新工作流](https://github.com/shadcn-ui/ui/blob/main/skills/shadcn/SKILL.md#updating-components)。
 
 ## 组件
 
@@ -61,12 +88,13 @@ pnpm exec playwright install chromium
 pnpm test:browser
 ```
 
-`pnpm build` 生成站点、静态路由、registry JSON 和单一 UTF-8 `llms.txt`。浏览器测试在已构建站点上运行。消费项目测试使用真实 shadcn CLI，验证标准目录和自定义别名，不是迁移工具。
+`pnpm build` 生成站点、静态路由、registry JSON 和单一 UTF-8 `llms.txt`。浏览器测试在已构建站点上运行。消费项目测试使用真实 shadcn CLI，验证标准目录、自定义别名，以及更新预览不写入项目文件；不是自动迁移工具。
 
 ```text
 registry/ui/          可直接安装的组件源码
 registry/catalog.mjs  唯一组件目录与依赖图
 examples/            网站预览及 Usage 的同一份代码
+docs/updating.md      官网与 Markdown 同源的更新指南模板
 site/                展示站布局与文档界面
 scripts/             构建及验证
 public/              静态资源及生成的 registry、llms.txt
@@ -74,7 +102,7 @@ public/              静态资源及生成的 registry、llms.txt
 
 `tests/restored-inventory.test.mjs` 保存重写前的独立 55 项目录基线，防止后续整理时误删组件；同时检查每个 Usage 引用的本地文件与外部依赖都包含在安装清单里。
 
-不提供兼容包、旧界面、主题实验室、迁移脚本或 Skill 安装流程。公共 AI 文档仅有 `llms.txt`。
+不提供兼容包、旧界面、主题实验室、迁移脚本或自有 Skill 安装流程。公共 AI 文档仅有 `llms.txt` 作为入口，更新指南是其索引的页面文档。
 
 ## 部署
 
@@ -90,7 +118,7 @@ SITE_URL=https://asharca.github.io/ui/ BASE_PATH=/ui/ pnpm build
 SITE_URL=https://your-domain.example/ BASE_PATH=/ pnpm build
 ```
 
-部署 `dist/`。每个文档路由有独立 HTML 入口，可直接打开和刷新；registry 与 `llms.txt` 是静态文件，不经过 SPA HTML 回退。`SITE_URL` 是对外可访问的完整地址；浏览器中的安装命令根据当前站点生成。
+部署 `dist/`。每个文档路由有独立 HTML 入口，可直接打开和刷新；registry 与 `llms.txt` 是静态文件，不经过 SPA HTML 回退。`SITE_URL` 是对外可访问的完整地址；浏览器中的安装和更新命令根据当前站点生成。
 
 ## 设计与许可
 

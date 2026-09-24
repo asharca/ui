@@ -4,6 +4,7 @@ import { catalog } from '../registry/catalog.mjs';
 import { DocsLayout } from './docs-layout';
 import { Header, Footer, Dock, SearchDialog } from './chrome';
 import { HomePage, CatalogPage, ComponentPage, InstallationPage, NotFound } from './pages';
+import { UpdatingPage } from './updating';
 
 const WorkspaceWindow = lazy(() => import('../examples/workspace-shell'));
 
@@ -27,7 +28,7 @@ export function App() {
   useEffect(() => {
     if (detachedWorkspace) return;
     const entry = catalog.find((item) => pathname.replace(/\/$/, '') === `/components/${item.slug}`);
-    document.title = `${entry?.name ?? (pathname.startsWith('/docs') ? '安装' : pathname.startsWith('/components') ? '组件' : 'React 组件源码')} — Asharca UI`;
+    document.title = `${entry?.name ?? (pathname.replace(/\/$/, '') === '/docs/updating' ? '更新组件' : pathname.startsWith('/docs') ? '安装' : pathname.startsWith('/components') ? '组件' : 'React 组件源码')} — Asharca UI`;
     if (!hash) window.scrollTo(0, 0);
     else requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' }));
     setSearchOpen(false);
@@ -42,6 +43,7 @@ export function App() {
         <Route path="/components" element={<CatalogPage />} />
         <Route path="/components/:slug" element={<ComponentPage />} />
         <Route path="/docs/installation" element={<InstallationPage />} />
+        <Route path="/docs/updating" element={<UpdatingPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

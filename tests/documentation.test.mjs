@@ -54,7 +54,7 @@ test('API metadata reports real defaults, required flags, compound components an
 });
 test('every copyable page is a real UTF-8 Markdown file containing its API and exact examples', async () => {
   const { pages } = await json('.generated/documents.json');
-  assert.equal(pages.length, catalog.length + 2);
+  assert.equal(pages.length, catalog.length + 3);
   for (const page of pages) {
     const markdown = await readFile(`public/${page.markdownPath}`, 'utf8');
     assert.ok(markdown.startsWith(`# ${page.title}\n`));

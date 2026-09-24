@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "test": "vitest run && node --test tests/*.test.mjs",
     "test:browser": "playwright test",
-    "test:consumer": "node scripts/check-consumer.mjs",
+    "test:consumer": "node scripts/check-consumer.mjs && node scripts/check-update-preview.mjs",
     "check": "pnpm registry && pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
