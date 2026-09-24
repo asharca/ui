@@ -76,9 +76,32 @@ test('streaming and invalid diagrams keep source, block external assets and do n
   await demo.getByRole('button', { name: '错误回退' }).click();
   await expect(demo.locator('[data-slot="mermaid-block"]')).toHaveAttribute('data-state', 'error');
   await expect(demo.getByLabel('Mermaid 源码', { exact: true })).toContainText('未完成节点');
-  await demo.getByRole('button', { name: '模拟流式' }).click();
-  await expect(demo.locator('[data-slot="mermaid-block"]')).toHaveAttribute('data-state', 'streaming');
-  await expect(demo.locator('[data-slot="mermaid-block"]')).toHaveAttribute('data-state', 'ready', { timeout: 20000 });
+  // Observe before starting: the short stream can finish between Playwright's
+  // increasing polling intervals. Check every DOM transition, not a lucky poll.
+  const observed = await demo.getByRole('button', { name: '模拟流式' }).evaluate(async (button) => {
+    const root = button.closest('[data-demo="rich-markdown"]')!;
+    return new Promise<{ states: string[]; streamingImages: number }>((resolve) => {
+      const states: string[] = [];
+      let streamingImages = 0;
+      const finish = () => { clearTimeout(timer); observer.disconnect(); resolve({ states, streamingImages }); };
+      const read = () => {
+        const block = root.querySelector('[data-slot="mermaid-block"]');
+        const state = block?.getAttribute('data-state');
+        if (state && states.at(-1) !== state) states.push(state);
+        if (state === 'streaming') streamingImages += block!.querySelectorAll('img').length;
+        if (state === 'ready' && states.includes('streaming')) finish();
+      };
+      const observer = new MutationObserver(read);
+      const timer = setTimeout(finish, 12000);
+      observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-state'] });
+      (button as HTMLButtonElement).click();
+      read();
+    });
+  });
+  expect(observed.states).toContain('streaming');
+  expect(observed.streamingImages).toBe(0);
+  expect(observed.states.at(-1)).toBe('ready');
+  await expect(demo.locator('[data-slot="mermaid-block"]')).toHaveAttribute('data-state', 'ready');
   await demo.getByText('编辑示例内容', { exact: true }).click();
   let requests = 0; await page.route('https://diagram-tracker.invalid/**', (route) => { requests++; return route.abort(); });
   await demo.getByRole('textbox', { name: '示例 Markdown' }).fill('```mermaid\nflowchart LR\n A@{ img: "https://diagram-tracker.invalid/pixel" }\n```');
