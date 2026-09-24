@@ -16,7 +16,11 @@ function run(args) {
     child.stdout.on('data', (chunk) => { output += chunk; });
     child.stderr.on('data', (chunk) => { output += chunk; });
     child.once('error', (error) => { clearTimeout(timer); reject(error); });
-    child.once('exit', (code) => { clearTimeout(timer); code === 0 ? accept(output) : reject(new Error(`CLI exited ${code}: ${output}`)); });
+    child.once('exit', (code) => {
+      clearTimeout(timer);
+      if (code === 0) accept(output);
+      else reject(new Error(`CLI exited ${code}: ${output}`));
+    });
   });
 }
 async function snapshot(cwd, dir = '') {
