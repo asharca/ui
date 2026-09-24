@@ -51,6 +51,16 @@ for entry in entries:
     assert hashlib.sha256(content.encode()).hexdigest() == entry['after'], f'Reconstruction mismatch: {name}'
     outputs[target] = content
 
+# Normalize only empty MIT comment lines after validating the exact payload.
+# Keep the complete license wording; record the resulting migration snapshot.
+manifest_path = ROOT / 'docs/beui-agent-manifest.json'
+manifest = json.loads(outputs[manifest_path])
+for file in manifest['files']:
+    target = safe_path(ROOT, file['target'])
+    outputs[target] = outputs[target].replace(' * \n', ' *\n')
+    file['migrationSha256'] = hashlib.sha256(outputs[target].encode()).hexdigest()
+outputs[manifest_path] = json.dumps(manifest, ensure_ascii=False, indent=2) + '\n'
+
 # Validate every output first, then apply the reviewed set together.
 for target, content in outputs.items():
     target.parent.mkdir(parents=True, exist_ok=True)
