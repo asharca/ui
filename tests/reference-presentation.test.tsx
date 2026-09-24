@@ -45,7 +45,7 @@ describe('beUI-style selection surfaces', () => {
     expect(first).toHaveAttribute('aria-current', 'page');
     rerender(view('b'));
     expect(second).toHaveAttribute('aria-current', 'page');
-    expect(second).toBeFocused();
+    expect(second).toHaveFocus();
     expect(container.querySelectorAll('[data-slot="workspace-selection"]')).toHaveLength(1);
     expect(second.querySelector('[data-slot="workspace-selection"]')).toHaveAttribute('aria-hidden', 'true');
     await user.click(screen.getByRole('button', { name: '禁用', hidden: true }));
