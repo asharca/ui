@@ -8,7 +8,7 @@ import { cn, focusRing } from './utils';
 // Presentation follows ToolPlane's Streamdown controls, while keeping this
 // registry's opt-in, sanitized static-image rendering boundary.
 export const actionClass = cn('inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 motion-safe:transition-colors [&_svg]:size-4', focusRing);
-const tableClass = 'w-full border-collapse text-sm [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-muted [&_th]:border-b [&_th]:border-border [&_th]:px-4 [&_th]:py-3 [&_th]:font-medium [&_td]:border-b [&_td]:border-border/60 [&_td]:px-4 [&_td]:py-3 [&_tr:last-child_td]:border-b-0 [&_tbody_tr]:hover:bg-muted/25';
+const tableClass = 'w-full border-collapse text-sm [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-muted [&_th]:border-b [&_th]:border-border [&_th]:px-4 [&_th]:py-3 [&_th]:font-medium [&_th]:text-left [&_th]:whitespace-nowrap [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border/60 [&_td]:px-4 [&_td]:py-3 [&_tr:last-child_td]:border-b-0 [&_tbody_tr]:hover:bg-muted/25';
 
 export function saveText(text: string, type: string, filename: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -30,6 +30,10 @@ export function ExpandedContent({ open, onOpenChange, title, trigger, children }
   </Dialog>;
 }
 
+function spreadsheetValue(cell: string) {
+  return /^[\s\u0000-\u001f]*[=+\-@]/.test(cell) ? `'${cell}` : cell;
+}
+
 export function MarkdownTable({ children }: { children?: ReactNode }) {
   const local = useRef<HTMLTableElement>(null);
   const expanded = useRef<HTMLTableElement>(null);
@@ -45,7 +49,7 @@ export function MarkdownTable({ children }: { children?: ReactNode }) {
   }
   async function copy() {
     try {
-      const value = cells().map((row) => row.map((cell) => cell.replace(/[\t\r\n]+/g, ' ')).join('\t')).join('\n');
+      const value = cells().map((row) => row.map((cell) => spreadsheetValue(cell.replace(/[\t\r\n]+/g, ' '))).join('\t')).join('\n');
       await navigator.clipboard.writeText(value);
       if (mounted.current) setFeedback('表格已复制，可粘贴到电子表格。');
     } catch { if (mounted.current) setFeedback('复制失败，请手动选择表格内容。'); }
@@ -54,7 +58,7 @@ export function MarkdownTable({ children }: { children?: ReactNode }) {
     try {
       // Quote all cells, retain Unicode and neutralize spreadsheet formulas.
       const csv = cells().map((row) => row.map((cell) => {
-        const safe = /^[\s\u0000-\u001f]*[=+\-@]/.test(cell) ? `'${cell}` : cell;
+        const safe = spreadsheetValue(cell);
         return `"${safe.replace(/"/g, '""')}"`;
       }).join(',')).join('\r\n');
       saveText(`\uFEFF${csv}`, 'text/csv;charset=utf-8', 'table.csv');
@@ -103,12 +107,14 @@ export function DiagramViewport({ src, fullscreen = false, onError }: { src: str
     const observer = new ResizeObserver(read); observer.observe(node);
     return () => observer.disconnect();
   }, []);
+  const inlineHeight = Math.min(384, Math.max(224, Math.min(1, Math.max(1, bounds.width - 40) / size.width) * size.height + 56));
   const fit = Math.min(1, Math.max(1, bounds.width - 40) / size.width, Math.max(1, bounds.height - 56) / size.height);
   const reset = () => { setZoom(1); if (viewport.current) { viewport.current.scrollTop = 0; viewport.current.scrollLeft = 0; } };
   const changeZoom = (delta: number) => setZoom((value) => Math.max(0.5, Math.min(3, value + delta)));
   return <div data-slot="mermaid-viewport" className={cn('relative min-w-0 overflow-hidden rounded-md border border-border bg-background', fullscreen && 'min-h-0 flex-1')}>
     <div ref={viewport} data-slot="mermaid-canvas" role="region" aria-label="Mermaid 图表预览，可拖动或滚动" tabIndex={0}
-      className={cn('overflow-auto overscroll-contain rounded-md outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring', fullscreen ? 'h-full' : 'h-[clamp(14rem,40vh,24rem)]', dragging ? 'cursor-grabbing select-none' : 'cursor-grab')}
+      className={cn('overflow-auto overscroll-contain rounded-md outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring', fullscreen ? 'h-full' : '', dragging ? 'cursor-grabbing select-none' : 'cursor-grab')}
+      style={fullscreen ? undefined : { height: inlineHeight }}
       onPointerDown={(event) => {
         if (event.pointerType !== 'mouse' || event.button !== 0) return;
         drag.current = { x: event.clientX, y: event.clientY, left: event.currentTarget.scrollLeft, top: event.currentTarget.scrollTop, id: event.pointerId };
