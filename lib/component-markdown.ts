@@ -103,7 +103,10 @@ export async function buildComponentMarkdown(
     }
   } else {
     lines.push("```bash");
-    lines.push(`npx shadcn@latest add @beui/${component.slug}`);
+    const target = component.slug.startsWith("workspace-")
+      ? `${(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "")}/r/${component.slug}.json`
+      : `@beui/${component.slug}`;
+    lines.push(`npx shadcn@latest add ${target}`);
     lines.push("```", "");
   }
 

@@ -1610,6 +1610,21 @@ export const registry: CategoryEntry[] = [
       "Product-ready animated React UI blocks built with Motion and Tailwind CSS, available as customizable copy-paste source.",
     components: [
       {
+        slug: "workspace-shell",
+        name: "Workspace Shell",
+        description: "An inset workspace on beUI: shared chrome, a collapsible sidebar and browser-like tabs joined to the content surface.",
+        file: "components/workspace/workspace-shell.tsx",
+        extraFiles: ["components/workspace/workspace-tab-bar.tsx", "components/workspace/workspace-sidebar.tsx"],
+        badge: "new", launchedAt: "2026-09-24",
+      },
+      {
+        slug: "workspace-tab-bar",
+        name: "Workspace Tab Bar",
+        description: "Surface-connected tabs with pinning, closing, drag and keyboard reordering, and host-owned window actions.",
+        file: "components/workspace/workspace-tab-bar.tsx",
+        badge: "new", launchedAt: "2026-09-24",
+      },
+      {
         slug: "infinite-masonry",
         name: "Infinite Masonry",
         description:

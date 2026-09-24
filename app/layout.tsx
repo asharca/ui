@@ -1,13 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import { GoogleAnalytics } from "@/components/app/analytics/google-analytics";
 import { ThemeProvider } from "@/components/app/chrome/theme-provider";
 import { PreferencesProvider } from "@/components/app/preferences/preferences-provider";
-import { PreferencesPanel } from "@/components/app/preferences/preferences-panel";
-import { SiteHeader } from "@/components/app/chrome/site-header";
-import { SiteFrame } from "@/components/app/chrome/site-frame";
-import { KeyboardShortcuts } from "@/components/app/chrome/keyboard-shortcuts";
 import { JsonLd } from "@/components/app/analytics/json-ld";
 import {
   AUTHOR,
@@ -18,15 +14,7 @@ import {
 } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
-
-const sans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-});
-const mono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-});
+import { WorkspaceAwareFrame } from "@/components/app/chrome/workspace-aware-frame";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -102,25 +90,14 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(sans.variable, mono.variable)}
+      className={cn(GeistSans.variable, GeistMono.variable)}
     >
       <head>
-        {process.env.NODE_ENV === "production" && (
-          <script
-            defer
-            src="https://collect.tracwell.app/script.js"
-            data-project-key="tw_live_b83ebcb2a50b4e3b82f65ca32c086623"
-            data-collection-mode="product"
-            data-consent="granted"
-            data-respect-do-not-track="true"
-          />
-        )}
         <link rel="icon" type="image/png" href="/beui-mark.png" />
         <link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
         <link rel="alternate" type="application/json" title="Component registry" href="/r" />
@@ -130,13 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <JsonLd data={siteJsonLd()} />
         <ThemeProvider>
           <PreferencesProvider>
-            <KeyboardShortcuts />
-            <SiteHeader />
-            <main className="pt-14">
-              <SiteFrame>{children}</SiteFrame>
-            </main>
-            <PreferencesPanel />
-            <GoogleAnalytics measurementId={googleAnalyticsId} />
+            <WorkspaceAwareFrame>{children}</WorkspaceAwareFrame>
           </PreferencesProvider>
         </ThemeProvider>
       </body>

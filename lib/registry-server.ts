@@ -325,7 +325,7 @@ export async function buildShadcnItem(
     type: comp.categorySlug === "blocks" ? "registry:block" : "registry:component",
     title: comp.name,
     description: comp.description,
-    author: "Saurabh <saurabh10102@gmail.com>",
+    author: comp.file.startsWith("components/workspace/") ? "asharca" : "Saurabh <saurabh10102@gmail.com>",
     dependencies,
     registryDependencies: [],
     files: uniqueByPath(

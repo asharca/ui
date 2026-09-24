@@ -8,7 +8,9 @@ const DIRECTIVE_RE = /^\s*(["']use (?:client|server)["'];?[^\n]*\n)/;
 
 /** Component docs page URL, e.g. https://beui.dev/components/motion/tabs */
 export function pageUrlFor(categorySlug: string, pageSlug: string) {
-  return `${SITE_URL}${componentPath(categorySlug, pageSlug)}`;
+  const workspace = categorySlug === "blocks" && ["workspace-shell", "workspace-tab-bar"].includes(pageSlug);
+  const origin = workspace ? (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "") : SITE_URL;
+  return `${origin}${componentPath(categorySlug, pageSlug)}`;
 }
 
 /**

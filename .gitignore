@@ -48,3 +48,7 @@ next-env.d.ts
 # editor / local agent config
 .claude/
 .env
+
+# Workspace browser review output
+/test-results/
+/playwright-report/

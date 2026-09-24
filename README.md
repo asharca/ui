@@ -1,121 +1,45 @@
-<p align="center">
-  <a href="https://beui.dev">
-    <img src="./public/beui-mark.png" alt="beUI logo" width="88" height="88" />
-  </a>
-</p>
+# Asharca Workspace · based on beUI
 
-<h1 align="center">beUI - Motion Component Library</h1>
+以 [beUI](https://github.com/starc007/ui-components) 的完整 Next.js / Bun 源码为基础，仅增加 Asharca 风格的 **Workspace Shell、Workspace Tab Bar 及其侧栏组合**。上游 MIT 许可和组件实现保留，不再叠加旧版 Vite/Registry 或复制 Agent 组件的架构。
 
-<p align="center">
-  Animated components for React and Next.js. Copy the source, own the code.
-</p>
+## 本地调试
 
-<p align="center">
-  <a href="https://github.com/starc007/ui-components/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/starc007/ui-components?color=000000&style=flat-square" /></a>
-  <a href="https://github.com/starc007/ui-components/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/starc007/ui-components?color=000000&style=flat-square" /></a>
-  <a href="https://github.com/starc007/ui-components/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/starc007/ui-components/ci.yml?branch=main&color=000000&style=flat-square" /></a>
-  <a href="https://ui.shadcn.com/docs/registry"><img alt="shadcn compatible" src="https://img.shields.io/badge/shadcn-compatible-000000?style=flat-square" /></a>
-</p>
-
-<p align="center">
-  <a href="https://beui.dev">Website</a>
-  ·
-  <a href="https://beui.dev/components/motion">Components</a>
-  ·
-  <a href="https://beui.dev/llms.txt">llms.txt</a>
-</p>
-
-<p align="center">
-  <a href="https://beui.dev"><img src="./public/demo.gif" alt="beUI components demo" width="640" /></a>
-</p>
-
-## What is beUI?
-
-beUI is a motion component library for product interfaces.
-
-Each component includes a live preview, usage example, source code, and a shadcn install command. The components are meant to live in your app, not behind a package.
-
-### Need complete blocks and landing pages?
-
-[beUI Pro](https://pro.beui.dev/?utm_source=github&utm_medium=referral&utm_campaign=free_to_pro&utm_content=readme_callout)
-includes premium animated sections and full Next.js templates with editable
-source and private registry access.
-
-## Install a component
-
-Open any component page and copy the install command. beUI is in the shadcn registry directory under the `@beui` namespace.
+Node.js 24，Bun 1.3.14：
 
 ```bash
-npx shadcn@latest add @beui/animated-toast-stack
+bun install --frozen-lockfile
+bun run dev
 ```
 
-Direct URLs also work:
+打开 **http://localhost:3000/workspace**。
+
+组件文档：`/components/blocks/workspace-shell`、`/components/blocks/workspace-tab-bar`。
 
 ```bash
-npx shadcn@latest add https://beui.dev/r/animated-toast-stack.json
+bun run check
+bun test
+bun run build
+bunx playwright install chromium
+bun run test:workspace:browser
 ```
 
-You can also copy the source directly from the component page.
+布局、组件属性、独立窗口、Registry 安装与部署说明见 [docs/workspace.md](docs/workspace.md)。原始 beUI 项目说明见 [README.beui.md](README.beui.md)。
 
-## For AI agents
+## 源码与历史
 
-beUI exposes static endpoints that coding agents can read without scraping the UI.
+上游固定提交：`starc007/ui-components@1e23f4b10a404c17d9649086cf561e152527e2de`。
 
-```txt
-https://beui.dev/llms.txt
-https://beui.dev/r
-https://beui.dev/r/{slug}
-https://beui.dev/r/{slug}.json
-https://beui.dev/r/{slug}/raw
-```
+保留当前 GitHub 仓库身份，采用上游源码树重建；这**没有建立 GitHub 原生的 fork-network 关系**。重建前主分支与 Agent 迁移分别保留为：
 
-Install the beUI skill so Cursor, Claude Code and Codex pick existing `@beui`
-components before inventing new motion UI:
+- `archive/pre-beui-rebuild-main-2026-09-24`
+- `archive/pre-beui-rebuild-agents-2026-09-24`
+
+细节见 [UPSTREAM.md](UPSTREAM.md)。不继承 beUI 的线上部署凭据或统计脚本，当前 CI 只验证，不自动部署。工作区示例是本地状态演示，不连接真实模型或 MCP 服务。
+
+## beUI 官方 Skill
 
 ```bash
 npx skills add starc007/ui-components --skill beui
 ```
 
-beUI Pro customers can install the licensed block workflow from the same
-repository:
-
-```bash
-npx skills add starc007/ui-components --skill beui-pro
-```
-
-## Run locally
-
-```bash
-bun install
-bun run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## Checks
-
-```bash
-bun run check
-```
-
-This runs TypeScript, Biome lint, and registry source validation.
-
-## Contributing
-
-Add components in `components/motion/`, previews in `components/previews/motion/`, and registry entries in `lib/registry.ts`.
-
-Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a PR.
-
-## Star history
-
-<a href="https://star-history.dera.page/#starc007/ui-components&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=starc007/ui-components&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=starc007/ui-components&type=Date" />
-    <img alt="Star history chart for starc007/ui-components" src="https://star-history.dera.page/svg?repos=starc007/ui-components&type=Date" />
-  </picture>
-</a>
-
-## Author
-
-Saurabh Chauhan · [@saurra3h](https://x.com/saurra3h)
+上游 Skill 提供 beUI 组件知识；新增工作区接口请同时阅读本仓库 docs/workspace.md。
