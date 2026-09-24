@@ -1,0 +1,45 @@
+name: Validate beUI workspace
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: beui-workspace-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - name: TypeScript, Biome and Registry
+        run: bun run check
+      - name: Upstream and workspace unit tests
+        run: bun test
+      - name: Next.js production build
+        run: bun run build
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+      - name: Workspace browser regressions
+        run: bun run test:workspace:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: beui-workspace-review
+          path: |
+            test-results
+            playwright-report
+          retention-days: 7
