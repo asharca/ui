@@ -51,10 +51,14 @@ jobs:
           git add -A
           git diff --cached --check
           git commit -m 'feat(agents): migrate all 17 beUI Agent components with registry, demos and regression coverage'
-          git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer ${GH_TOKEN}" push origin HEAD:refs/heads/feat/beui-agent-components
           git archive HEAD | gzip > "$RUNNER_TEMP/agent-final-source.tar.gz"
+          AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w 0)
+          echo "::add-mask::$AUTH"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:refs/heads/feat/beui-agent-components
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: agent-final-source
           path: ${{ runner.temp }}/agent-final-source.tar.gz
           retention-days: 7
+          if-no-files-found: ignore
