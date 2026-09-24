@@ -5,7 +5,7 @@ import { Dialog as Primitive, Tooltip as TooltipPrimitive } from 'radix-ui';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { IconButton } from './icon-button';
-import { cn, focusRing } from './utils';
+import { cn, focusRing, layoutSpring } from './utils';
 
 export interface WorkspaceSidebarItem { id: string; label: string; icon?: ReactNode; badge?: ReactNode; href?: string; disabled?: boolean }
 export interface WorkspaceSidebarGroup { id: string; title?: string; items: WorkspaceSidebarItem[] }
@@ -55,18 +55,23 @@ export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onColl
           onClick={() => onCollapsedChange(!compact)} />}
       </header>
       <TooltipPrimitive.Provider delayDuration={200} skipDelayDuration={100}>
-        <nav id={`${id}-${mobile ? 'mobile' : 'desktop'}-navigation`} aria-label={title} data-slot="workspace-nav" className={cn('min-h-0 flex-1 space-y-5 overflow-x-hidden overflow-y-auto overscroll-contain py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', inset ? 'px-[var(--workspace-sidebar-gutter)]' : 'px-3')}>
+        <motion.nav layoutRoot layoutScroll id={`${id}-${mobile ? 'mobile' : 'desktop'}-navigation`} aria-label={title} data-slot="workspace-nav" className={cn('min-h-0 flex-1 space-y-5 overflow-x-hidden overflow-y-auto overscroll-contain py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', inset ? 'px-[var(--workspace-sidebar-gutter)]' : 'px-3')}>
           {groups.map((group) => <div key={group.id} data-slot="workspace-group" className="grid gap-1">
             {group.title && <p data-slot="workspace-group-title" aria-hidden={compact || undefined} className={cn('mb-1 h-4 overflow-hidden px-2 text-[10px] leading-4 whitespace-nowrap text-muted-foreground', fade)}>{group.title}</p>}
             {group.items.map((item) => {
               const cls = cn(
-                'grid w-full shrink-0 grid-cols-[var(--workspace-icon-rail)_minmax(0,1fr)] items-center overflow-hidden p-0 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground motion-safe:transition-[height,border-radius,background-color,color]',
+                'relative isolate grid w-full min-w-0 shrink-0 grid-cols-[var(--workspace-icon-rail)_minmax(0,1fr)] items-center p-0 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground motion-safe:transition-[height,border-radius,background-color,color]',
                 geometry, focusRing, 'focus-visible:ring-inset focus-visible:ring-offset-0',
                 compact ? 'h-9 rounded-[18px]' : 'h-10 rounded-lg',
                 inset && 'hover:bg-background/60',
-                activeId === item.id && (inset ? 'bg-[var(--workspace-surface,var(--background))] text-foreground' : 'bg-muted text-foreground'), item.disabled && 'cursor-not-allowed opacity-40',
+                activeId === item.id && 'hover:bg-transparent text-foreground', item.disabled && 'cursor-not-allowed opacity-40',
               );
               const children = <>
+                {activeId === item.id && <motion.span aria-hidden="true" data-slot="workspace-selection" initial={false}
+                  layoutId={reduce ? undefined : `${id}-${mobile ? 'mobile' : 'desktop'}-selection`}
+                  transition={reduce ? { duration: 0 } : layoutSpring}
+                  className={cn('pointer-events-none absolute inset-0 -z-10', inset ? 'bg-[var(--workspace-surface,var(--background))]' : 'bg-muted')}
+                  style={{ borderRadius: compact ? 18 : 8 }} />}
                 <span data-slot="workspace-icon" aria-hidden="true" className={cn('inline-grid shrink-0 place-items-center justify-self-center', inset ? 'size-[18px] [&_svg]:size-[18px]' : 'size-4 [&_svg]:size-4')}>{item.icon ?? <span className="size-1.5 rounded-full bg-current" />}</span>
                 <span data-slot="workspace-label" aria-hidden={compact || undefined} className={cn('flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap pr-2.5', fade)}>
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
@@ -83,7 +88,7 @@ export function WorkspaceSidebar({ groups, activeId, onSelect, collapsed, onColl
               </TooltipPrimitive.Root>;
             })}
           </div>)}
-        </nav>
+        </motion.nav>
       </TooltipPrimitive.Provider>
       {footer && <div ref={mobile ? undefined : footerRef} data-slot="workspace-footer" aria-hidden={compact || undefined} inert={compact} className={cn('shrink-0 overflow-hidden py-3', inset ? 'px-[var(--workspace-sidebar-gutter)]' : 'border-t border-border px-3')}>
         <div className={cn(mobile ? 'w-full' : inset ? 'w-[calc(var(--workspace-sidebar-width,14rem)-2*var(--workspace-sidebar-gutter))]' : 'w-[calc(var(--workspace-sidebar-width,14rem)-1.5rem-var(--workspace-sidebar-border,1px))]', fade)}>{footer}</div>

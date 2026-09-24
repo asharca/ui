@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, BookOpen, Code2, Home, Layers, Menu, Moon, RefreshCw, Search, SlidersHorizontal, Sun, X } from 'lucide-react';
 import { Dialog as PrimitiveDialog } from 'radix-ui';
@@ -8,23 +8,38 @@ import { Popover, PopoverContent, PopoverTrigger } from '../registry/ui/popover'
 import { RadioGroup } from '../registry/ui/radio-group';
 import { Tooltip } from '../registry/ui/tooltip';
 import { Github } from './icons';
+import { motion, useReducedMotion } from 'motion/react';
+import { layoutSpring } from '../registry/ui/utils';
+import './sidebar-motion.css';
 import { publicPath, usePreferences, type Theme } from './preferences';
 
 export const repository = 'https://github.com/asharca/ui';
+function SidebarItem({ to, children, layoutId, onNavigate }: { to: string; children: ReactNode; layoutId: string; onNavigate?: () => void }) {
+  const reduce = useReducedMotion();
+  return <NavLink to={to} end={to === '/'} onClick={onNavigate} data-slot="docs-sidebar-item">
+    {({ isActive }) => <>
+      {isActive && <motion.span aria-hidden="true" data-slot="docs-sidebar-selection" initial={false}
+        layoutId={reduce ? undefined : layoutId} transition={reduce ? { duration: 0 } : layoutSpring}
+        className="sidebar-selection" style={{ borderRadius: 7 }} />}
+      <span className="sidebar-link-label">{children}</span>
+    </>}
+  </NavLink>;
+}
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
-  return <nav className="side-nav" aria-label="组件导航">
+  const selectionId = useId();
+  return <motion.nav layoutRoot className="side-nav" aria-label="组件导航">
     <div className="side-group">
       <span className="side-heading">开始使用</span>
-      <NavLink to="/" end onClick={onNavigate}><Home size={14} />首页</NavLink>
-      <NavLink to="/docs/installation" onClick={onNavigate}><BookOpen size={14} />安装</NavLink>
-      <NavLink to="/docs/updating" onClick={onNavigate}><RefreshCw size={14} />更新组件</NavLink>
+      <SidebarItem layoutId={selectionId} to="/" onNavigate={onNavigate}><Home size={14} />首页</SidebarItem>
+      <SidebarItem layoutId={selectionId} to="/docs/installation" onNavigate={onNavigate}><BookOpen size={14} />安装</SidebarItem>
+      <SidebarItem layoutId={selectionId} to="/docs/updating" onNavigate={onNavigate}><RefreshCw size={14} />更新组件</SidebarItem>
     </div>
     {groups.map((group) => <div className="side-group" key={group}>
       <span className="side-heading">{group}<span>{catalog.filter((entry) => entry.group === group).length}</span></span>
-      {catalog.filter((entry) => entry.group === group).map((entry) => <NavLink key={entry.slug} to={`/components/${entry.slug}`} onClick={onNavigate}>{entry.name}</NavLink>)}
+      {catalog.filter((entry) => entry.group === group).map((entry) => <SidebarItem layoutId={selectionId} key={entry.slug} to={`/components/${entry.slug}`} onNavigate={onNavigate}>{entry.name}</SidebarItem>)}
     </div>)}
     <a className="side-llms" href={publicPath('llms.txt')} onClick={onNavigate}><Code2 size={14} />llms.txt<ArrowUpRight size={12} /></a>
-  </nav>;
+  </motion.nav>;
 }
 export function Header({ onSearch }: { onSearch: () => void }) {
   const [mobile, setMobile] = useState(false);

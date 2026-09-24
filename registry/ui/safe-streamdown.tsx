@@ -2,6 +2,8 @@
 import { Children, isValidElement, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Copy, Download, Maximize2 } from 'lucide-react';
+import { actionClass, DiagramViewport, ExpandedContent, MarkdownTable, saveText } from './rich-content-view';
 import { cn, focusRing } from './utils';
 
 export interface SafeStreamdownProps {
@@ -67,7 +69,9 @@ function MermaidBlock({ code, pending, theme }: { code: string; pending: boolean
   const [dark, setDark] = useState(theme === 'dark');
   const [view, setView] = useState<'diagram' | 'source'>('diagram');
   const [revision, setRevision] = useState(0);
-  const [zoom, setZoom] = useState(1);
+  const [expanded, setExpanded] = useState(false);
+  const expandTrigger = useRef<HTMLButtonElement>(null);
+  const [downloadError, setDownloadError] = useState(false);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [result, setResult] = useState<{ key: string; src?: string; error?: boolean } | null>(null);
   const key = `${dark}:${revision}:${code}`;
@@ -95,25 +99,42 @@ function MermaidBlock({ code, pending, theme }: { code: string; pending: boolean
     try { await navigator.clipboard.writeText(code); setCopyState('copied'); }
     catch { setCopyState('error'); }
   }
-  return <figure ref={host} data-slot="mermaid-block" data-state={pending ? 'streaming' : current?.error ? 'error' : current?.src ? 'ready' : 'loading'} className="my-4 min-w-0 overflow-hidden rounded-xl border border-border bg-background">
-    <figcaption className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/25 px-3 py-2">
-      <span className="font-mono text-[11px] text-muted-foreground">Mermaid</span>
-      <div className="flex items-center gap-1" role="group" aria-label="图表操作">
-        <button type="button" className={cn(control, view === 'diagram' && 'bg-muted text-foreground')} aria-pressed={view === 'diagram'} onClick={() => setView('diagram')}>图表</button>
-        <button type="button" className={cn(control, view === 'source' && 'bg-muted text-foreground')} aria-pressed={view === 'source'} onClick={() => setView('source')}>源码</button>
-        <button type="button" className={control} onClick={() => void copy()} aria-label="复制 Mermaid 源码">{copyState === 'copied' ? '已复制' : '复制'}</button>
+  const ready = !pending && Boolean(current?.src) && !current?.error;
+  function download() {
+    if (!current?.src) return;
+    try {
+      const data = decodeURIComponent(current.src.slice(current.src.indexOf(',') + 1));
+      saveText(data, 'image/svg+xml;charset=utf-8', 'diagram.svg'); setDownloadError(false);
+    } catch { setDownloadError(true); }
+  }
+  const controls = (fullscreen: boolean) => <div role="group" aria-label="图表操作" className="flex shrink-0 items-center gap-0.5">
+    <button type="button" className={actionClass} onClick={() => void copy()} aria-label="复制 Mermaid 源码" title={copyState === 'copied' ? '已复制' : '复制源码'}><Copy aria-hidden="true" /></button>
+    <button type="button" className={actionClass} onClick={download} disabled={!ready} aria-label="下载 Mermaid SVG" title="下载 SVG"><Download aria-hidden="true" /></button>
+    {!fullscreen && <button ref={expandTrigger} type="button" className={actionClass} onClick={() => setExpanded(true)} disabled={!ready} aria-label="展开 Mermaid 图表" title="展开图表"><Maximize2 aria-hidden="true" /></button>}
+  </div>;
+  const failure = () => setResult({ key, error: true });
+  return <figure ref={host} data-slot="mermaid-block" data-state={pending ? 'streaming' : current?.error ? 'error' : current?.src ? 'ready' : 'loading'} className="my-4 flex min-w-0 max-w-full flex-col gap-2 rounded-lg border border-border bg-muted/30 p-2">
+    <figcaption className="flex min-w-0 flex-wrap items-center justify-between gap-1">
+      <div role="group" aria-label="图表显示方式" className="flex items-center gap-0.5 rounded-md bg-muted/50 p-0.5">
+        <button type="button" className={cn(control, view === 'diagram' && 'bg-background text-foreground shadow-xs')} aria-pressed={view === 'diagram'} onClick={() => setView('diagram')}>图表</button>
+        <button type="button" className={cn(control, view === 'source' && 'bg-background text-foreground shadow-xs')} aria-pressed={view === 'source'} onClick={() => setView('source')}>源码</button>
       </div>
+      {controls(false)}
     </figcaption>
-    {pending && <p role="status" className="px-4 pt-2 text-xs text-muted-foreground">图表生成中，回复结束后渲染。</p>}
-    {current?.error && !pending && <div className="flex items-center justify-between gap-3 px-4 pt-3 text-xs text-muted-foreground"><p role="status">图表暂时无法渲染，已保留源码。</p><button type="button" className={control} onClick={() => setRevision((value) => value + 1)}>重试</button></div>}
-    {source ? <pre aria-label="Mermaid 源码" tabIndex={0} className="!m-0 !rounded-none !border-0 !bg-transparent !text-xs"><code>{code}</code></pre> : current?.src ? <>
-      <div role="region" aria-label="Mermaid 图表预览，可横向滚动" tabIndex={0} className="max-h-[32rem] overflow-auto p-4 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
-        <img src={current.src} alt="Mermaid 图表" draggable={false} className="mx-auto block h-auto !max-w-none" style={{ width: `${zoom * 100}%` }} onError={() => setResult({ key, error: true })} />
-      </div>
-      <div className="flex justify-end gap-1 px-3 pb-2"><button type="button" className={control} aria-label="缩小图表" disabled={zoom <= 1} onClick={() => setZoom((value) => Math.max(1, value - 0.25))}>−</button><button type="button" className={control} aria-label="重置图表缩放" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button><button type="button" className={control} aria-label="放大图表" disabled={zoom >= 2} onClick={() => setZoom((value) => Math.min(2, value + 0.25))}>＋</button></div>
-    </> : <p role="status" className="px-4 py-8 text-center text-xs text-muted-foreground">正在绘制图表…</p>}
+    {pending && <p role="status" className="px-2 text-xs text-muted-foreground">图表生成中，回复结束后渲染。</p>}
+    {current?.error && !pending && <div className="flex items-center justify-between gap-3 px-2 text-xs text-muted-foreground"><p role="status">图表暂时无法渲染，已保留源码。</p><button type="button" className={control} onClick={() => setRevision((value) => value + 1)}>重试</button></div>}
+    {source ? <pre aria-label="Mermaid 源码" tabIndex={0} className="!m-0 max-h-96 !rounded-md !border-border !bg-background !text-xs"><code>{code}</code></pre> : current?.src ?
+      <DiagramViewport key={code} src={current.src} onError={failure} /> : <p role="status" className="rounded-md border border-border bg-background px-4 py-12 text-center text-xs text-muted-foreground">正在绘制图表…</p>}
     <span role="status" className="sr-only">{copyState === 'copied' ? 'Mermaid 源码已复制' : ''}</span>
-    {copyState === 'error' && <p role="alert" className="px-4 pb-3 text-xs text-destructive">复制失败，请切换源码视图手动复制。</p>}
+    {copyState === 'error' && <p role="alert" className="px-2 text-xs text-destructive">复制失败，请切换源码视图手动复制。</p>}
+    {downloadError && <p role="alert" className="px-2 text-xs text-destructive">导出失败，请复制图表源码。</p>}
+    <ExpandedContent open={expanded} onOpenChange={setExpanded} title="Mermaid 图表预览" trigger={expandTrigger}>
+      <div className="flex min-h-0 flex-1 flex-col gap-2">
+        <div className="flex items-center justify-between gap-2"><span className="text-xs text-muted-foreground">拖动查看 · + / − 缩放 · 0 适应画布</span>{controls(true)}</div>
+        {ready && current?.src ? <DiagramViewport key={code} src={current.src} fullscreen onError={failure} /> : <p role="status">图表暂时不可用，请关闭预览查看源码。</p>}
+        <span role="status" className="text-xs text-muted-foreground">{copyState === 'copied' ? 'Mermaid 源码已复制' : copyState === 'error' ? '复制失败，请查看源码。' : downloadError ? '导出失败，请复制图表源码。' : ''}</span>
+      </div>
+    </ExpandedContent>
   </figure>;
 }
 
@@ -124,7 +145,7 @@ export function SafeStreamdown({ children, mode = 'static', allowImages = false,
   const components = useMemo<Components>(() => ({
       a: ({ children: text, href, title }) => href ? <a href={href} title={title} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">{text}</a> : <span>{text}</span>,
       img: ({ src, alt }) => allowImages && typeof src === 'string' ? <img src={src} alt={alt ?? ''} loading="lazy" referrerPolicy="no-referrer" className="max-h-80 max-w-full rounded-xl object-contain" /> : <span className="text-xs text-muted-foreground">[图片：{alt || '未加载'}]</span>,
-      table: ({ children: rows }) => <div role="region" aria-label="Markdown 表格，可横向滚动" tabIndex={0} className={cn('my-4 max-w-full overflow-x-auto rounded-xl border border-border', focusRing)}><table className="w-full border-collapse text-xs"><caption className="sr-only">Markdown 表格</caption>{rows}</table></div>,
+      table: ({ children: rows }) => <MarkdownTable>{rows}</MarkdownTable>,
       pre: ({ children: content }) => {
         const code = Children.toArray(content)[0];
         if (allowMermaid && isValidElement<{ className?: string; children?: string }>(code) && /(?:^|\s)language-mermaid(?:\s|$)/.test(code.props.className ?? '')) {
@@ -133,7 +154,7 @@ export function SafeStreamdown({ children, mode = 'static', allowImages = false,
         return <pre tabIndex={0}>{content}</pre>;
       },
   }), [allowImages, allowMermaid, mermaidTheme, mode]);
-  return <div aria-busy={mode === 'streaming'} className={cn('min-w-0 max-w-full break-words text-sm leading-7 [&_p]:my-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h1]:my-4 [&_h1]:text-xl [&_h1]:font-semibold [&_h2]:my-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:my-3 [&_h3]:font-semibold [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs [&_pre]:my-4 [&_pre]:max-w-full [&_pre]:overflow-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-muted/40 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_th]:border-b [&_th]:border-border [&_th]:bg-muted/40 [&_th]:px-3 [&_th]:py-2.5 [&_th]:text-left [&_th]:font-medium [&_td]:border-b [&_td]:border-border [&_td]:px-3 [&_td]:py-2.5 [&_tbody_tr:last-child_td]:border-b-0 [&_hr]:my-5 [&_hr]:border-border', className)}>
+  return <div aria-busy={mode === 'streaming'} className={cn('min-w-0 max-w-full break-words text-sm leading-7 [&_p]:my-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h1]:my-4 [&_h1]:text-xl [&_h1]:font-semibold [&_h2]:my-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:my-3 [&_h3]:font-semibold [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs [&_pre]:my-4 [&_pre]:max-w-full [&_pre]:overflow-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-muted/40 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_hr]:my-5 [&_hr]:border-border', className)}>
     <Markdown skipHtml remarkPlugins={[remarkGfm]} components={components}>{children}</Markdown>
   </div>;
 }

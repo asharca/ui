@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFile, readdir } from 'node:fs/promises';
-import { catalog, resolveFiles } from '../registry/catalog.mjs';
+import { allEntries, catalog, resolveFiles } from '../registry/catalog.mjs';
 
 // Independent baseline: showcase/catalog-data.ts + component-metadata.ts at
 // aeb90b1c5f34bd89061502a086bbcc1e098d4fdc, before the clean-site rewrite.
@@ -65,7 +65,7 @@ test('the single llms index and built item count match the expanded catalog', as
   const llms = await readFile('public/llms.txt', 'utf8');
   const items = await readdir('public/r');
   assert.ok(items.includes('registry.json'));
-  assert.equal(items.filter((item) => item.endsWith('.json') && item !== 'registry.json').length, catalog.length + 1);
+  assert.equal(items.filter((item) => item.endsWith('.json') && item !== 'registry.json').length, allEntries.length);
   for (const slug of original) assert.ok(llms.includes(`/r/${slug}.json`), `llms.txt omits ${slug}`);
   assert.doesNotMatch(llms, /@asharca\/ui(?:\/|["'])/);
 });

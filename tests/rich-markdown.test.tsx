@@ -26,7 +26,8 @@ describe('Markdown tables and Mermaid', () => {
     const image = await screen.findByRole('img', { name: 'Mermaid 图表' });
     expect(image).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml'));
     expect(graph.initialize).toHaveBeenCalledWith(expect.objectContaining({ securityLevel: 'strict', htmlLabels: false, startOnLoad: false }));
-    expect(container.querySelector('svg')).toBeNull();
+    // Toolbar icons are SVG; rendered Mermaid content must remain a static img.
+    expect(container.querySelector('[data-slot="mermaid-canvas"] svg')).toBeNull();
     expect(document.querySelector('[data-mermaid-measure]')).toBeNull();
   });
   it('does not remount or rerender an unchanged diagram on parent updates', async () => {

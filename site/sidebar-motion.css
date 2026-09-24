@@ -1,0 +1,5 @@
+/* Keep the actual links in flow; only the selected surface travels. */
+.side-nav .side-group > a { position: relative; isolation: isolate; min-width: 0; }
+.side-nav .side-group > a.active { background: transparent; }
+.sidebar-link-label { position: relative; display: flex; align-items: center; gap: 9px; min-width: 0; }
+.sidebar-selection { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--muted); }

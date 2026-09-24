@@ -4,6 +4,7 @@ import { catalog } from '../registry/catalog.mjs';
 import updateTemplate from '../docs/updating.md?raw';
 import { splitUpdateGuide } from '../scripts/update-guide.mjs';
 import { Sidebar } from './chrome';
+import { motion } from 'motion/react';
 
 const updateToc = splitUpdateGuide(updateTemplate).sections.map((section) => ({ id: section.id, label: section.title.replace(/^\d+\.\s*/, '') }));
 
@@ -35,7 +36,7 @@ export function DocsLayout() {
     else if (target.bottom > bounds.bottom - 24) container.scrollTop += target.bottom - bounds.bottom + 24;
   }, [pathname]);
   return <div className={`docs-layout${toc.length ? ' with-toc' : ''}`}>
-    <aside className="docs-sidebar" aria-label="文档侧栏"><div className="docs-sidebar-scroll" ref={rail} tabIndex={0} aria-label="滚动组件导航"><Sidebar /></div></aside>
+    <aside className="docs-sidebar" aria-label="文档侧栏"><motion.div layoutScroll layoutRoot className="docs-sidebar-scroll" ref={rail} tabIndex={0} aria-label="滚动组件导航"><Sidebar /></motion.div></aside>
     <main id="main-content" tabIndex={-1} className="docs-main"><Outlet /></main>
     {toc.length > 0 && <aside className="docs-toc" aria-label="本页目录"><span>本页内容</span>{toc.map((section) => <a key={section.id} href={`#${section.id}`}>{section.label}</a>)}</aside>}
   </div>;
