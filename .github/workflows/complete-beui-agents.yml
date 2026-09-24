@@ -1,0 +1,60 @@
+name: Complete reviewed beUI Agent migration
+on:
+  push:
+    branches: [feat/beui-agent-components]
+    paths:
+      - .beui-migration/**
+      - scripts/complete-beui-agents.py
+      - .github/workflows/complete-beui-agents.yml
+permissions:
+  contents: write
+concurrency:
+  group: complete-beui-agent-migration
+  cancel-in-progress: false
+jobs:
+  migrate:
+    if: github.repository == 'asharca/ui' && github.ref == 'refs/heads/feat/beui-agent-components'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_PATH: /ui/
+      SITE_URL: https://asharca.github.io/ui/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Reconstruct the reviewed source set
+        run: |
+          mkdir -p "$RUNNER_TEMP/beui-pinned"
+          git -C "$RUNNER_TEMP/beui-pinned" init -q
+          git -C "$RUNNER_TEMP/beui-pinned" fetch --depth=1 https://github.com/starc007/ui-components.git 1e23f4b10a404c17d9649086cf561e152527e2de
+          git -C "$RUNNER_TEMP/beui-pinned" checkout -q FETCH_HEAD
+          python3 scripts/complete-beui-agents.py "$RUNNER_TEMP/beui-pinned"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Validate the reconstructed source
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm check
+      - name: Commit only to the requested feature branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'feat(agents): migrate all 17 beUI Agent components with registry, demos and regression coverage'
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer ${GH_TOKEN}" push origin HEAD:refs/heads/feat/beui-agent-components
+          git archive HEAD | gzip > "$RUNNER_TEMP/agent-final-source.tar.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-final-source
+          path: ${{ runner.temp }}/agent-final-source.tar.gz
+          retention-days: 7
