@@ -1,0 +1,39 @@
+name: Prepare rich chat dependency lock
+on:
+  push:
+    branches: [feat/table-selection-rich-chat]
+    paths: [.github/workflows/prepare-rich-chat-deps.yml]
+permissions:
+  contents: write
+jobs:
+  lock:
+    if: github.ref == 'refs/heads/feat/table-selection-rich-chat'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/table-selection-rich-chat
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Add only the graph renderer and sanitizer
+        run: pnpm add mermaid@12.0.0 dompurify@3.4.16 --save-exact --lockfile-only --ignore-scripts
+      - name: Commit the generated manifest and lockfile to the feature branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json pnpm-lock.yaml
+          git diff --cached --quiet || git commit -m 'chore(deps): lock Mermaid and SVG sanitizer for rich message rendering'
+          git push origin HEAD:refs/heads/feat/table-selection-rich-chat
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rich-chat-lock
+          path: |
+            package.json
+            pnpm-lock.yaml
+          retention-days: 1
