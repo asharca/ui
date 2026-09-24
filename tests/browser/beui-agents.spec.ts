@@ -52,7 +52,8 @@ test('question approval records choices and displays the host-confirmed result',
   await preview.getByRole('button', { name: '分步问答', exact: true }).click();
   await preview.getByText('测试环境', { exact: true }).click();
   // Single-choice questions auto-advance; do not double-advance from the test.
-  await expect(preview.getByText('交付形式', { exact: true })).toBeVisible();
+  // The animated title keeps an aria-hidden measuring copy in the DOM.
+  await expect(preview.getByText('交付形式', { exact: true }).filter({ visible: true })).toBeVisible();
   await preview.getByText('源码', { exact: true }).click();
   await preview.getByText('文档', { exact: true }).click();
   await preview.getByRole('button', { name: 'Submit response', exact: true }).click();

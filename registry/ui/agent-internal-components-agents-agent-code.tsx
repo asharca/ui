@@ -152,7 +152,8 @@ export function AgentCodeLine({
 }: AgentCodeLineProps) {
   return (
     <span className={className}>
-      {tokens
+      {/* Async highlighting must never replace newly streamed text with stale tokens. */}
+      {tokens && tokens.map((token) => token.content).join("") === code
         ? tokens.map((token) => (
             <span
               key={`${token.offset}-${token.content}`}
