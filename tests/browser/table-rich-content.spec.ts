@@ -20,7 +20,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     expect(frames.some((frame) => frame.opacity > 0.01 && frame.opacity < 0.99)).toBe(reducedMotion === 'no-preference');
     await expect(demo.getByRole('group', { name: '已选行操作' })).toBeVisible();
     await expect(demo.getByRole('button', { name: '文件数', exact: true })).toHaveCount(0);
-    await page.screenshot({ path: testInfo.outputPath(`table-selected-${reducedMotion}.png`), fullPage: true });
+    await demo.screenshot({ path: testInfo.outputPath(`table-selected-${reducedMotion}.png`) });
     await demo.getByRole('button', { name: '清空选择' }).click();
     await expect(demo.getByRole('checkbox', { name: '选择本页全部' })).toBeFocused();
     await expect(demo.getByRole('button', { name: '文件数', exact: true })).toBeVisible();
@@ -52,14 +52,14 @@ test('real Mermaid flowchart and sequence, source, zoom and dark theme', async (
   const image = block.getByRole('img', { name: 'Mermaid 图表' });
   await expect.poll(() => image.evaluate((node) => (node as HTMLImageElement).naturalWidth)).toBeGreaterThan(100);
   await expect(demo.getByRole('table')).toContainText('任务发布');
+  await demo.screenshot({ path: testInfo.outputPath('rich-markdown-light.png') });
   await block.getByRole('button', { name: '放大图表' }).click();
   await expect(block.getByRole('button', { name: '重置图表缩放' })).toHaveText('125%');
   await block.getByRole('button', { name: '复制 Mermaid 源码' }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('flowchart LR');
   await block.getByRole('button', { name: '源码', exact: true }).click();
-  await expect(block.getByLabel('Mermaid 源码')).toContainText('审核通过');
+  await expect(block.getByLabel('Mermaid 源码', { exact: true })).toContainText('审核通过');
   await block.getByRole('button', { name: '图表', exact: true }).click();
-  await demo.screenshot({ path: testInfo.outputPath('rich-markdown-light.png') });
   const before = await image.getAttribute('src');
   await page.evaluate(() => document.documentElement.classList.add('dark'));
   await expect.poll(() => image.getAttribute('src')).not.toBe(before);
@@ -75,7 +75,7 @@ test('streaming and invalid diagrams keep source, block external assets and do n
   const demo = page.locator('.detail-preview [data-demo="rich-markdown"]');
   await demo.getByRole('button', { name: '错误回退' }).click();
   await expect(demo.locator('[data-slot="mermaid-block"]')).toHaveAttribute('data-state', 'error');
-  await expect(demo.getByLabel('Mermaid 源码')).toContainText('未完成节点');
+  await expect(demo.getByLabel('Mermaid 源码', { exact: true })).toContainText('未完成节点');
   await demo.getByRole('button', { name: '模拟流式' }).click();
   await expect(demo.locator('[data-slot="mermaid-block"]')).toHaveAttribute('data-state', 'streaming');
   await expect(demo.locator('[data-slot="mermaid-block"]')).toHaveAttribute('data-state', 'ready', { timeout: 20000 });
@@ -98,6 +98,8 @@ test('rich conversation displays user and assistant content and stays within a p
   await expect(demo.getByRole('article', { name: '用户消息' })).toContainText('请用表格');
   await expect(demo.getByRole('article', { name: '助手消息' }).getByRole('table')).toContainText('需求确认');
   await demo.screenshot({ path: testInfo.outputPath('rich-chat-desktop.png') });
+  await log.evaluate((node) => { node.scrollTop = node.scrollHeight; });
+  await demo.screenshot({ path: testInfo.outputPath('rich-chat-answer.png') });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('rich-chat-mobile.png'), fullPage: true });
@@ -112,4 +114,27 @@ test('selection actions are scrollable on mobile without widening the page', asy
   await demo.getByRole('button', { name: '清空选择' }).click();
   await expect(demo.getByRole('checkbox', { name: '选择行 p1', exact: true })).not.toBeChecked();
   await demo.screenshot({ path: testInfo.outputPath('table-mobile.png') });
+});
+
+test('record table selection and clear transitions for visual review', async ({ browser }, testInfo) => {
+  const context = await browser.newContext({ baseURL: testInfo.project.use.baseURL, viewport: { width: 1280, height: 900 }, reducedMotion: 'no-preference', recordVideo: { dir: testInfo.outputPath('video'), size: { width: 1280, height: 900 } } });
+  const page = await context.newPage();
+  await page.goto('components/data-table/');
+  const demo = page.locator('.detail-preview [data-demo="table-selection"]');
+  await expect(demo).toBeVisible(); await demo.scrollIntoViewIfNeeded();
+  await demo.screenshot({ path: testInfo.outputPath('table-default.png') });
+  // Short holds make the real browser recording readable; frame geometry and
+  // reduced-motion behavior are asserted in the tests above.
+  await page.waitForTimeout(500);
+  for (let index = 0; index < 3; index++) {
+    await demo.getByRole('checkbox', { name: '选择行 p1', exact: true }).check();
+    await page.waitForTimeout(400);
+    await demo.getByRole('checkbox', { name: '选择行 p2', exact: true }).check();
+    await page.waitForTimeout(600);
+    await demo.getByRole('button', { name: '清空选择' }).click();
+    await page.waitForTimeout(500);
+  }
+  await context.close();
+  const path = await page.video()?.path();
+  if (path) await testInfo.attach('table-selection-motion', { path, contentType: 'video/webm' });
 });

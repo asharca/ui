@@ -71,10 +71,19 @@ export function DataTable<T>({ data, columns, getRowId, label, pageSize = 5, sea
     onSortingChange: setSorting, onGlobalFilterChange: setQuery,
     onRowSelectionChange: (updater) => changeSelection(typeof updater === 'function' ? updater(selected) : updater),
     enableRowSelection: selectable, globalFilterFn: 'includesString',
+    // Editing selected records must not eject the reader to page one. Search
+    // explicitly resets its page; disappearing last pages are clamped below.
+    autoResetPageIndex: false,
     initialState: { pagination: { pageSize: Math.max(1, Math.floor(pageSize)) } },
     getCoreRowModel: getCoreRowModel(), getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(), getPaginationRowModel: getPaginationRowModel(),
   });
+  const pageCount = table.getPageCount();
+  const pageIndex = table.getState().pagination.pageIndex;
+  useLayoutEffect(() => {
+    const lastPage = Math.max(0, pageCount - 1);
+    if (pageIndex > lastPage) table.setPageIndex(lastPage);
+  }, [pageCount, pageIndex, table]);
   const selectedIds = selectable ? Object.keys(selected).filter((id) => selected[id]) : [];
   const clearSelection = () => changeSelection({});
   const selecting = selectedIds.length > 0;
@@ -150,6 +159,6 @@ export function DataTable<T>({ data, columns, getRowId, label, pageSize = 5, sea
         <AnimatePresence initial={false}>{selecting && <motion.div key="selection" className="pointer-events-auto h-full">{actions}</motion.div>}</AnimatePresence>
       </div>}
     </div>
-    <div className="flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-muted-foreground">共 {table.getFilteredRowModel().rows.length} 项</span><Pagination page={table.getState().pagination.pageIndex + 1} pageCount={table.getPageCount()} onPageChange={(page) => table.setPageIndex(page - 1)} /></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-muted-foreground">共 {table.getFilteredRowModel().rows.length} 项</span><Pagination page={pageIndex + 1} pageCount={pageCount} onPageChange={(page) => table.setPageIndex(page - 1)} /></div>
   </div>;
 }

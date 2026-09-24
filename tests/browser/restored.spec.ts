@@ -97,7 +97,9 @@ test('conversation rename and delete change the actual local model', async ({ pa
 
 test('rich chat handles editing branches approval attachments and local streaming', async ({ page }) => {
   await page.goto('components/chat-thread/');
-  const preview = page.locator('.detail-preview');
+  // The original interaction showcase is first; the new diagram showcase has
+  // its own message editor and is tested independently.
+  const preview = page.locator('.detail-preview').first();
   await preview.getByRole('button', { name: '编辑', exact: true }).click();
   await preview.getByRole('textbox', { name: '编辑消息' }).fill('请保留原来的组件。');
   await preview.getByRole('button', { name: '保存编辑' }).click();
