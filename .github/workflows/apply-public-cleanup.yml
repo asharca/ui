@@ -1,0 +1,82 @@
+name: Apply reviewed public-only cleanup
+on:
+  push:
+    branches: [rebuild/beui-workspace]
+    paths:
+      - .github/workflows/apply-public-cleanup.yml
+      - .source-transfer/public-cleanup-*.b64
+permissions:
+  contents: write
+concurrency:
+  group: apply-reviewed-public-cleanup
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.repository == 'asharca/ui' && github.ref == 'refs/heads/rebuild/beui-workspace'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Apply hash-verified source edits
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, json, lzma, pathlib, subprocess
+          root = pathlib.Path.cwd().resolve()
+          encoded = ''.join((root / f'.source-transfer/public-cleanup-{i}.b64').read_text() for i in range(2))
+          raw = lzma.decompress(base64.b64decode(encoded, validate=True))
+          assert hashlib.sha256(raw).hexdigest() == '747c1947a9d25198ed8bec11929c6c4624181312c2ed1e78e1980f1b66df3abc'
+          payload = json.loads(raw)
+          for name, expected in payload['expected'].items():
+              relative = pathlib.PurePosixPath(name)
+              assert not relative.is_absolute() and '..' not in relative.parts
+              target = root / relative
+              assert target.resolve().is_relative_to(root)
+              if expected is None:
+                  assert not target.exists(), f'Unexpected existing file: {name}'
+              else:
+                  content = target.read_bytes()
+                  actual = hashlib.sha1(b'blob ' + str(len(content)).encode() + b'\0' + content).hexdigest()
+                  assert actual == expected, f'Concurrent change: {name}'
+          patch = payload['patch'].encode()
+          subprocess.run(['git', 'apply', '--check', '--unidiff-zero', '-'], input=patch, check=True)
+          subprocess.run(['git', 'apply', '--unidiff-zero', '-'], input=patch, check=True)
+          for name in payload['delete']:
+              assert name in payload['expected'] and payload['expected'][name] is not None
+              (root / name).unlink()
+          for index in range(2):
+              (root / f'.source-transfer/public-cleanup-{index}.b64').unlink()
+          print(f"Applied {len(payload['expected'])} reviewed source changes; transfer chunks removed.")
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Static checks and unit tests only
+        run: |
+          bun install --frozen-lockfile
+          bun run check
+          bun test
+      - name: Public MCP typecheck
+        working-directory: mcp
+        run: |
+          bun install --frozen-lockfile
+          bun run typecheck
+      - name: Commit validated source only to the requested branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'refactor: remove Pro promotion and private MCP while preserving public components'
+          AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          echo "::add-mask::$AUTH"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:refs/heads/rebuild/beui-workspace
