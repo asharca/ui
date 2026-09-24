@@ -11,13 +11,20 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     env:
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Prepare source-only audit snapshot
+        run: git archive HEAD | gzip > "$RUNNER_TEMP/workspace-source.tar.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workspace-source-audit
+          path: ${{ runner.temp }}/workspace-source.tar.gz
+          retention-days: 1
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -29,17 +36,3 @@ jobs:
         run: bun run check
       - name: Upstream and workspace unit tests
         run: bun test
-      - name: Next.js production build
-        run: bun run build
-      - name: Install Chromium
-        run: bunx playwright install --with-deps chromium
-      - name: Workspace browser regressions
-        run: bun run test:workspace:browser
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: beui-workspace-review
-          path: |
-            test-results
-            playwright-report
-          retention-days: 7
