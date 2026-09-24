@@ -23,6 +23,8 @@ const hasSlot = (node: ReactNode) => node != null && typeof node !== "boolean";
 /** The beUI sidebar provider owns navigation state; the host owns tabs and data.
  * Set a height on the shell. Tabs and content share one alignment line, and the
  * first active tab removes only the adjoining top-left corner of the surface.
+ * data-workspace-shell identifies this composition without replacing beUI's
+ * own data-slot="sidebar-wrapper" or introducing a second layout wrapper.
  */
 export function WorkspaceShell({
   sidebar, tabBar, mobileHeader, header, footer, children, className, style,
@@ -32,7 +34,7 @@ export function WorkspaceShell({
   return (
     <AnimatedSidebarProvider
       {...props}
-      data-slot="workspace-shell"
+      data-workspace-shell=""
       style={{ "--sidebar-width": "14rem", "--sidebar-width-icon": "4rem", ...style }}
       className={cn("h-full min-h-0 w-full overflow-hidden bg-[var(--workspace-shell-background,var(--muted))] text-foreground", className)}
     >

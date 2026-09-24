@@ -2,9 +2,12 @@ import { expect, test } from '@playwright/test';
 
 const tabs = (page) => page.getByRole('tablist', { name: '工作区标签' });
 const tab = (page, name) => tabs(page).getByRole('tab', { name, exact: true });
+const workspace = (page) => page.locator('[data-workspace-shell]');
 
 async function ready(page) {
   await page.goto('/workspace');
+  await expect(workspace(page)).toBeVisible();
+  await expect(workspace(page)).toHaveAttribute('data-slot', 'sidebar-wrapper');
   await expect(tab(page, '概览')).toHaveAttribute('aria-selected', 'true');
   // An interaction confirms hydration instead of relying on static server text.
   await tab(page, 'Agents').click();
@@ -15,8 +18,12 @@ async function ready(page) {
 for (const colorScheme of ['light', 'dark']) {
   test(`inset surface, tab shoulders and fixed controls align (${colorScheme})`, async ({ page }, info) => {
     await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
+    // beUI intentionally defaults to dark. Set the actual next-themes preference
+    // rather than labelling two dark screenshots as a light/dark comparison.
+    await page.addInitScript((theme) => localStorage.setItem('theme', theme), colorScheme);
     await ready(page);
-    const shell = page.locator('[data-slot="workspace-shell"]');
+    await expect(page.locator('html')).toHaveClass(new RegExp(`(?:^|\\s)${colorScheme}(?:\\s|$)`));
+    const shell = workspace(page);
     const surface = page.locator('[data-slot="workspace-surface"]');
     const strip = page.locator('[data-slot="workspace-tab-strip"]');
     await expect(surface).toHaveCSS('border-top-left-radius', '0px');
@@ -141,7 +148,8 @@ test('blocked popups report failure without deleting the original draft', async 
   await page.evaluate(() => { window.open = () => null; });
   await page.getByRole('button', { name: '概览操作', exact: true }).click();
   await page.getByRole('button', { name: '在独立窗口打开', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('拦截');
+  // Next.js also has a route-announcer alert outside the application shell.
+  await expect(workspace(page).getByRole('alert')).toContainText('拦截');
   await expect(page.getByRole('textbox', { name: '概览便签' })).toHaveValue('整理本周的工作区任务');
 });
 
