@@ -48,6 +48,12 @@ jobs:
           for name in payload['delete']:
               assert name in payload['expected'] and payload['expected'][name] is not None
               (root / name).unlink()
+          test = root / 'tests/public-only.test.ts'
+          old = '    const redirects = await config.redirects();'
+          new = '    if (!config.redirects) throw new Error("Redirect configuration is missing.");\n' + old
+          source = test.read_text()
+          assert source.count(old) == 1
+          test.write_text(source.replace(old, new))
           for index in range(2):
               (root / f'.source-transfer/public-cleanup-{index}.b64').unlink()
           print(f"Applied {len(payload['expected'])} reviewed source changes; transfer chunks removed.")
