@@ -21,29 +21,29 @@ export function CenterMorphModalPreview() {
         </CenterMorphModalTrigger>
 
         <CenterMorphModalContent
-          ariaLabel="beUI Pro"
-          ariaDescribedBy="center-morph-pro-description"
+          ariaLabel="Workspace overview"
+          ariaDescribedBy="center-morph-workspace-description"
         >
           <div className="p-7 sm:p-8">
             <p className="text-sm font-medium text-muted-foreground">
-              beUI Pro
+              Workspace overview
             </p>
             <h2 className="mt-5 max-w-xs pr-8 text-2xl font-medium tracking-tight text-foreground">
-              Ship the whole experience.
+              Keep your work together.
             </h2>
             <p
-              id="center-morph-pro-description"
+              id="center-morph-workspace-description"
               className="mt-3 text-sm leading-relaxed text-muted-foreground"
             >
-              Go beyond individual components with premium animated sections
-              and complete Next.js templates.
+              Organize your tools and drafts in a workspace built with
+              reusable components and accessible interactions.
             </p>
 
             <div className="mt-7 space-y-3 border-y border-border py-5">
               {[
-                "Premium animated sections",
-                "Complete Next.js templates",
-                "Editable source and private registry",
+                "Flexible workspace layouts",
+                "Keyboard-friendly navigation",
+                "Editable open-source components",
               ].map((feature) => (
                 <div
                   key={feature}
@@ -59,12 +59,12 @@ export function CenterMorphModalPreview() {
             </div>
 
             <a
-              href="https://pro.beui.dev/?utm_source=beui&utm_medium=component_preview&utm_campaign=center_morph_modal"
+              href="/workspace"
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
               className="mt-7 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              Explore beUI Pro
+              Open workspace
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </a>
           </div>

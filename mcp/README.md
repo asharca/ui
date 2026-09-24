@@ -1,50 +1,14 @@
 # beUI MCP server
 
-Remote [MCP](https://modelcontextprotocol.io) server for the beUI component registries, running on a Cloudflare Worker. It lets AI agents discover, inspect, and install both free beUI components and licensed beUI Pro blocks.
+Remote [MCP](https://modelcontextprotocol.io) server for the public beUI component registry, running on a Cloudflare Worker. It lets AI agents discover, inspect, and install open-source components without authentication.
 
-It owns no data — it reads the live `beui.dev/r/*` registry endpoints at runtime (edge-cached), so new components appear without redeploying the worker.
+It owns no component data: it reads the live `REGISTRY_URL/r/*` endpoints at runtime with short-lived edge caching.
 
 ## Connect
 
-Add to your MCP client (Claude Desktop, Cursor, etc.):
+The upstream public service is available at `https://mcp.beui.dev/mcp`. For your own deployment, use `https://<your-worker-host>/mcp`. Streamable HTTP is recommended; `/sse` remains available for legacy clients.
 
-```
-https://mcp.beui.dev/mcp
-```
-
-Streamable HTTP is recommended. An SSE endpoint (`/sse`) exists for legacy clients.
-
-## Connect to beUI Pro
-
-Paid users can connect Claude and other OAuth-capable clients directly to:
-
-```
-https://mcp.beui.dev/pro/mcp
-```
-
-The client opens a beUI Pro authorization page where the customer enters the
-same license key they use as `BEUI_PRO_TOKEN`. Clients that support custom
-headers can continue to configure that key directly:
-
-```json
-{
-  "mcpServers": {
-    "beui-pro": {
-      "url": "https://mcp.beui.dev/pro/mcp",
-      "headers": {
-        "Authorization": "Bearer ${BEUI_PRO_TOKEN}"
-      }
-    }
-  }
-}
-```
-
-The Pro endpoint supports OAuth 2.1 discovery, dynamic client registration,
-authorization-code flow with PKCE, rotating refresh tokens, and direct license
-key bearer authentication. OAuth grants keep the license key encrypted and
-forward it to the private registry only while serving authenticated tool calls.
-The server does not accept tokens as tool arguments, include them in tool
-results, or cache authenticated source responses.
+Only `/`, `/mcp`, `/mcp/*`, `/sse`, and `/sse/*` are served. Other paths return 404. No license token, OAuth provider, or authorization-storage binding is required.
 
 ## Tools
 
@@ -55,26 +19,22 @@ results, or cache authenticated source responses.
 | `get_component` | `slug` | description, dependencies, all source files, install command |
 | `get_install_command` | `slug`, `packageManager?` | shadcn CLI command per package manager |
 
-The Pro endpoint exposes the same four tool names against the installable
-`@beui-pro` catalog. `get_component` returns the licensed source files, while
-`get_install_command` also returns the registry configuration required by the
-shadcn CLI. Standalone templates that are not in the private shadcn index are
-not exposed as installable components.
+## Code checks
 
-## Develop
+From this directory:
 
 ```bash
-bun install
-bun run dev        # local worker at http://localhost:8787
+bun install --frozen-lockfile
 bun run typecheck
 ```
 
-## Deploy
+Public transport routing is covered by the repository's `bun test` suite. Tests use in-memory requests and transport stubs, not a running Worker.
+
+## Manual development and deployment
 
 ```bash
-bun run deploy
+bun run dev       # optional local Worker at http://localhost:8787
+bun run deploy    # explicit deployment only
 ```
 
-Requires `beui.dev` on Cloudflare. Wrangler provisions the `mcp.beui.dev` custom domain on first deploy (see `routes` in `wrangler.jsonc`). To point at a different registry, set the `REGISTRY_URL` var.
-
-OAuth also requires the `OAUTH_KV` namespace configured in `wrangler.jsonc`.
+Before deploying your own Worker, replace the upstream custom domain in `wrangler.jsonc` with one you control, or remove `routes` to use a workers.dev address. The existing `mcp.beui.dev` route is an upstream example, not an authorization to deploy there. `REGISTRY_URL` defaults to the public upstream registry. This repository's CI never starts or deploys the Worker.

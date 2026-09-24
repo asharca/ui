@@ -17,7 +17,8 @@ Upstream deployment workflows are intentionally not enabled in this repository.
 - `app/workspace`: independent demo without documentation chrome.
 - beUI catalog/previews: two new block entries with self-hosted install URLs.
 - Root layout uses the existing bundled Geist font package instead of build-time Google font downloads, and does not load upstream analytics.
-- `.github/workflows/ci.yml`: validation only; original production deployment workflows remain disabled.
+- `.github/workflows/ci.yml`: static checks, unit tests and public MCP typechecking only; no app server, build, browser or screenshot steps.
+- Paid-product promotion, the private MCP/authentication stack and the licensed-content skill are removed; public components and source attribution remain.
 - The previous `registry/ui`, Vite `site`, `agent-internal-*` migration and their build pipeline are not carried over.
 
 Read `docs/workspace.md` for development, changed entry points and deployment requirements.

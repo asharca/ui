@@ -18,7 +18,7 @@ const FAQS = [
         >
           Read the license
         </a>
-        . beUI Pro has a separate paid license.
+        .
       </>
     ),
   },
@@ -56,12 +56,6 @@ const FAQS = [
     title: "Can I change the design and animations?",
     description:
       "Yes. The source lives in your project. You can change the styles, motion, and behavior directly, and use your own theme tokens to match your product.",
-  },
-  {
-    id: "pro",
-    title: "Do I need Pro to use the free components?",
-    description:
-      "No. The public library works independently of Pro. Pro is a separate collection of premium components and animated blocks; the Lifetime plan also includes full templates and animated illustrations.",
   },
 ];
 

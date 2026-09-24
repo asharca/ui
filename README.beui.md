@@ -35,12 +35,6 @@ beUI is a motion component library for product interfaces.
 
 Each component includes a live preview, usage example, source code, and a shadcn install command. The components are meant to live in your app, not behind a package.
 
-### Need complete blocks and landing pages?
-
-[beUI Pro](https://pro.beui.dev/?utm_source=github&utm_medium=referral&utm_campaign=free_to_pro&utm_content=readme_callout)
-includes premium animated sections and full Next.js templates with editable
-source and private registry access.
-
 ## Install a component
 
 Open any component page and copy the install command. beUI is in the shadcn registry directory under the `@beui` namespace.
@@ -74,13 +68,6 @@ components before inventing new motion UI:
 
 ```bash
 npx skills add starc007/ui-components --skill beui
-```
-
-beUI Pro customers can install the licensed block workflow from the same
-repository:
-
-```bash
-npx skills add starc007/ui-components --skill beui-pro
 ```
 
 ## Run locally

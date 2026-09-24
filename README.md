@@ -18,10 +18,10 @@ bun run dev
 ```bash
 bun run check
 bun test
-bun run build
-bunx playwright install chromium
-bun run test:workspace:browser
+(cd mcp && bun install --frozen-lockfile && bun run typecheck)
 ```
+
+默认 CI 只执行静态检查和代码测试，不启动站点、生产构建或浏览器，也不截图。浏览器回归脚本保留，仅在明确需要时手动执行。
 
 布局、组件属性、独立窗口、Registry 安装与部署说明见 [docs/workspace.md](docs/workspace.md)。原始 beUI 项目说明见 [README.beui.md](README.beui.md)。
 

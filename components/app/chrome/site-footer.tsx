@@ -29,10 +29,6 @@ const LINKS = [
   { href: "/docs/motion-patterns", label: "Motion patterns" },
   { href: "/sponsors", label: "Sponsor" },
   { href: "/llms.txt", label: "llms.txt" },
-  {
-    href: "https://pro.beui.dev/?utm_source=beui&utm_medium=referral&utm_campaign=free_to_pro&utm_content=footer",
-    label: "beUI Pro",
-  },
   { href: "https://usemarkd.app", label: "Markd" },
   {
     href: "https://tracwell.app/?utm_source=beui&utm_medium=referral&utm_campaign=sponsorship&utm_content=landing_footer",

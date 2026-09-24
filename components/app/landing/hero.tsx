@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PressLink } from "@/components/app/press-link";
 import { INSTALLABLE_COUNT } from "@/lib/registry";
 import { HeroEyebrow } from "./hero-eyebrow";
@@ -22,15 +22,6 @@ export function Hero() {
         <PressLink href="/components/motion" className={styles.primaryLink}>
           Browse components
           <ArrowRight aria-hidden="true" className="size-4" />
-        </PressLink>
-        <PressLink
-          href="https://pro.beui.dev/?utm_source=beui&utm_medium=referral&utm_campaign=free_to_pro&utm_content=hero"
-          target="_blank"
-          rel="noreferrer noopener"
-          className={styles.secondaryLink}
-        >
-          Explore Pro
-          <ArrowUpRight aria-hidden="true" className="size-4" />
         </PressLink>
       </div>
     </div>

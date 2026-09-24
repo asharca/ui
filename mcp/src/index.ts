@@ -1,16 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import OAuthProvider from "@cloudflare/workers-oauth-provider";
-import { createMcpHandler, McpAgent } from "agents/mcp";
-import { WorkerEntrypoint } from "cloudflare:workers";
+import { McpAgent } from "agents/mcp";
 import { z } from "zod";
-import {
-  handleAuthorization,
-  type McpOAuthProps,
-  type OAuthEnv,
-  PRO_MCP_RESOURCE,
-  PRO_MCP_SCOPE,
-  resolveLicenseToken,
-} from "./oauth.js";
 import {
   getEntry,
   getIndex,
@@ -19,12 +9,11 @@ import {
   type IndexComponent,
   type PackageManager,
 } from "./registry.js";
-import { createProServer } from "./pro-server.js";
+import { createPublicMcpHandler } from "./public-handler.js";
 
-interface Env extends OAuthEnv {
+interface Env {
   BeUiMcp: DurableObjectNamespace;
   REGISTRY_URL?: string;
-  PRO_REGISTRY_URL?: string;
 }
 
 const json = (value: unknown) => ({
@@ -176,69 +165,10 @@ export class BeUiMcp extends McpAgent<Env, Record<string, never>, Record<string,
   }
 }
 
-const LANDING = `beUI MCP server
-
-Animated components and premium blocks for React and Next.js.
-
-Connect your MCP client to:
-  https://mcp.beui.dev/mcp   (Streamable HTTP, recommended)
-  https://mcp.beui.dev/sse   (SSE, legacy)
-  https://mcp.beui.dev/pro/mcp   (beUI Pro, bearer token required)
-
-Tools: list_components, search_components, get_component, get_install_command
-Docs:  https://beui.dev
-`;
-
-class ProMcpHandler extends WorkerEntrypoint<Env, McpOAuthProps> {
-  async fetch(request: Request) {
-    const server = createProServer(
-      this.env,
-      this.ctx.props.registryAuthorization,
-    );
-    const response = await createMcpHandler(server, { route: "/pro/mcp" })(
-      request,
-      this.env,
-      this.ctx,
-    );
-    response.headers.set("cache-control", "private, no-store");
-    return response;
-  }
-}
-
-const defaultHandler: ExportedHandler<Env> = {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-
-    if (url.pathname === "/authorize") return handleAuthorization(request, env);
-
-    if (url.pathname.startsWith("/mcp")) {
-      return BeUiMcp.serve("/mcp", { binding: "BeUiMcp" }).fetch(request, env, ctx);
-    }
-
-    if (url.pathname.startsWith("/sse")) {
-      return BeUiMcp.serveSSE("/sse", { binding: "BeUiMcp" }).fetch(request, env, ctx);
-    }
-
-    return new Response(LANDING, {
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
-  },
-};
-
-export default new OAuthProvider<Env>({
-  apiRoute: "/pro/mcp",
-  apiHandler: ProMcpHandler,
-  defaultHandler,
-  authorizeEndpoint: "/authorize",
-  tokenEndpoint: "/token",
-  clientRegistrationEndpoint: "/register",
-  clientIdMetadataDocumentEnabled: true,
-  scopesSupported: [PRO_MCP_SCOPE],
-  resourceMetadata: {
-    resource: PRO_MCP_RESOURCE,
-    scopes_supported: [PRO_MCP_SCOPE],
-    bearer_methods_supported: ["header"],
-    resource_name: "beUI Pro MCP",
-  },
-  resolveExternalToken: resolveLicenseToken,
-});
+// Only public transports are exposed; unknown paths never reach an MCP server.
+export default createPublicMcpHandler<Env, ExecutionContext>({
+  mcp: (request, env, ctx) =>
+    BeUiMcp.serve("/mcp", { binding: "BeUiMcp" }).fetch(request, env, ctx),
+  sse: (request, env, ctx) =>
+    BeUiMcp.serveSSE("/sse", { binding: "BeUiMcp" }).fetch(request, env, ctx),
+}) satisfies ExportedHandler<Env>;

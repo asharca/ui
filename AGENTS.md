@@ -13,7 +13,7 @@ bun run check:registry  # every registry component can publish its files
 bun run check           # all three — run before committing
 ```
 
-Prefer `typecheck` + `lint` for quick verification. Do not start the dev server or run `bun run build` unless explicitly asked.
+Prefer `typecheck` + `lint` for quick verification. Use `bun run check`, `bun test` and the MCP typecheck for acceptance. Do not start dev/production servers, run `bun run build`, launch Playwright/browsers, or create screenshots unless explicitly asked. Keep default CI code-only.
 
 ## Layout
 

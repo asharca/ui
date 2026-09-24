@@ -46,10 +46,10 @@ export const previewRailItems = [
     href: "#sponsors",
   },
   {
-    id: "pro",
-    label: "beUI Pro",
-    description: "Get premium components and lifetime access.",
-    href: "#pro",
+    id: "workspace",
+    label: "Workspace",
+    description: "Organize navigation, tools, and drafts in one place.",
+    href: "#workspace",
   },
   {
     id: "examples",

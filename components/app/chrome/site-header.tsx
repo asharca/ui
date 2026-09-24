@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, SwatchBook } from "lucide-react";
+import { SwatchBook } from "lucide-react";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +10,6 @@ import { GithubIcon } from "@/components/app/icons";
 import { MobileNav } from "@/components/app/chrome/mobile-nav";
 import { usePreferences } from "@/components/app/preferences/preferences-provider";
 import { PressLink } from "@/components/app/press-link";
-import { RainbowCta } from "@/components/app/rainbow-cta";
 import { SiteSearch } from "@/components/app/chrome/site-search";
 import { ThemeToggle } from "@/components/app/chrome/theme-toggle";
 import { Tooltip } from "@/components/motion/tooltip";
@@ -184,17 +183,6 @@ export function SiteHeader() {
               {formattedStarCount ? <span>{formattedStarCount}</span> : null}
             </span>
           </PressLink>
-          <RainbowCta
-            href="https://pro.beui.dev/?utm_source=beui&utm_medium=referral&utm_campaign=free_to_pro&utm_content=navbar"
-            target="_blank"
-            rel="noreferrer noopener"
-            shape="pill"
-            className="hidden min-h-9 text-xs sm:inline-flex"
-            innerClassName="whitespace-nowrap bg-foreground px-3 text-background sm:px-3.5"
-          >
-            Get Pro
-            <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
-          </RainbowCta>
         </nav>
       </div>
     </header>
