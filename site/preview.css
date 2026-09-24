@@ -42,6 +42,12 @@
   padding: clamp(20px, 3vw, 36px);
   background: color-mix(in srgb, var(--muted) 12%, var(--card));
 }
+/* Tall examples must start inside the scrollable area, not above it underneath
+   the toolbar. Small examples remain centered with the same existing chrome. */
+.example-workbench > .detail-preview:not([hidden]) {
+  align-items: safe center;
+  justify-content: safe center;
+}
 .example-workbench > .workbench-source { margin: 0; padding: 16px; min-width: 0; }
 .preview-canvas {
   display: flex;

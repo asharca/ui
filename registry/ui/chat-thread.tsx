@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, File, Paperclip, Pencil, RotateCcw } from 'l
 import { ChatPanel } from './chat-panel';
 import { Button } from './button';
 import { Textarea } from './textarea';
-import { SafeStreamdown } from './safe-streamdown';
+import { SafeStreamdown, type SafeStreamdownProps } from './safe-streamdown';
 import { ToolCallCard, type ToolCallCardProps } from './tool-call-card';
 import { ChatComposerToolbar, type ChatComposerToolbarProps } from './chat-composer-toolbar';
 
@@ -29,6 +29,8 @@ export interface ChatThreadProps {
   onAttach?: (files: File[]) => void | Promise<void>;
   composerTools?: ChatComposerToolbarProps;
   composerFooter?: ReactNode;
+  /** Body rendering options for both roles; diagrams and remote images remain opt-in. */
+  markdownOptions?: Pick<SafeStreamdownProps, 'allowImages' | 'allowMermaid' | 'mermaidTheme'>;
   title?: string;
   className?: string;
 }
@@ -36,7 +38,7 @@ function attachmentHref(href: string | undefined) {
   if (!href) return undefined;
   try { const url = new URL(href, 'https://example.invalid'); return ['https:', 'http:', 'blob:'].includes(url.protocol) ? href : undefined; } catch { return undefined; }
 }
-export function ChatThread({ messages, onSend, busy = false, onStop, onEdit, onRegenerate, onBranchChange, onAttach, composerTools, composerFooter, title = '对话', className }: ChatThreadProps) {
+export function ChatThread({ messages, onSend, busy = false, onStop, onEdit, onRegenerate, onBranchChange, onAttach, composerTools, composerFooter, markdownOptions, title = '对话', className }: ChatThreadProps) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export function ChatThread({ messages, onSend, busy = false, onStop, onEdit, onR
       {editing === message.id ? <form onSubmit={(event) => { event.preventDefault(); if (draft.trim()) void run(`edit-${message.id}`, () => onEdit?.(message.id, draft.trim()), () => setEditing(null)); }}>
         <Textarea label="编辑消息" value={draft} onChange={(event) => setDraft(event.target.value)} disabled={Boolean(pending)} />
         <div className="mt-2 flex gap-2"><Button size="sm" type="submit" loading={pending === `edit-${message.id}`} disabled={!draft.trim()}>保存编辑</Button><Button size="sm" variant="ghost" disabled={Boolean(pending)} onClick={() => setEditing(null)}>取消编辑</Button></div>
-      </form> : <SafeStreamdown mode={busy && index === messages.length - 1 && message.role === 'assistant' ? 'streaming' : 'static'}>{message.content}</SafeStreamdown>}
+      </form> : <SafeStreamdown {...markdownOptions} mode={busy && index === messages.length - 1 && message.role === 'assistant' ? 'streaming' : 'static'}>{message.content}</SafeStreamdown>}
       {message.attachments?.length ? <div className="flex flex-wrap gap-2">{message.attachments.map((file) => {
         const href = attachmentHref(file.href);
         const label = <><File aria-hidden="true" className="size-3.5 shrink-0" /><span className="truncate">{file.name}</span></>;

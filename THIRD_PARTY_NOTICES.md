@@ -45,3 +45,7 @@ and API extraction approach reference beUI at commit
 and `lib/props-extractor.ts`. The upstream MIT notice above also applies to
 these adapted patterns and SVG marks. Provider links do not imply endorsement
 or an API integration.
+
+## Rich message diagrams and selection header
+
+Mermaid and DOMPurify are used under their upstream MIT licenses. Their package notices remain part of distributed dependencies. The diagram renderer uses local dependencies, not third-party hosted rendering. beUI table/index.tsx (blob e2f73fa90f854cbe2f85faa536d5cd83e60403b9) and table/table-header.tsx (blob 05cd0be8594e22a6c9161bb824008ffa59c43bd5) were consulted for table structure and interaction direction; Asharca retains its TanStack implementation. The existing beUI MIT notice above applies to reference-derived patterns.
