@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
+import { CheckCheck, Download } from 'lucide-react';
 import { DataTable, type ColumnDef } from '@/components/asharca/data-table';
+import { Button } from '@/components/asharca/button';
 
 type Project = { id: string; name: string; status: string; files: number };
 const projects: Project[] = [
@@ -19,9 +21,25 @@ const columns: ColumnDef<Project>[] = [
   { accessorKey: 'files', header: '文件数', cell: ({ row }) => <span className="font-mono tabular-nums">{row.original.files}</span> },
 ];
 export default function DataTableDemo() {
+  const [data, setData] = useState(projects);
   const [feedback, setFeedback] = useState('');
-  return <div className="w-full max-w-3xl"><DataTable label="项目" data={projects} columns={columns} getRowId={(row) => row.id} pageSize={4}
-    selectionToolbar={({ selectedIds, clearSelection }) => <button type="button" className="rounded-lg border border-border px-2.5 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-ring" onClick={() => { setFeedback(`已处理 ${selectedIds.length} 个本地示例项目`); clearSelection(); }}>处理所选</button>} />
-    <p role="status" className="mt-3 min-h-5 text-xs text-muted-foreground">{feedback || '排序和翻页不会改变行 ID，选择状态可以跨页保留。'}</p>
+  const [presentation, setPresentation] = useState<'header' | 'toolbar'>('header');
+  function exportRows(ids: string[]) {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data.filter((row) => ids.includes(row.id)), null, 2)], { type: 'application/json' }));
+    const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'selected-projects.json'; anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setFeedback(`已导出 ${ids.length} 个本地示例项目`);
+  }
+  return <div className="w-full max-w-3xl" data-demo="table-selection">
+    <div role="group" aria-label="选择操作展示方式" className="mb-4 flex flex-wrap items-center gap-1">
+      <Button variant={presentation === 'header' ? 'secondary' : 'ghost'} size="sm" aria-pressed={presentation === 'header'} onClick={() => setPresentation('header')}>表头切换</Button>
+      <Button variant={presentation === 'toolbar' ? 'secondary' : 'ghost'} size="sm" aria-pressed={presentation === 'toolbar'} onClick={() => setPresentation('toolbar')}>独立工具栏</Button>
+    </div>
+    <DataTable label="项目" data={data} columns={columns} getRowId={(row) => row.id} pageSize={4} selectionPresentation={presentation}
+      selectionToolbar={({ selectedIds, clearSelection }) => <>
+        <Button size="sm" variant="secondary" onClick={() => { setData((items) => items.map((row) => selectedIds.includes(row.id) ? { ...row, status: '已完成' } : row)); setFeedback(`已处理 ${selectedIds.length} 个本地示例项目`); clearSelection(); }}><CheckCheck aria-hidden="true" className="size-3.5" />处理所选</Button>
+        <Button size="sm" variant="ghost" onClick={() => exportRows(selectedIds)}><Download aria-hidden="true" className="size-3.5" />导出</Button>
+      </>} />
+    <p role="status" className="mt-3 min-h-5 text-xs leading-5 text-muted-foreground">{feedback || '勾选后表头原位切换；选择跨页保留，操作仅修改本地演示数据。'}</p>
   </div>;
 }

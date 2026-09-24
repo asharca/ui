@@ -1,0 +1,36 @@
+name: Finalize table and rich message wiring
+on:
+  push:
+    branches: [feat/table-selection-rich-chat]
+    paths: [.github/workflows/wire-rich-chat.yml]
+permissions:
+  contents: write
+jobs:
+  wire:
+    if: github.ref == 'refs/heads/feat/table-selection-rich-chat'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/table-selection-rich-chat
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply exact source changes and remove temporary development helpers
+        run: |
+          node scripts/.wire-rich-chat.cjs
+          node -e "const fs=require('node:fs');const p='site/pages.tsx';fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace('markdownOptions={{ allowMermaid: true }} 开启','markdownOptions 的 allowMermaid 选项开启'))"
+          git rm scripts/.wire-rich-chat.cjs .github/workflows/wire-rich-chat.yml
+          git add registry/ui/data-table.tsx registry/ui/chat-thread.tsx registry/ui/safe-streamdown.tsx registry/catalog.mjs site/pages.tsx scripts/build-docs.mjs tests/restored-components.test.tsx tests/browser/restored.spec.ts README.md THIRD_PARTY_NOTICES.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: wire rich message examples, docs and legacy selection compatibility'
+          git push origin HEAD:refs/heads/feat/table-selection-rich-chat
+      - name: Package source for verification
+        run: git archive --format=tar.gz HEAD > rich-ui-source.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rich-ui-source
+          path: rich-ui-source.tar.gz
+          retention-days: 1
