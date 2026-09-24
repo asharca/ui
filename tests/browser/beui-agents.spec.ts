@@ -9,6 +9,9 @@ for (const slug of slugs) {
     await page.goto(`components/${slug}/`);
     const preview = page.locator('.detail-preview').first();
     await expect(preview).toBeVisible();
+    // Wait for the actual lazy component, not its non-empty loading placeholder.
+    await expect(preview.locator('.preview-placeholder')).toHaveCount(0);
+    await expect(preview.getByText('正在加载组件…', { exact: true })).toHaveCount(0);
     await expect(preview).not.toContainText('示例暂时无法加载');
     await expect(preview.locator('.demo-content')).not.toBeEmpty();
     const response = await request.get(`r/${slug}.json`);
@@ -16,6 +19,7 @@ for (const slug of slugs) {
     const payload = await response.json();
     expect(payload.files.some((file: { path: string }) => file.path === `registry/ui/${slug}.tsx`)).toBe(true);
     for (const file of payload.files) expect(file.content).not.toMatch(/from ["']@\/(components\/agents|components\/motion|lib\/)/);
+    await preview.screenshot({ path: info.outputPath(`${slug}-desktop.png`) });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(() => document.documentElement.classList.add('dark'));
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
