@@ -5,7 +5,7 @@
 Source: https://github.com/starc007/ui-components
 Website: https://beui.dev/
 
-Asharca UI's site organization, restrained visual language and component interaction direction reference beUI. Components in this repository are rewritten for its own source registry. No beUI branding, sponsored content, endorsements or Pro assets are included. The upstream MIT notice is retained for reference-derived implementation patterns.
+Asharca UI's site organization, restrained visual language and component interaction direction reference beUI. The existing components are rewritten for this source registry. The new agent-* family and agent-internal-* dependencies are adapted directly from the public beUI source at commit 1e23f4b10a404c17d9649086cf561e152527e2de; they are not claimed as original Asharca implementations. See docs/beui-agent-manifest.json for file-level provenance. Each installed adapted file also includes the full MIT notice. No beUI branding, sponsored content, endorsements or Pro assets are included. The upstream MIT notice is retained for reference-derived implementation patterns.
 
 MIT License
 
@@ -49,3 +49,7 @@ or an API integration.
 ## Rich message diagrams and selection header
 
 Mermaid and DOMPurify are used under their upstream MIT licenses. Their package notices remain part of distributed dependencies. The diagram renderer uses local dependencies, not third-party hosted rendering. beUI table/index.tsx (blob e2f73fa90f854cbe2f85faa536d5cd83e60403b9) and table/table-header.tsx (blob 05cd0be8594e22a6c9161bb824008ffa59c43bd5) were consulted for table structure and interaction direction; Asharca retains its TanStack implementation. The existing beUI MIT notice above applies to reference-derived patterns.
+
+## Shiki
+
+The Agent code surfaces use Shiki (MIT). Shiki and its grammar/theme data retain their respective upstream licenses.

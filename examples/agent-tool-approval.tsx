@@ -1,0 +1,4 @@
+'use client';
+import { useState } from 'react';
+import { ToolApproval, ToolApprovalCode, type ToolApprovalStatus } from '@/components/asharca/agent-tool-approval';
+export default function Demo() { const [status, setStatus] = useState<ToolApprovalStatus>('pending'); return <div className="w-full max-w-xl space-y-3"><ToolApproval tool="terminal" title="允许执行这条命令？" description="仅示范审批 UI；真实授权由后端负责。" status={status} defaultOpen parameters={[{ id: 'command', label: '命令', value: <ToolApprovalCode code="pnpm test" language="bash" /> }, { id: 'scope', label: '范围', value: '当前工作区' }]} onApprove={() => setStatus('approved')} onAlwaysAllow={() => setStatus('approved')} onDeny={() => setStatus('denied')} /><button className="text-xs text-muted-foreground underline" onClick={() => setStatus('pending')}>重置权限示例</button></div>; }

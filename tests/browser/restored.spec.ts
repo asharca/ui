@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test('all restored families are discoverable without changing the site layout', async ({ page }) => {
   await page.goto('components/');
-  await expect(page.locator('.catalog-count')).toHaveText('62 个组件');
-  await expect(page.locator('.component-card')).toHaveCount(62);
+  await expect(page.locator('.catalog-count')).toHaveText('79 个组件');
+  await expect(page.locator('.component-card')).toHaveCount(79);
   await page.getByRole('button', { name: '工作区', exact: true }).click();
   await expect(page.locator('.catalog-count')).toHaveText('5 个组件');
   await expect(page.locator('.component-card[data-component="workspace-shell"]')).toBeVisible();

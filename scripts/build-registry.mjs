@@ -17,8 +17,8 @@ const items = [];
 for (const entry of allEntries) {
   const closure = resolveFiles(entry.slug);
   const files = await Promise.all(closure.map(async (item) => {
-    const path = `registry/ui/${item.slug}.${item.slug === 'utils' ? 'ts' : 'tsx'}`;
-    return { path, type: 'registry:component', target: `@components/asharca/${item.slug}.${item.slug === 'utils' ? 'ts' : 'tsx'}`, content: await readFile(resolve(root, path), 'utf8') };
+    const path = `registry/ui/${item.slug}.${item.ext ?? (item.slug === 'utils' ? 'ts' : 'tsx')}`;
+    return { path, type: 'registry:component', target: `@components/asharca/${item.slug}.${item.ext ?? (item.slug === 'utils' ? 'ts' : 'tsx')}`, content: await readFile(resolve(root, path), 'utf8') };
   }));
   const item = registryItemSchema.parse({
     $schema: 'https://ui.shadcn.com/schema/registry-item.json',

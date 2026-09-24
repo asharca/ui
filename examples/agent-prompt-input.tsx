@@ -1,0 +1,4 @@
+'use client';
+import { useState } from 'react';
+import { PromptInput } from '@/components/asharca/agent-prompt-input';
+export default function Demo() { const [sent, setSent] = useState(''); const [fail, setFail] = useState(false); return <div className="w-full max-w-xl space-y-3"><PromptInput aria-label="Agent 输入" placeholder="输入需求，选择模型后发送…" models={[{ value: 'fast', label: '快速模型' }, { value: 'reasoning', label: '推理模型' }]} actions={[{ value: 'attach', label: '添加本地上下文' }]} onAction={() => setSent('附件动作已触发，由业务应用选择文件。')} onSubmit={async (text, model) => { await Promise.resolve(); if (fail) throw new Error('模拟发送失败，草稿已保留。'); setSent(`${model}：${text}`); }} /><label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={fail} onChange={(event) => setFail(event.target.checked)} />模拟失败</label><p role="status" className="min-h-5 text-xs text-muted-foreground">{sent || '本地示例，不连接模型。'}</p></div>; }

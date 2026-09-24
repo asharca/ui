@@ -1,0 +1,97 @@
+[
+  {
+    "branch": "chore/docs-metadata-prepare",
+    "sha": "c0d7bd38e9fc87d12a79e4c2ee71682e1d635a78",
+    "archiveTag": "archive/2026-09-24/chore/docs-metadata-prepare"
+  },
+  {
+    "branch": "docs/component-update-guide",
+    "sha": "05d96e8de3822dbb01b6deac7b24c2a3b0b0940b",
+    "archiveTag": "archive/2026-09-24/docs/component-update-guide"
+  },
+  {
+    "branch": "feat/beui-component-refinement",
+    "sha": "9a986aea34beec7aebd03f938103ca1a9e0dc17b",
+    "archiveTag": "archive/2026-09-24/feat/beui-component-refinement"
+  },
+  {
+    "branch": "feat/component-studio-redesign",
+    "sha": "d3cb97280033c55fe37a2031c2217294d5a61e72",
+    "archiveTag": "archive/2026-09-24/feat/component-studio-redesign"
+  },
+  {
+    "branch": "feat/data-table-selection-toolbar",
+    "sha": "205bf0e332814c1fbd00f137ba6f48254cfd32db",
+    "archiveTag": "archive/2026-09-24/feat/data-table-selection-toolbar"
+  },
+  {
+    "branch": "feat/release-ui-0.2.2",
+    "sha": "fe5bfa038695a1bbab6cb552e651aa7a11887220",
+    "archiveTag": "archive/2026-09-24/feat/release-ui-0.2.2"
+  },
+  {
+    "branch": "feat/remove-composer-top-gap",
+    "sha": "972831ae27f38b02f8f5843b20604bc416dd4363",
+    "archiveTag": "archive/2026-09-24/feat/remove-composer-top-gap"
+  },
+  {
+    "branch": "feat/restore-component-catalog",
+    "sha": "15f1f15f6aad741fb58e4d8173e2c1c22e26da1d",
+    "archiveTag": "archive/2026-09-24/feat/restore-component-catalog"
+  },
+  {
+    "branch": "feat/table-selection-rich-chat",
+    "sha": "e9c884d900570e004d8019fe1e8371c92cbb953f",
+    "archiveTag": "archive/2026-09-24/feat/table-selection-rich-chat"
+  },
+  {
+    "branch": "feat/transitions-showcase-rewrite",
+    "sha": "76b05cc02d7a9846a1f18a374503814e001df29b",
+    "archiveTag": "archive/2026-09-24/feat/transitions-showcase-rewrite"
+  },
+  {
+    "branch": "feat/workspace-shell",
+    "sha": "9709a2b17218aadf84ccaccee21b6d8c928e4115",
+    "archiveTag": "archive/2026-09-24/feat/workspace-shell"
+  },
+  {
+    "branch": "fix/docs-navigation-api-actions",
+    "sha": "55b0ffb58293d10ea4083b53dd4801cb104f745e",
+    "archiveTag": "archive/2026-09-24/fix/docs-navigation-api-actions"
+  },
+  {
+    "branch": "fix/registry-directory-readiness",
+    "sha": "a71d66d91475d0cbafdd804c2d159f29a21d8002",
+    "archiveTag": "archive/2026-09-24/fix/registry-directory-readiness"
+  },
+  {
+    "branch": "fix/sidebar-collapse-motion",
+    "sha": "a6964f6519804414d918e1a7466a76bb158d461c",
+    "archiveTag": "archive/2026-09-24/fix/sidebar-collapse-motion"
+  },
+  {
+    "branch": "fix/sidebar-compact-spacing-transition",
+    "sha": "5fa15778ce4e4dbf54dcdc879c45a07a191d758e",
+    "archiveTag": "archive/2026-09-24/fix/sidebar-compact-spacing-transition"
+  },
+  {
+    "branch": "fix/ui-reliability-and-showcase",
+    "sha": "202be77e3faca73bceb6b34b3001bef90f0a82d8",
+    "archiveTag": "archive/2026-09-24/fix/ui-reliability-and-showcase"
+  },
+  {
+    "branch": "fix/workspace-alignment-detached-tabs",
+    "sha": "83c0eba33a7285cf3c9607d4d1164211999d913e",
+    "archiveTag": "archive/2026-09-24/fix/workspace-alignment-detached-tabs"
+  },
+  {
+    "branch": "fix/workspace-showcase-navigation",
+    "sha": "532a3c78de076f07ec4933a34cc7c887b95c5548",
+    "archiveTag": "archive/2026-09-24/fix/workspace-showcase-navigation"
+  },
+  {
+    "branch": "fix/workspace-sidebar-motion",
+    "sha": "f5987d37d71dd7810d05dd59ce40ac0d697333b8",
+    "archiveTag": "archive/2026-09-24/fix/workspace-sidebar-motion"
+  }
+]

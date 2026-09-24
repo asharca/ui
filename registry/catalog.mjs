@@ -1,3 +1,4 @@
+import { agentCatalog, agentInternalEntries } from './agent-catalog.mjs';
 const entry = (slug, name, group, description, dependencies = [], needs = [], examples = [slug], wide = false) => ({ slug, name, group, description, dependencies, needs: ['utils', ...needs], examples, wide });
 
 /** One catalog drives the site, dependency closures and the single llms.txt. */
@@ -64,13 +65,14 @@ export const catalog = [
   entry('workspace-sidebar', 'Workspace Sidebar', '工作区', '折叠导航、状态徽标和焦点受控的手机抽屉。', ['radix-ui', 'lucide-react', 'motion'], ['icon-button'], ['workspace-sidebar'], true),
   entry('sidebar-action-rail', 'Sidebar Action Rail', '工作区', '鼠标与键盘都能操作的条目快捷动作。', [], ['icon-button']),
   entry('tool-plane-logo', 'ToolPlane Logo', '工作区', '保留 ToolPlane 标识，使用当前的中性色与圆角。', ['lucide-react']),
+  ...agentCatalog,
 ];
 export const groups = ['基础组件', '表单与反馈', '数据与布局', '浮层组件', 'AI 组件', '工作区'];
 export const utilities = { slug: 'utils', name: 'Utilities', group: '内部', description: 'Class composition and shared motion settings.', dependencies: ['clsx', 'tailwind-merge'], needs: [], examples: [], wide: false };
 // Private implementation helpers are installed with their owning component,
 // but do not inflate the public component catalog or API pages.
 export const internalEntries = [{ slug: 'rich-content-view', name: 'Rich Content View', group: '内部', description: 'ToolPlane-style table actions, accessible expanded views and diagram canvas.', dependencies: ['lucide-react'], needs: ['utils', 'dialog'], examples: [], wide: false }];
-export const allEntries = [utilities, ...internalEntries, ...catalog];
+export const allEntries = [utilities, ...internalEntries, ...agentInternalEntries, ...catalog];
 
 export function resolveFiles(slug) {
   const ordered = [];

@@ -54,7 +54,7 @@ npx shadcn@latest add https://asharca.github.io/ui/r/button.json --view button.t
 
 ## 组件
 
-当前目录包含 **62 项**：恢复重写前全部 55 项组件入口，保留源码站新增的 6 项组件，并新增 WorkspaceShell。组件统一使用当前的中性色、圆角、边框与交互风格，不加载旧展示站样式。
+当前目录包含 **79 项**：恢复重写前全部 55 项组件入口，保留源码站新增的 6 项组件，并新增 WorkspaceShell 与 17 项 beUI Agent 组件。组件统一使用当前的中性色、圆角、边框与交互风格，不加载旧展示站样式。
 
 | 分类 | 数量 | 内容 |
 | --- | ---: | --- |
@@ -62,7 +62,7 @@ npx shadcn@latest add https://asharca.github.io/ui/r/button.json --view button.t
 | 表单与反馈 | 10 | Field、提交与确认提交、复制、徽标、状态徽标、Alert、进度、Skeleton、Spinner |
 | 数据与布局 | 12 | Card、Page、Section、Panel、Toolbar、EmptyState、Entity、Avatar、DataTable、ChartContainer、ContentPage、RotatingHeadline |
 | 导航与浮层 | 10 | NavigationTabs、Chip、Breadcrumbs、Pagination、Dialog、DropdownMenu、ContextMenu、HoverCard、Popover、Tooltip |
-| AI 组件 | 11 | PromptInput、Message、ToolResult、ApprovalCard、ChatPanel、SafeStreamdown、ToolCallCard、ChatComposerToolbar、ConversationSidebar、ChatShell、ChatThread |
+| AI 组件 | 28 | PromptInput、Message、ToolResult、ApprovalCard、ChatPanel、SafeStreamdown、ToolCallCard、ChatComposerToolbar、ConversationSidebar、ChatShell、ChatThread |
 | 工作区 | 5 | WorkspaceShell、WorkspaceTabBar、WorkspaceSidebar、SidebarActionRail、ToolPlaneLogo |
 
 表格、图表、聊天与工作区使用适合复杂内容的宽画布；预览和安装源码一致，Usage 读取实际示例。
@@ -135,3 +135,12 @@ DataTable 默认勾选后在表头原位置展示数量和批量操作，取消�
 - [DataTable 演示](https://asharca.github.io/ui/components/data-table/)
 - [完整富文本对话](https://asharca.github.io/ui/components/chat-thread/)
 - [表格、流程图与时序图](https://asharca.github.io/ui/components/safe-streamdown/)
+
+
+## beUI Agent 组件
+
+已从固定的公开 MIT 快照适配全部 17 项 AI Agents 组件，使用独立 `agent-*` 入口，不替换现有聊天或审批 API。包含消息/输入/滚动、计划与代码、文件差异与工具结果、两类审批、来源、活动、加载、图像状态、资源侧栏和 Chat App。
+
+[迁移清单与使用边界](docs/beui-agent-migration.md) · [逐文件源码出处](docs/beui-agent-manifest.json)
+
+每项均提供预览、Usage、API 和 Registry 完整依赖。示例没有真实模型或工具执行；Image Generation 示例明确使用本地占位。新入口只有在合并及部署后才出现在公开站点。已经安装同名旧组件的项目请保留原导入，对新增导出使用 `as AgentMessage` 等别名。

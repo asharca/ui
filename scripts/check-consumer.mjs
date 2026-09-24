@@ -71,5 +71,5 @@ async function fixture(name, prefix, sourceDir, componentDir, entries) {
 }
 try {
   await fixture('standard', '@', 'src', 'components', catalog.filter((entry) => entry.slug !== 'button'));
-  await fixture('custom-alias', '~', 'app', 'widgets', catalog.filter((entry) => entry.slug === 'dialog' || entry.slug === 'chat-panel'));
+  await fixture('custom-alias', '~', 'app', 'widgets', catalog.filter((entry) => entry.slug === 'dialog' || entry.slug === 'chat-panel' || entry.slug === 'agent-chat-app'));
 } finally { await new Promise((accept) => server.close(accept)); }

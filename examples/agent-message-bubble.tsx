@@ -1,0 +1,3 @@
+'use client';
+import { MessageBubble, MessageBubbleContent, MessageBubbleGroup, MessageBubbleCollapsible } from '@/components/asharca/agent-message-bubble';
+export default function Demo() { return <div className="w-full max-w-xl"><MessageBubbleGroup><MessageBubble align="end" variant="solid"><MessageBubbleContent>请总结这次组件迁移。</MessageBubbleContent></MessageBubble><MessageBubble variant="soft"><MessageBubbleCollapsible collapsedLines={2} moreLabel="展开全文" lessLabel="收起"><MessageBubbleContent><p>原有接口保持不变。</p><p>新增 Agent 组件采用独立源码入口。</p><p>包括消息、模型输入、任务进度、审批、代码差异与工作区。</p><p>每项都有独立安装命令和可复制的示例。</p></MessageBubbleContent></MessageBubbleCollapsible></MessageBubble></MessageBubbleGroup></div>; }

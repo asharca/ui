@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFile, readdir } from 'node:fs/promises';
+import { agentCatalog } from '../registry/agent-catalog.mjs';
 import { allEntries, catalog, resolveFiles } from '../registry/catalog.mjs';
 
 // Independent baseline: showcase/catalog-data.ts + component-metadata.ts at
@@ -15,8 +16,8 @@ test('all 55 original entries, six rewrite additions and the workspace shell rem
   const actual = new Set(catalog.map((entry) => entry.slug));
   for (const slug of original) assert.ok(actual.has(slug), `Original component removed again: ${slug}`);
   for (const slug of rewrite) assert.ok(actual.has(slug), `Current component removed: ${slug}`);
-  assert.deepEqual(actual, new Set([...original, ...rewrite, 'workspace-shell']));
-  assert.equal(actual.size, 62);
+  assert.deepEqual(actual, new Set([...original, ...rewrite, 'workspace-shell', ...agentCatalog.map((item) => item.slug)]));
+  assert.equal(actual.size, 79);
   assert.equal(original.filter((slug) => !rewrite.includes(slug)).length, 44);
 });
 
@@ -43,7 +44,7 @@ test('restored implementations declare their external dependencies without reins
     const closure = resolveFiles(entry.slug);
     const dependencies = new Set(['react', 'react-dom', ...closure.flatMap((item) => item.dependencies).map(packageName)]);
     for (const item of closure) {
-      const source = await readFile(`registry/ui/${item.slug}.${item.slug === 'utils' ? 'ts' : 'tsx'}`, 'utf8');
+      const source = await readFile(`registry/ui/${item.slug}.${item.ext ?? (item.slug === 'utils' ? 'ts' : 'tsx')}`, 'utf8');
       for (const match of source.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
         if (match[1].startsWith('./')) continue;
         assert.ok(dependencies.has(packageName(match[1])), `${entry.slug}: undeclared ${match[1]}`);

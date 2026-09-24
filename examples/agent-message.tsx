@@ -1,0 +1,3 @@
+'use client';
+import { Message, MessageAvatar, MessageContent, MessageHeader, MessageFooter, MessageGroup, MessageTyping } from '@/components/asharca/agent-message';
+export default function Demo() { return <MessageGroup className="w-full max-w-xl"><Message from="user"><MessageContent><MessageHeader>你</MessageHeader>检查最新的实现。<MessageFooter>刚刚</MessageFooter></MessageContent><MessageAvatar>我</MessageAvatar></Message><Message from="assistant"><MessageAvatar>AI</MessageAvatar><MessageContent><MessageHeader>开发助手</MessageHeader><p>正在核对组件接口和测试。</p><MessageTyping label="正在回复" /><MessageFooter>源码由你的项目维护</MessageFooter></MessageContent></Message></MessageGroup>; }

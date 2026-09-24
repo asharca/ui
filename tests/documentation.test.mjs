@@ -7,8 +7,8 @@ import { cell, fence, propsMarkdown, normalizeProps } from '../scripts/docs-supp
 
 const json = async (path) => JSON.parse(await readFile(path, 'utf8'));
 const api = (slug) => json(`public/api-reference/${slug}.json`);
-test('all 62 components document every named public component export from its actual source', async () => {
-  assert.equal(catalog.length, 62);
+test('all 79 components document every named public component export from its actual source', async () => {
+  assert.equal(catalog.length, 79);
   for (const entry of catalog) {
     const doc = await api(entry.slug);
     assert.equal(doc.slug, entry.slug);
@@ -18,6 +18,7 @@ test('all 62 components document every named public component export from its ac
     const ast = ts.createSourceFile(doc.sourcePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const exported = [];
     for (const statement of ast.statements) {
+      if (ts.isExportDeclaration(statement) && !statement.isTypeOnly && statement.exportClause && ts.isNamedExports(statement.exportClause)) for (const item of statement.exportClause.elements) { if (!item.isTypeOnly) exported.push(item.name.text); }
       if (!statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue;
       if (ts.isFunctionDeclaration(statement)) exported.push(statement.name.text);
       if (ts.isVariableStatement(statement)) for (const declaration of statement.declarationList.declarations) exported.push(declaration.name.getText(ast));
