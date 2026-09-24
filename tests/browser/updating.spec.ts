@@ -52,7 +52,8 @@ test('search, component entry and mobile navigation find the update guide withou
   await expect(page.getByRole('heading', { level: 1, name: '更新组件' })).toBeVisible();
   await page.getByRole('button', { name: '搜索组件与文档' }).click();
   await page.getByRole('combobox', { name: '搜索组件或文档' }).fill('回退');
-  await page.getByRole('combobox', { name: '搜索组件或文档' }).press('Enter');
+  // Other components can match this keyword too; choose the document by name.
+  await page.getByRole('listbox', { name: '搜索结果' }).getByRole('button', { name: /更新组件/ }).click();
   await expect(page).toHaveURL(/\/docs\/updating\/?$/);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => document.documentElement.classList.add('dark'));
