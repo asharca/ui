@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, BookOpen, Code2, Home, Layers, Menu, Moon, Search, SlidersHorizontal, Sun, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, BookOpen, Code2, Home, Layers, Menu, Moon, RefreshCw, Search, SlidersHorizontal, Sun, X } from 'lucide-react';
 import { Dialog as PrimitiveDialog } from 'radix-ui';
 import { catalog, groups } from '../registry/catalog.mjs';
 import { Dialog, DialogContent } from '../registry/ui/dialog';
@@ -17,6 +17,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <span className="side-heading">开始使用</span>
       <NavLink to="/" end onClick={onNavigate}><Home size={14} />首页</NavLink>
       <NavLink to="/docs/installation" onClick={onNavigate}><BookOpen size={14} />安装</NavLink>
+      <NavLink to="/docs/updating" onClick={onNavigate}><RefreshCw size={14} />更新组件</NavLink>
     </div>
     {groups.map((group) => <div className="side-group" key={group}>
       <span className="side-heading">{group}<span>{catalog.filter((entry) => entry.group === group).length}</span></span>
@@ -55,7 +56,7 @@ export function Header({ onSearch }: { onSearch: () => void }) {
         <nav className="top-nav" aria-label="主导航">
           <Link to="/components" className={pathname.startsWith('/components') && !ai ? 'active' : ''}>组件</Link>
           <Link to={`/components?group=${encodeURIComponent('AI 组件')}`} className={ai ? 'active' : ''}>AI 组件</Link>
-          <NavLink to="/docs/installation">文档</NavLink>
+          <Link to="/docs/installation" className={pathname.startsWith('/docs/') ? 'active' : ''}>文档</Link>
         </nav>
       </div>
       <div className="header-actions">
@@ -76,12 +77,12 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const returnFocus = useRef<HTMLElement | null>(null);
   const id = useId();
   const navigate = useNavigate();
-  const entries = [...catalog.map((entry) => ({ ...entry, href: `/components/${entry.slug}` })), { slug: 'installation', name: '安装与开始使用', group: '文档', description: 'shadcn CLI、手动安装与项目配置', href: '/docs/installation' }];
+  const entries = [...catalog.map((entry) => ({ ...entry, href: `/components/${entry.slug}` })), { slug: 'installation', name: '安装与开始使用', group: '文档', description: 'shadcn CLI、手动安装与项目配置', href: '/docs/installation' }, { slug: 'updating', name: '更新组件', group: '文档', description: '更新 升级 定制 差异 合并 验证 回退 update upgrade dry-run diff', href: '/docs/updating' }];
   const results = entries.filter((entry) => `${entry.name} ${entry.group} ${entry.description}`.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8);
   useEffect(() => { if (open) { setQuery(''); setActive(0); } }, [open]);
   function choose(href: string) { onOpenChange(false); navigate(href); }
   return <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent title="搜索" description="查找组件或安装说明。" className="site-search-dialog"
+    <DialogContent title="搜索" description="查找组件、安装或更新说明。" className="site-search-dialog"
       onOpenAutoFocus={(event) => { event.preventDefault(); returnFocus.current = document.activeElement as HTMLElement | null; input.current?.focus(); }}
       onCloseAutoFocus={(event) => { event.preventDefault(); if (returnFocus.current?.isConnected) returnFocus.current.focus(); }}>
       <label className="sr-only" htmlFor={`${id}-input`}>搜索组件或文档</label>
@@ -120,5 +121,5 @@ export function Dock() {
   </nav></div>;
 }
 export function Footer() {
-  return <footer className="site-footer"><span>asharca/ui <small>MIT License</small></span><nav aria-label="页脚导航"><Link to="/docs/installation">安装</Link><a href={repository} target="_blank" rel="noreferrer">GitHub</a><a href={publicPath('llms.txt')}>llms.txt</a></nav></footer>;
+  return <footer className="site-footer"><span>asharca/ui <small>MIT License</small></span><nav aria-label="页脚导航"><Link to="/docs/installation">安装</Link><Link to="/docs/updating">更新组件</Link><a href={repository} target="_blank" rel="noreferrer">GitHub</a><a href={publicPath('llms.txt')}>llms.txt</a></nav></footer>;
 }

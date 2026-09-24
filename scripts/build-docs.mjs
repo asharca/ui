@@ -5,6 +5,7 @@ import ts from 'typescript';
 import docgen from 'react-docgen-typescript';
 import { catalog } from '../registry/catalog.mjs';
 import { fence, normalizeProps, propsMarkdown } from './docs-support.mjs';
+import { renderUpdateGuide } from './update-guide.mjs';
 
 // Same extraction approach as beUI's lib/props-extractor.ts (MIT): build once
 // from the real TS program, never hand-write a second set of component APIs.
@@ -78,7 +79,11 @@ const install = (slug) => [
   fence(`npx shadcn@latest add ${url(`r/${slug}.json`)}`, 'bash'), '',
   'For short commands, merge the following field into the consuming project\'s components.json. Preserve its other fields. Do not assume public directory acceptance.',
   fence(namespace, 'json'), fence(`npx shadcn@latest add @asharca/${slug}`, 'bash'), '',
-  'Use project-local imports, for example @/components/asharca/button. Adjust @/ to your project alias.',
+  'Use project-local imports, for example @/components/asharca/button. Adjust @/ to your project alias.', '',
+  '## Updating installed source', '',
+  'Already installed or customized? Save your work first, inspect every file in the dependency closure, then preserve local modifications while applying upstream changes. --diff is inspection, not automatic merging; --overwrite replaces existing files and requires explicit approval for the complete affected scope.', '',
+  fence(`npx shadcn@latest add ${url(`r/${slug}.json`)} --dry-run`, 'bash'), '',
+  `[Complete update guide: diffs, customizations, verification and rollback](${url('docs/updating/')})`,
 ];
 for (const entry of catalog) {
   const sourcePath = `registry/ui/${entry.slug}.tsx`;
@@ -115,9 +120,17 @@ for (const entry of catalog) {
 }
 await emit('/components', '组件', ['# 组件', '', 'Asharca UI — 可直接安装到项目的 React 组件源码。', '', ...install('button'), '', '## Components', '', ...catalog.map((entry) => `- [${entry.name}](${url(`components/${entry.slug}.md`)}): ${entry.description}`), '', `Registry index: ${url('r/registry.json')}`].join('\n'));
 await emit('/docs/installation', '安装', ['# 安装', '', requirements, '', '## Prepare the project', fence('npx shadcn@latest init', 'bash'), '', ...install('button'), '', '## Local import', fence('import { Button } from "@/components/asharca/button";\n\nexport function Example() {\n  return <Button>开始使用</Button>;\n}', 'tsx'), '', '## Manual installation and updates', '', 'Use each component page\'s Manual tab for the full dependency list and source files. Review local modifications before updating. Never overwrite user changes silently.', '', `Components: ${url('components.md')}`, `Registry index: ${url('r/registry.json')}`].join('\n'));
+await emit('/docs/updating', '更新组件', renderUpdateGuide(await readFile(path.join(root, 'docs/updating.md'), 'utf8'), site.href));
 await writeFile(path.join(root, '.generated/documents.json'), JSON.stringify({ siteUrl: site.href, pages }, null, 2) + '\n');
 let llms = await readFile(path.join(root, 'public/llms.txt'), 'utf8');
-llms = llms.split('\n## Page Markdown\n')[0].trimEnd();
+llms = llms.split('\n## Page Markdown\n')[0].split('\n## Updating installed source\n')[0].trimEnd();
+llms += [
+  '', '', '## Updating installed source', '',
+  `Complete guide: ${url('docs/updating.md')}`, '',
+  'Updating npm dependencies does not replace installed component source. In the consumer project, preserve existing work and configuration, use the original registry URL or configured @asharca namespace with add --dry-run, then --diff and --view for every affected file. Button also includes utils.ts; composite entries include their full local dependency closure.', '',
+  'Preserve local APIs, callbacks, state, theme and layout. Asharca APIs come from its actual source, not the official shadcn component of the same name. Do not reinitialize the project, switch presets, replace files from raw GitHub URLs, or use --all as an installed-only updater. Never use --overwrite without explicit approval for the complete affected scope. Diffs do not establish the original installation baseline or guarantee automatic merging.', '',
+  'Review package.json, lockfiles, new files and shared dependencies. Run the consumer project checks and create an isolated reviewed update commit for rollback. Current HTTP registry URLs track deployment, not immutable component versions; shadcn@latest selects the CLI version. See the full guide for Agent instructions, verification and rollback.',
+].join('\n');
 llms += '\n\n## Page Markdown\n\nThe same page documentation used by Copy Page and API Reference is available as static Markdown. These URLs contain public documentation only, never live preview input.\n\n';
 llms += pages.map((page) => `- [${page.title}](${page.markdownUrl})`).join('\n') + '\n';
 await writeFile(path.join(root, 'public/llms.txt'), llms, 'utf8');
