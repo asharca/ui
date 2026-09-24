@@ -3,6 +3,9 @@ on:
   push:
     branches: [feat/beui-agent-components]
     paths: [.github/workflows/prepare-beui-agents.yml]
+concurrency:
+  group: prepare-beui-agents
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
@@ -23,19 +26,18 @@ jobs:
           cache: pnpm
       - name: Read pinned upstream source without executing it
         run: |
-          mkdir -p /tmp/beui
+          mkdir -p /tmp/beui /tmp/review
           git -C /tmp/beui init -q
           git -C /tmp/beui fetch --depth=1 https://github.com/starc007/ui-components.git 1e23f4b10a404c17d9649086cf561e152527e2de
           git -C /tmp/beui checkout -q FETCH_HEAD
-          mkdir -p /tmp/review
-          tar -C /tmp/beui -czf /tmp/review/beui-source.tar.gz components lib registry app/globals.css package.json LICENSE AGENTS.md
+          tar -C /tmp/beui -czf /tmp/review/beui-source.tar.gz components lib app/globals.css package.json LICENSE AGENTS.md
           git archive HEAD | gzip > /tmp/review/asharca-source.tar.gz
       - name: Archive and remove the explicitly superseded branch snapshot
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY'
-          import json, os, urllib.request, urllib.parse
+          import json, os, urllib.request, urllib.parse, urllib.error
           expected = dict(line.split() for line in '''chore/docs-metadata-prepare c0d7bd38e9fc87d12a79e4c2ee71682e1d635a78
           docs/component-update-guide 05d96e8de3822dbb01b6deac7b24c2a3b0b0940b
           feat/beui-component-refinement 9a986aea34beec7aebd03f938103ca1a9e0dc17b
@@ -56,7 +58,7 @@ jobs:
           fix/workspace-showcase-navigation 532a3c78de076f07ec4933a34cc7c887b95c5548
           fix/workspace-sidebar-motion f5987d37d71dd7810d05dd59ce40ac0d697333b8'''.splitlines())
           def api(path, method='GET', body=None):
-              request = urllib.request.Request('https://api.github.com/repos/asharca/ui/' + path, method=method,
+              request = urllib.request.Request('https://api.github.com/repos/asharca/ui' + ('/' + path if path else ''), method=method,
                   data=json.dumps(body).encode() if body else None,
                   headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept':'application/vnd.github+json', 'Content-Type':'application/json'})
               with urllib.request.urlopen(request) as response:
@@ -72,7 +74,10 @@ jobs:
               assert name != default and name != 'main' and not branch['protected']
               assert sha == expected[name], 'Concurrent changes to ' + name
               archive = 'archive/2026-09-24/' + name
-              api('git/refs', 'POST', {'ref':'refs/tags/' + archive, 'sha':sha})
+              try: api('git/refs', 'POST', {'ref':'refs/tags/' + archive, 'sha':sha})
+              except urllib.error.HTTPError as error:
+                  if error.code != 422: raise
+                  assert api('git/ref/tags/' + urllib.parse.quote(archive, safe=''))['object']['sha'] == sha
               ref = api('git/ref/heads/' + urllib.parse.quote(name, safe=''))
               assert ref['object']['sha'] == sha, 'Concurrent update; preserved branch'
               api('git/refs/heads/' + urllib.parse.quote(name, safe=''), 'DELETE')
@@ -86,6 +91,7 @@ jobs:
           pnpm add --ignore-scripts --save-exact shiki@4.2.0 react-use-measure@2.1.7
           tar -czf /tmp/review/test-environment.tar.gz node_modules package.json pnpm-lock.yaml
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: beui-agent-source-and-tools
           path: /tmp/review
