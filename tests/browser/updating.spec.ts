@@ -17,7 +17,7 @@ test('update guide is navigable, copyable and has a real static Markdown route',
   await expect(page).toHaveURL(/#rollback$/);
   await page.reload();
   await expect(page.getByRole('heading', { name: /7\. 回退和复现/ })).toBeInViewport();
-  await page.getByRole('button', { name: 'Copy Page', exact: true }).click();
+  await page.getByRole('button', { name: 'Copy page as Markdown', exact: true }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('# 更新组件');
   const md = await request.get('docs/updating.md');
   expect(md.ok()).toBe(true);
