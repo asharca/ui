@@ -1,5 +1,4 @@
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { SiteFooter } from "@/components/app/chrome/site-footer";
 import { LandingFaq } from "@/components/app/landing/faq";
@@ -129,42 +128,6 @@ export default function Home() {
     <div className="relative">
       <section className="px-4 pb-12 pt-20 sm:pb-14 sm:pt-28">
         <Hero />
-      </section>
-
-      <section
-        aria-labelledby="landing-sponsors"
-        className="mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 px-4 pb-12 sm:pb-16"
-      >
-        <h2
-          id="landing-sponsors"
-          className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-muted-foreground"
-        >
-          Sponsored by
-        </h2>
-        <Link
-          href="https://tracwell.app/?utm_source=beui&utm_medium=referral&utm_campaign=sponsorship&utm_content=landing_hero"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="inline-flex items-center gap-2.5 rounded-xl px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-        >
-          <Image
-            src="/sponsors/tracwell-icon-light.svg"
-            alt=""
-            width={28}
-            height={28}
-            className="size-7 dark:hidden"
-          />
-          <Image
-            src="/sponsors/tracwell-icon-dark.svg"
-            alt=""
-            width={28}
-            height={28}
-            className="hidden size-7 dark:block"
-          />
-          <span className="font-display text-xl font-semibold tracking-tight">
-            Tracwell
-          </span>
-        </Link>
       </section>
 
       <GettingStarted />

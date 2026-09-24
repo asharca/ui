@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BouncyAccordion } from "@/components/motion/bouncy-accordion";
+import { GITHUB_LICENSE_URL } from "@/lib/repository";
 
 const FAQS = [
   {
@@ -12,7 +13,7 @@ const FAQS = [
         substantial portions of the source.{" "}
         <a
           className="underline underline-offset-4"
-          href="https://github.com/starc007/ui-components/blob/main/LICENSE"
+          href={GITHUB_LICENSE_URL}
           target="_blank"
           rel="noreferrer noopener"
         >

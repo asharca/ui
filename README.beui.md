@@ -11,9 +11,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/starc007/ui-components/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/starc007/ui-components?color=000000&style=flat-square" /></a>
-  <a href="https://github.com/starc007/ui-components/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/starc007/ui-components?color=000000&style=flat-square" /></a>
-  <a href="https://github.com/starc007/ui-components/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/starc007/ui-components/ci.yml?branch=main&color=000000&style=flat-square" /></a>
+  <a href="https://github.com/asharca/ui/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/asharca/ui?color=000000&style=flat-square" /></a>
+  <a href="https://github.com/asharca/ui/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/asharca/ui?color=000000&style=flat-square" /></a>
+  <a href="https://github.com/asharca/ui/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/asharca/ui/ci.yml?branch=main&color=000000&style=flat-square" /></a>
   <a href="https://ui.shadcn.com/docs/registry"><img alt="shadcn compatible" src="https://img.shields.io/badge/shadcn-compatible-000000?style=flat-square" /></a>
 </p>
 
@@ -67,7 +67,7 @@ Install the beUI skill so Cursor, Claude Code and Codex pick existing `@beui`
 components before inventing new motion UI:
 
 ```bash
-npx skills add starc007/ui-components --skill beui
+npx skills add asharca/ui --skill beui
 ```
 
 ## Run locally
@@ -95,11 +95,11 @@ Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a PR.
 
 ## Star history
 
-<a href="https://star-history.dera.page/#starc007/ui-components&Date">
+<a href="https://star-history.dera.page/#asharca/ui&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=starc007/ui-components&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=starc007/ui-components&type=Date" />
-    <img alt="Star history chart for starc007/ui-components" src="https://star-history.dera.page/svg?repos=starc007/ui-components&type=Date" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=asharca/ui&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=asharca/ui&type=Date" />
+    <img alt="Star history chart for asharca/ui" src="https://star-history.dera.page/svg?repos=asharca/ui&type=Date" />
   </picture>
 </a>
 

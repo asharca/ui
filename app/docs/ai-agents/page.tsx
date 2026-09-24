@@ -1,3 +1,4 @@
+import { GITHUB_SKILL_INSTALL } from "@/lib/repository";
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -68,7 +69,7 @@ const ENDPOINTS: { label: string; url: string; desc: string }[] = [
 
 const MCP_URL = "https://mcp.beui.dev/mcp";
 
-const SKILL_SNIPPET = `npx skills add starc007/ui-components --skill beui`;
+const SKILL_SNIPPET = GITHUB_SKILL_INSTALL;
 
 const MCP_CLI_SNIPPET = `# Claude Code
 claude mcp add --transport http beui https://mcp.beui.dev/mcp

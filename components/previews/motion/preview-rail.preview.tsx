@@ -40,10 +40,10 @@ export const previewRailItems = [
     href: "#changelog",
   },
   {
-    id: "sponsors",
-    label: "Sponsors",
-    description: "Support continued development of the open-source library.",
-    href: "#sponsors",
+    id: "resources",
+    label: "Resources",
+    description: "Find documentation and useful implementation references.",
+    href: "#resources",
   },
   {
     id: "workspace",

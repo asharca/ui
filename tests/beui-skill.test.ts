@@ -1,3 +1,4 @@
+import { GITHUB_SKILL_INSTALL } from "@/lib/repository";
 import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -51,7 +52,7 @@ function slugsFromSkill(markdown: string) {
 describe("beUI skill", () => {
   test("README documents a non-interactive skill install", async () => {
     const readme = await readFile(path.join(ROOT, "README.md"), "utf8");
-    expect(readme).toContain("npx skills add starc007/ui-components --skill beui");
+    expect(readme).toContain(GITHUB_SKILL_INSTALL);
     expect(readme).not.toContain("npx skills add https://beui.dev");
   });
 

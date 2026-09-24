@@ -14,7 +14,6 @@ import { componentSearchEntries } from "@/lib/site-search";
 const PAGES = [
   { slug: "home", name: "Home", href: "/" },
   { slug: "playground", name: "Playground", href: "/playground" },
-  { slug: "sponsors", name: "Sponsors", href: "/sponsors" },
   { slug: "theme", name: "Theme setup", href: "/docs/theme" },
   { slug: "ai-agents", name: "AI Agents", href: "/docs/ai-agents" },
   {

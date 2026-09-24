@@ -1,11 +1,11 @@
-const GITHUB_REPO_API_URL = "https://api.github.com/repos/starc007/ui-components";
+import { GITHUB_REPOSITORY_API_URL } from "@/lib/repository";
 
 export async function getGithubStarCount(): Promise<number | null> {
   try {
-    const response = await fetch(GITHUB_REPO_API_URL, {
+    const response = await fetch(GITHUB_REPOSITORY_API_URL, {
       headers: {
         Accept: "application/vnd.github+json",
-        "User-Agent": "beui-star-count",
+        "User-Agent": "asharca-ui-star-count",
       },
       cache: "no-store",
       signal: AbortSignal.timeout(5000),

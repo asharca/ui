@@ -1,7 +1,6 @@
 "use client";
 
 import { ThreeColumnLayout } from "@/components/app/chrome/three-column-layout";
-import { RightSidebar } from "@/components/app/chrome/right-sidebar";
 
 import { RotateCw } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -157,7 +156,6 @@ export function Playground() {
           </ul>
         </nav>
       }
-      rightSidebar={<RightSidebar />}
     >
       <header className="mb-8">
         <h1 className="font-display text-3xl font-semibold text-foreground md:text-4xl">

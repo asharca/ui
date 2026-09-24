@@ -1,3 +1,4 @@
+import { GITHUB_REPOSITORY_API_URL } from "@/lib/repository";
 import { afterAll, afterEach, expect, spyOn, test } from "bun:test";
 import { GET } from "../app/api/github-stars/route";
 
@@ -18,6 +19,7 @@ function edgeCache() {
       put: async (key: Request, response: Response) => { entries.set(key.url, response); },
     },
   } });
+  return entries;
 }
 
 test("shares counts across visitors and ignores query cache-busters", async () => {
@@ -29,6 +31,7 @@ test("shares counts across visitors and ignores query cache-busters", async () =
   const second = await GET(new Request("https://beui.dev/api/github-stars?random=123"));
   expect(await second.json()).toEqual({ count: 1234 });
   expect(fetchSpy).toHaveBeenCalledTimes(1);
+  expect(fetchSpy.mock.calls[0]?.[0]).toBe(GITHUB_REPOSITORY_API_URL);
   expect(fetchSpy.mock.calls[0]?.[1]?.cache).toBe("no-store");
 });
 
@@ -47,4 +50,16 @@ test("rejects malformed upstream counts and handles network failure", async () =
   expect((await GET(new Request("https://beui.dev/api/github-stars"))).status).toBe(503);
   fetchSpy.mockRejectedValueOnce(new Error("network unavailable"));
   expect((await GET(new Request("https://beui.dev/api/github-stars"))).status).toBe(503);
+});
+
+
+test("repository identity invalidates an old upstream count on the same host", async () => {
+  const entries = edgeCache();
+  entries.set("https://beui.dev/api/github-stars", Response.json({ count: 99999 }));
+  fetchSpy.mockResolvedValue(Response.json({ stargazers_count: 0 }));
+  const response = await GET(new Request("https://beui.dev/api/github-stars?repository=starc007/ui-components"));
+  expect(await response.json()).toEqual({ count: 0 });
+  expect(fetchSpy).toHaveBeenCalledTimes(1);
+  expect(fetchSpy.mock.calls[0]?.[0]).toBe("https://api.github.com/repos/asharca/ui");
+  expect(entries.has("https://beui.dev/api/github-stars?repository=asharca%2Fui")).toBe(true);
 });

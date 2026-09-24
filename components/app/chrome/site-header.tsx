@@ -13,6 +13,7 @@ import { PressLink } from "@/components/app/press-link";
 import { SiteSearch } from "@/components/app/chrome/site-search";
 import { ThemeToggle } from "@/components/app/chrome/theme-toggle";
 import { Tooltip } from "@/components/motion/tooltip";
+import { GITHUB_REPOSITORY_URL } from "@/lib/repository";
 import { cn } from "@/lib/utils";
 
 function formatStarCount(count: number) {
@@ -47,7 +48,6 @@ export function SiteHeader() {
   const isAgents = pathname.startsWith("/components/agents");
   const isCharts = pathname.startsWith("/charts");
   const isPlayground = pathname.startsWith("/playground");
-  const isSponsors = pathname.startsWith("/sponsors");
   const formattedStarCount =
     typeof githubStarCount === "number"
       ? formatStarCount(githubStarCount)
@@ -139,17 +139,6 @@ export function SiteHeader() {
             >
               Playground
             </Link>
-            <Link
-              href="/sponsors"
-              className={cn(
-                "rounded-md px-1.5 py-1.5 text-sm transition-colors lg:px-3",
-                isSponsors
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Sponsors
-            </Link>
           </nav>
         </div>
 
@@ -167,7 +156,7 @@ export function SiteHeader() {
             </button>
           </Tooltip>
           <PressLink
-            href="https://github.com/starc007/ui-components"
+            href={GITHUB_REPOSITORY_URL}
             target="_blank"
             rel="noreferrer noopener"
             className="group hidden items-center gap-1.5 rounded-full lg:inline-flex border border-border bg-card/20 px-3 py-2 text-xs font-medium text-foreground hover:border-(--color-border-strong)"

@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import { SiteSidebar } from "@/components/app/chrome/site-sidebar";
 import { PageTransition } from "@/components/app/chrome/page-transition";
 import { ThreeColumnLayout } from "@/components/app/chrome/three-column-layout";
-import { RightSidebar } from "@/components/app/chrome/right-sidebar";
 
 const SIDEBAR_PATHS = ["/components", "/docs", "/charts"];
 
@@ -18,10 +17,7 @@ export function SiteFrame({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ThreeColumnLayout
-      leftSidebar={<SiteSidebar />}
-      rightSidebar={<RightSidebar />}
-    >
+    <ThreeColumnLayout leftSidebar={<SiteSidebar />}>
       <PageTransition>{children}</PageTransition>
     </ThreeColumnLayout>
   );

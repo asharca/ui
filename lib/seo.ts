@@ -1,3 +1,4 @@
+import { GITHUB_LICENSE_URL, GITHUB_REPOSITORY_URL } from "@/lib/repository";
 import { categoryPath, componentPath } from "@/lib/component-paths";
 import type { JsonLdSchema } from "@/components/app/analytics/json-ld";
 import { componentDates } from "@/lib/component-dates";
@@ -215,8 +216,8 @@ export function componentJsonLd(
       "@type": "SoftwareSourceCode",
       name: comp.name,
       description: comp.guide?.seo.description ?? comp.description,
-      codeRepository: "https://github.com/starc007/ui-components",
-      license: "https://github.com/starc007/ui-components/blob/main/LICENSE",
+      codeRepository: GITHUB_REPOSITORY_URL,
+      license: GITHUB_LICENSE_URL,
       programmingLanguage: "TypeScript",
       runtimePlatform: "React",
       codeSampleType: "full (compile ready)",

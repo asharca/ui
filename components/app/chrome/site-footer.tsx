@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { categoryPath, componentPath } from "@/lib/component-paths";
 import { registry } from "@/lib/registry";
+import { GITHUB_REPOSITORY_URL } from "@/lib/repository";
 
 const FOOTER_LIMIT = 7;
 const COLUMNS = [
@@ -23,17 +24,12 @@ const COLUMNS = [
 const LINKS = [
   { href: "/components/motion", label: "Browse all" },
   { href: "/playground", label: "Playground" },
-  { href: "https://github.com/starc007/ui-components", label: "GitHub" },
+  { href: GITHUB_REPOSITORY_URL, label: "GitHub" },
   { href: "/docs/ai-agents", label: "For coding agents" },
   { href: "/docs/theme", label: "Theming" },
   { href: "/docs/motion-patterns", label: "Motion patterns" },
-  { href: "/sponsors", label: "Sponsor" },
   { href: "/llms.txt", label: "llms.txt" },
   { href: "https://usemarkd.app", label: "Markd" },
-  {
-    href: "https://tracwell.app/?utm_source=beui&utm_medium=referral&utm_campaign=sponsorship&utm_content=landing_footer",
-    label: "Tracwell",
-  },
 ];
 
 export function SiteFooter() {

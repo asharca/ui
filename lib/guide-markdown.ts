@@ -1,3 +1,4 @@
+import { GITHUB_SKILL_INSTALL } from "@/lib/repository";
 import { SITE_URL } from "@/lib/site";
 
 const guides = {
@@ -93,7 +94,7 @@ const visible = {
 Install the skill when you want coding agents to choose existing beUI components before inventing custom motion widgets.
 
 \`\`\`bash
-npx skills add starc007/ui-components --skill beui
+${GITHUB_SKILL_INSTALL}
 \`\`\`
 
 ## MCP server

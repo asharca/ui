@@ -1,10 +1,14 @@
+import { GITHUB_REPOSITORY } from "@/lib/repository";
 import { getGithubStarCount } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  // A fixed key prevents query strings from bypassing the shared edge cache.
-  const key = new Request(new URL("/api/github-stars", request.url));
+  // Ignore visitor query strings and isolate caches by repository identity.
+  // An old beUI count must not survive a repository change on the same domain.
+  const url = new URL("/api/github-stars", request.url);
+  url.searchParams.set("repository", GITHUB_REPOSITORY);
+  const key = new Request(url);
   const cache = typeof caches !== "undefined"
     ? (caches as CacheStorage & { default?: Cache }).default
     : undefined;

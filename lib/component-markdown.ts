@@ -1,3 +1,4 @@
+import { GITHUB_REPOSITORY_URL } from "@/lib/repository";
 import { componentDates } from "@/lib/component-dates";
 import { getComponentProps } from "@/lib/props-extractor";
 import { findCategory, findComponent, type ComponentExample } from "@/lib/registry";
@@ -141,7 +142,7 @@ export async function buildComponentMarkdown(
     "",
     `- Registry detail: ${primaryEntry.detail_url}`,
     `- Raw source: ${primaryEntry.raw_url}`,
-    `- GitHub: https://github.com/starc007/ui-components`,
+    `- GitHub: ${GITHUB_REPOSITORY_URL}`,
     "",
   );
 

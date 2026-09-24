@@ -1,5 +1,7 @@
 # Asharca Workspace · based on beUI
 
+项目仓库：[asharca/ui](https://github.com/asharca/ui)。项目链接、Star 统计和 Skill 安装均使用此仓库；上游来源与 MIT 署名另行保留。
+
 以 [beUI](https://github.com/starc007/ui-components) 的完整 Next.js / Bun 源码为基础，仅增加 Asharca 风格的 **Workspace Shell、Workspace Tab Bar 及其侧栏组合**。上游 MIT 许可和组件实现保留，不再叠加旧版 Vite/Registry 或复制 Agent 组件的架构。
 
 ## 本地调试
@@ -36,10 +38,10 @@ bun test
 
 细节见 [UPSTREAM.md](UPSTREAM.md)。不继承 beUI 的线上部署凭据或统计脚本，当前 CI 只验证，不自动部署。工作区示例是本地状态演示，不连接真实模型或 MCP 服务。
 
-## beUI 官方 Skill
+## 本仓库的 beUI Skill
 
 ```bash
-npx skills add starc007/ui-components --skill beui
+npx skills add asharca/ui --skill beui
 ```
 
-上游 Skill 提供 beUI 组件知识；新增工作区接口请同时阅读本仓库 docs/workspace.md。
+本仓库保留的上游 Skill 提供 beUI 组件知识；新增工作区接口请同时阅读本仓库 docs/workspace.md。
