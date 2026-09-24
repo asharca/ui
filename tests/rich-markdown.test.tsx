@@ -47,7 +47,7 @@ describe('Markdown tables and Mermaid', () => {
     render(<SafeStreamdown allowMermaid>{'```mermaid\n' + code + '\n```'}</SafeStreamdown>);
     expect(await screen.findByText('图表暂时无法渲染，已保留源码。')).toBeVisible();
     expect(graph.render).not.toHaveBeenCalled();
-    expect(screen.getByLabelText('Mermaid 源码')).toHaveTextContent(code);
+    expect(screen.getByLabelText('Mermaid 源码').textContent).toBe(code);
   });
   it('offers an honest syntax-error fallback and can retry', async () => {
     graph.parse.mockResolvedValueOnce(false);
