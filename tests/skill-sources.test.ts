@@ -22,8 +22,9 @@ describe("hybrid skill sources", () => {
     }
     for (const entry of policy.project.entries) {
       const target = targets.find((candidate) => candidate.slug === entry.slug);
-      expect(target?.categorySlug).toBe(entry.category);
-      expect(entry.files).toContain(target?.file);
+      if (!target) throw new Error(`Missing registry target for ${entry.slug}`);
+      expect(target.categorySlug).toBe(entry.category);
+      expect(entry.files).toContain(target.file);
     }
   });
 
