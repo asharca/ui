@@ -40,8 +40,31 @@ bun test
 
 ## 本仓库的 beUI Skill
 
+合并到默认分支后，可直接安装：
+
 ```bash
 npx skills add asharca/ui --skill beui
 ```
 
-本仓库保留的上游 Skill 提供 beUI 组件知识；新增工作区接口请同时阅读本仓库 docs/workspace.md。
+合并前，从当前分支的本地源码目录安装（在业务项目中执行，替换实际路径）：
+
+```bash
+npx skills add /实际路径/asharca-ui-source/skills/beui --skill beui
+```
+
+Skill 保留 `beui` 安装名，但采用双来源策略：**未修改组件沿用官方
+`@beui/...` 安装和使用方式；新增或修改组件使用 asharca/ui 的源码及接口**。
+已有业务定制优先保留，不用上游同名组件覆盖。Skill 本身不要求部署网站或 MCP。
+
+在已下载的当前分支源码根目录，可导出自有组件的完整安装 JSON：
+
+```bash
+bun install --frozen-lockfile
+bun scripts/export-component.ts workspace-shell --out /绝对路径/新目录/workspace-shell.json
+```
+
+然后在业务项目中，先用 `shadcn add` 加该 JSON 的 `--dry-run` / `--diff`
+检查所有文件和共享依赖，再确认安装。导出不启动站点；下载源码和包仍可能需要联网。
+
+来源清单：[source-policy.json](skills/beui/source-policy.json)。完整安装、组合、
+更新和手动复制说明：[Skill 本地参考](skills/beui/references/workspace.md)。

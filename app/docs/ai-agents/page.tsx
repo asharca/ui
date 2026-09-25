@@ -8,70 +8,26 @@ import { GuideShell } from "@/components/app/docs/guide-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_PATH = "/docs/ai-agents";
-
-
+const DESCRIPTION = "Choose official beUI components or local Asharca source with one skill; no self-hosted service is required.";
 export const metadata: Metadata = {
   title: "AI Agents",
-  description:
-    "Install the beUI agent skill, connect the MCP server, or use the agent-friendly endpoints (llms.txt, JSON registry, raw source) to consume components programmatically.",
-  alternates: {
-    canonical: PAGE_PATH,
-    types: { "text/markdown": `${PAGE_PATH}.md` },
-  },
-  openGraph: {
-    title: "AI Agents · beUI",
-    description:
-      "Install the beUI agent skill, connect the MCP server, or use the agent-friendly endpoints (llms.txt, JSON registry, raw source) to consume components programmatically.",
-    url: "/docs/ai-agents",
-    type: "article",
-    siteName: "beUI",
-    images: ["/api/og"],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI Agents · beUI",
-    images: ["/api/og"],
-  },
+  description: DESCRIPTION,
+  alternates: { canonical: PAGE_PATH, types: { "text/markdown": `${PAGE_PATH}.md` } },
+  openGraph: { title: "AI Agents · beUI", description: DESCRIPTION, url: PAGE_PATH, type: "article", siteName: "beUI", images: ["/api/og"] },
+  twitter: { card: "summary_large_image", title: "AI Agents · beUI", images: ["/api/og"] },
 };
 
-const ENDPOINTS: { label: string; url: string; desc: string }[] = [
-  {
-    label: "llms.txt",
-    url: "/llms.txt",
-    desc: "Markdown index in llmstxt.org format.",
-  },
-  {
-    label: "Registry index",
-    url: "/r",
-    desc: "JSON catalogue of every component.",
-  },
-  {
-    label: "Component detail",
-    url: "/r/{slug}",
-    desc: "JSON with files, deps, source.",
-  },
-  {
-    label: "shadcn catalog",
-    url: "/registry.json",
-    desc: "Directory-compatible registry catalog.",
-  },
-  {
-    label: "shadcn item",
-    url: "/r/{slug}.json",
-    desc: "Install item with inline file content and shadcn semantic color classes.",
-  },
-  {
-    label: "Raw source",
-    url: "/r/{slug}/raw",
-    desc: "Plain text .tsx ready to drop in.",
-  },
+const ENDPOINTS = [
+  { label: "llms.txt", url: "/llms.txt", desc: "Markdown index in llmstxt.org format." },
+  { label: "Registry index", url: "/r", desc: "JSON catalogue of every component." },
+  { label: "Component detail", url: "/r/{slug}", desc: "JSON with files, deps, source." },
+  { label: "shadcn catalog", url: "/registry.json", desc: "Directory-compatible registry catalog." },
+  { label: "shadcn item", url: "/r/{slug}.json", desc: "Install item with inline file content and shadcn semantic color classes." },
+  { label: "Raw source", url: "/r/{slug}/raw", desc: "Plain text .tsx ready to drop in." },
 ];
-
 const MCP_URL = "https://mcp.beui.dev/mcp";
-
-const SKILL_SNIPPET = GITHUB_SKILL_INSTALL;
-
-const MCP_CLI_SNIPPET = `# Claude Code
+const MCP_CLI_SNIPPET = `# Optional: unchanged official components only
+# Claude Code
 claude mcp add --transport http beui https://mcp.beui.dev/mcp
 
 # Codex
@@ -79,7 +35,6 @@ codex mcp add beui --url https://mcp.beui.dev/mcp
 
 # Amp
 amp mcp add beui https://mcp.beui.dev/mcp`;
-
 const MCP_MANUAL_SNIPPET = `{
   "mcpServers": {
     "beui": {
@@ -88,238 +43,95 @@ const MCP_MANUAL_SNIPPET = `{
     }
   }
 }`;
+const LOCAL_SKILL_SNIPPET = `# Before the feature branch is merged, obtain the selected source.
+git clone --single-branch --branch rebuild/beui-workspace https://github.com/asharca/ui.git asharca-ui-source
 
-const FETCH_SNIPPET = `// 1. Discover what exists
+# In the consuming project; replace the absolute source path.
+npx skills add /absolute/path/asharca-ui-source/skills/beui --skill beui`;
+const LOCAL_COMPONENT_SNIPPET = `# In the selected asharca/ui source checkout
+git rev-parse HEAD
+bun install --frozen-lockfile
+bun scripts/export-component.ts workspace-shell --out /absolute/new-directory/workspace-shell.json
+
+# In the configured consuming project
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json --dry-run
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json --diff
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json`;
+const FETCH_SNIPPET = `// Optional official discovery; do not use it for Asharca modifications.
 const idx = await fetch('https://beui.dev/r').then((r) => r.json());
-
-// 2. Fetch a component
 const entry = await fetch(\`https://beui.dev/r/\${slug}\`).then((r) => r.json());
-
-// 3. Write files into the user's project
-for (const file of entry.files) {
-  await writeFile(file.path, file.content);
-}
-
-// 4. Install external deps
-await runShell(['bun', 'add', ...entry.dependencies]);`;
-
-const SHADCN_SNIPPET = `# Official registry namespace (shadcn directory)
+// Inspect every source file and dependency before writing or installing.
+// Preserve existing helpers, local changes, aliases and theme configuration.`;
+const SHADCN_SNIPPET = `# Unchanged official component
+npx shadcn@latest view @beui/animated-toast-stack
+npx shadcn@latest add @beui/animated-toast-stack --dry-run
 npx shadcn@latest add @beui/animated-toast-stack
 
-# Direct URL, no namespace needed
+# Official URL alternative
 npx shadcn@latest add https://beui.dev/r/animated-toast-stack.json`;
-
 const ENTRY_SHAPE = `{
-  "slug": "swap",
-  "name": "Multi-chain Swap",
-  "description": "Cross-chain swap widget with chain + token selectors, animated flip and quote.",
+  "slug": "animated-toast-stack",
+  "name": "Animated Toast Stack",
   "category": "motion",
-  "page_url": "https://beui.dev/components/motion/swap",
-  "detail_url": "https://beui.dev/r/swap",
-  "raw_url": "https://beui.dev/r/swap/raw",
   "dependencies": ["motion", "lucide-react", "react"],
   "internal": ["@/lib/utils"],
   "files": [
-    { "path": "components/motion/swap.tsx", "type": "component", "content": "..." },
-    { "path": "components/previews/motion/swap.preview.tsx", "type": "preview", "content": "..." },
+    { "path": "components/motion/animated-toast-stack.tsx", "type": "component", "content": "..." },
     { "path": "lib/utils.ts", "type": "util", "content": "..." }
   ]
 }`;
+const heading = "mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground";
+const inlineCode = "rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground";
 
 export default function AIAgentsPage() {
-  return (
-    <GuideShell>
-      <header id="overview" className="scroll-mt-24">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Agent guide
-        </p>
-        <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <h1 className="text-3xl font-medium tracking-tight text-foreground">
-            For AI agents
-          </h1>
-          <CopyPage
-            pageUrl={`${SITE_URL}${PAGE_PATH}`}
-            markdownPath={`${PAGE_PATH}.md`}
-            componentName="Agent Guide"
-          />
-        </div>
-        <p className="mt-3 max-w-2xl text-muted-foreground">
-          beUI exposes a static, agent-friendly surface. Install the beUI skill,
-          connect the MCP server below, or hit the raw endpoints directly. Coding
-          agents (Claude, Codex, Cursor, Amp) can list components, fetch source
-          with all deps, and drop files into the user&apos;s project.
-        </p>
-      </header>
-
-      <h2
-        id="agent-skill"
-        className="mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground"
-      >
-        Agent skill
-      </h2>
-      <p className="mt-2 text-muted-foreground">
-        The skill teaches coding agents to fetch the live registry first, pick
-        the closest{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          items[].name
-        </code>{" "}
-        install slug, inspect it with shadcn, then install and compose from
-        the generated source. Use it when you want agents to choose existing
-        beUI components instead of inventing custom motion widgets.
-      </p>
-      <div className="mt-4">
-        <CodeBlock code={SKILL_SNIPPET} lang="bash" filename="terminal" />
+  return <GuideShell>
+    <header id="overview" className="scroll-mt-24">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent guide</p>
+      <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <h1 className="text-3xl font-medium tracking-tight text-foreground">For AI agents</h1>
+        <CopyPage pageUrl={`${SITE_URL}${PAGE_PATH}`} markdownPath={`${PAGE_PATH}.md`} componentName="Agent Guide" />
       </div>
+      <p className="mt-3 max-w-2xl text-muted-foreground">Use one skill to choose between unchanged official components and Asharca source. The local-source workflow does not require a deployed website or MCP.</p>
+    </header>
 
-      <h2
-        id="mcp-server"
-        className="mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground"
-      >
-        MCP server
-      </h2>
-      <p className="mt-2 text-muted-foreground">
-        The fastest path: connect the beUI MCP server and your agent can list,
-        search and install components directly. Hosted at{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          {MCP_URL}
-        </code>
-        .
-      </p>
-      <div className="mt-4">
-        <CodeBlock code={MCP_CLI_SNIPPET} lang="bash" filename="terminal" />
-      </div>
-      <p className="mt-4 text-muted-foreground">
-        Any other client: add it manually to your MCP config.
-      </p>
-      <div className="mt-4">
-        <CodeBlock code={MCP_MANUAL_SNIPPET} lang="json" filename="mcp.json" />
-      </div>
-      <p className="mt-4 text-sm text-muted-foreground">
-        Tools:{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          list_components
-        </code>
-        ,{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          search_components
-        </code>
-        ,{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          get_component
-        </code>
-        ,{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          get_install_command
-        </code>
-        .
-      </p>
+    <h2 id="agent-skill" className={heading}>Agent skill</h2>
+    <p className="mt-2 text-muted-foreground">This repository&apos;s skill keeps official installation and usage for unchanged beUI components. Added or modified components, including the Workspace Shell and Tab Bar, use asharca/ui source and its bundled local usage guide. Existing project customizations take precedence.</p>
+    <p className="mt-4 text-sm text-muted-foreground">After the changes are merged into the default branch:</p>
+    <div className="mt-4"><CodeBlock code={GITHUB_SKILL_INSTALL} lang="bash" filename="terminal" /></div>
+    <p className="mt-4 text-sm text-muted-foreground">Before merging, install the skill from the selected local branch. A skill installation does not copy the complete component repository:</p>
+    <div className="mt-4"><CodeBlock code={LOCAL_SKILL_SNIPPET} lang="bash" filename="local-skill" /></div>
+    <p className="mt-4 text-sm text-muted-foreground">From that source checkout, export a local registry item; then review and install the JSON in your consuming project:</p>
+    <div className="mt-4"><CodeBlock code={LOCAL_COMPONENT_SNIPPET} lang="bash" filename="local-component" /></div>
+    <p className="mt-4 text-sm text-muted-foreground">Read skills/beui/source-policy.json and its bundled references/workspace.md before choosing a source. The exporter writes files only; it does not start a server. Official and project components may share helpers, so review every affected file before either installation.</p>
 
-      <h2
-        id="endpoints"
-        className="mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground"
-      >
-        Endpoints
-      </h2>
-      <ul className="mt-4 divide-y divide-border rounded-2xl border border-border bg-card">
-        {ENDPOINTS.map((e) => (
-          <li
-            key={e.url}
-            className="flex items-start justify-between gap-4 p-4"
-          >
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <code className="rounded-md bg-foreground/5 px-2 py-0.5 font-mono text-xs text-foreground">
-                  {e.url}
-                </code>
-                <span className="text-sm font-medium text-foreground">
-                  {e.label}
-                </span>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">{e.desc}</p>
-            </div>
-            {!e.url.includes("{") ? (
-              <Link
-                href={e.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Open
-                <ArrowUpRight className="h-3 w-3" />
-              </Link>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+    <h2 id="mcp-server" className={heading}>MCP server (optional)</h2>
+    <p className="mt-2 text-muted-foreground">For unchanged official components, the upstream beUI MCP can list, search and inspect its catalog. It does not serve Asharca modifications and is not required by the skill. Hosted at <code className={inlineCode}>{MCP_URL}</code>.</p>
+    <div className="mt-4"><CodeBlock code={MCP_CLI_SNIPPET} lang="bash" filename="terminal" /></div>
+    <p className="mt-4 text-muted-foreground">Any other client: add it manually to your MCP config.</p>
+    <div className="mt-4"><CodeBlock code={MCP_MANUAL_SNIPPET} lang="json" filename="mcp.json" /></div>
+    <p className="mt-4 text-sm text-muted-foreground">Tools: <code className={inlineCode}>list_components</code>, <code className={inlineCode}>search_components</code>, <code className={inlineCode}>get_component</code>, <code className={inlineCode}>get_install_command</code>.</p>
 
-      <h2
-        id="agent-flow"
-        className="mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground"
-      >
-        Agent flow
-      </h2>
-      <p className="mt-2 text-muted-foreground">
-        Four calls, then install. Components are self-contained and own their
-        files.
-      </p>
-      <div className="mt-4">
-        <CodeBlock code={FETCH_SNIPPET} lang="ts" filename="agent.ts" />
-      </div>
+    <h2 id="endpoints" className={heading}>Endpoints</h2>
+    <ul className="mt-4 divide-y divide-border rounded-2xl border border-border bg-card">
+      {ENDPOINTS.map((e) => <li key={e.url} className="flex items-start justify-between gap-4 p-4">
+        <div className="min-w-0"><div className="flex items-center gap-2"><code className="rounded-md bg-foreground/5 px-2 py-0.5 font-mono text-xs text-foreground">{e.url}</code><span className="text-sm font-medium text-foreground">{e.label}</span></div><p className="mt-1 text-sm text-muted-foreground">{e.desc}</p></div>
+        {!e.url.includes("{") && <Link href={e.url} target="_blank" rel="noreferrer noopener" className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground hover:text-foreground">Open<ArrowUpRight className="h-3 w-3" /></Link>}
+      </li>)}
+    </ul>
 
-      <h2
-        id="shadcn-flow"
-        className="mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground"
-      >
-        shadcn flow
-      </h2>
-      <p className="mt-2 text-muted-foreground">
-        The shadcn item installs source files and package dependencies.
-        Components use shadcn semantic color utilities directly, so they inherit
-        the target app&apos;s theme without beUI-specific color variables.
-      </p>
-      <div className="mt-4">
-        <CodeBlock code={SHADCN_SNIPPET} lang="bash" filename="terminal" />
-      </div>
+    <h2 id="agent-flow" className={heading}>Agent flow</h2>
+    <p className="mt-2 text-muted-foreground">Choose ownership first. The following is an optional upstream discovery example, not a way to retrieve local Asharca changes. Inspect complete dependency graphs before merging files.</p>
+    <div className="mt-4"><CodeBlock code={FETCH_SNIPPET} lang="ts" filename="agent.ts" /></div>
 
-      <h2
-        id="entry-shape"
-        className="mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground"
-      >
-        Entry shape
-      </h2>
-      <p className="mt-2 text-muted-foreground">
-        Internal helpers (e.g.{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          @/lib/utils
-        </code>
-        ) ship inline as{" "}
-        <code className="rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-xs text-foreground">
-          type: util
-        </code>{" "}
-        so the agent does not have to chase imports.
-      </p>
-      <div className="mt-4">
-        <CodeBlock code={ENTRY_SHAPE} lang="json" filename="r/swap.json" />
-      </div>
+    <h2 id="shadcn-flow" className={heading}>shadcn flow</h2>
+    <p className="mt-2 text-muted-foreground">Unchanged official components retain their official install commands. For local modifications use the exported JSON above. Preserve the target app&apos;s theme and existing helpers.</p>
+    <div className="mt-4"><CodeBlock code={SHADCN_SNIPPET} lang="bash" filename="terminal" /></div>
 
-      <h2
-        id="generative-ui"
-        className="mt-10 scroll-mt-24 text-xl font-medium tracking-tight text-foreground"
-      >
-        Generative UI
-      </h2>
-      <p className="mt-2 text-muted-foreground">
-        Want the model to compose these components into a live interface? Follow
-        the{" "}
-        <Link
-          href="/docs/openui"
-          className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
-        >
-          OpenUI integration guide
-        </Link>{" "}
-        to register a custom component library, generate its system prompt, and
-        render interactive OpenUI Lang as it streams.
-      </p>
-    </GuideShell>
-  );
+    <h2 id="entry-shape" className={heading}>Entry shape</h2>
+    <p className="mt-2 text-muted-foreground">Detail entries include source files and internal helpers. The export script produces a shadcn registry item with inline file contents, alias-aware targets and provenance, rather than this illustrative detail response.</p>
+    <div className="mt-4"><CodeBlock code={ENTRY_SHAPE} lang="json" filename="entry.json" /></div>
+
+    <h2 id="generative-ui" className={heading}>Generative UI</h2>
+    <p className="mt-2 text-muted-foreground">Want the model to compose these components into a live interface? Follow the <Link href="/docs/openui" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">OpenUI integration guide</Link> to register a custom component library, generate its system prompt, and render interactive OpenUI Lang as it streams.</p>
+  </GuideShell>;
 }

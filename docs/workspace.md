@@ -63,9 +63,29 @@ Shell 默认共享 muted 底色和 12px 内容圆角。标签与正文使用相�
 
 示例没有真实 MCP、模型调用、文件服务或用户管理，入口只用于展示 Shell、Tab Bar 与 beUI 的组合方式。
 
-## Registry 安装
+## Skill 与无需部署的源码安装
 
-本地服务启动后，在已初始化 shadcn 的消费项目中可以安装：
+本仓库的 `skills/beui/SKILL.md` 采用双来源规则：未修改组件沿用官方
+`@beui` 安装和 API；新增或修改的组件使用当前仓库的实现与使用说明。
+`skills/beui/source-policy.json` 记录定制入口；修改公共依赖时，所有受影响的
+安装项也要归入自有来源。网站展示文案的修改不等同于组件 API 修改。
+
+不部署本站或 MCP 也能导出组件。在本仓库根目录执行：
+
+```bash
+bun install --frozen-lockfile
+bun scripts/export-component.ts workspace-shell --out /绝对路径/新目录/workspace-shell.json
+```
+
+然后在已配置 shadcn 的业务项目里，先用同一本地 JSON 的 `--dry-run`、
+`--diff` 检查完整文件和依赖，再执行安装。不要默认覆盖 `lib/utils`、
+`lib/ease`、Motion 组件等共享文件；保留业务定制及现有主题。
+完整示例和手动复制兜底见 [Skill 使用说明](../skills/beui/references/workspace.md)。
+导出只生成源码 JSON，不启动 Next.js 或 MCP；下载源码和依赖可能仍需联网。
+
+## Registry 安装（可选的服务方式）
+
+本地服务启动后，在已初始化 shadcn 的消费项目中也可以安装：
 
 ```bash
 npx shadcn@latest add http://localhost:3000/r/workspace-shell.json
@@ -78,14 +98,14 @@ Registry 会解析 beUI 源码依赖并一并安装。这里的 `@beui/workspace
 
 ## 验证
 
+默认只运行代码检查，不启动项目：
+
 ```bash
 bun run check
 bun test
-bun run build
-bunx playwright install chromium
-bun run test:workspace:browser
+(cd mcp && bun install --frozen-lockfile && bun run typecheck)
 ```
 
-浏览器回归使用生产构建并自动启动 Next 服务；调试浏览器可执行 `bunx playwright test --headed`。完整测试保留上游测试；其中联网测试需要访问 beui.dev。测试用 Node.js 24 可避免旧版 Node 直接执行 `.ts` 脚本失败。
+完整测试保留上游测试；其中联网测试需要访问 beui.dev。仅在明确要求浏览器验证时，再手动生产构建、安装 Chromium 并运行 `bun run test:workspace:browser`；这不是 Skill 安装或本地组件导出的前提。
 
 旧 GitHub Pages/Vite 部署工作流和上游的自动部署目标已移除，当前只提供验证 CI。本工程需要兼容 Next.js 的部署环境；这次源码重建不等于网站已部署。

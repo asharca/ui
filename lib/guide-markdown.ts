@@ -12,7 +12,7 @@ Ask four questions before choosing a duration or spring:
 
 1. **Check frequency.** Repeated actions should feel nearly instant. Save expressive motion for rare moments.
 2. **Name the purpose.** Motion should explain space, confirm input, show state, or soften a change.
-3. **Choose the physics.** Use ease-out for entrances, ease-in-out for movement, linear motion for progress, and springs for gestures.
+3. **Choose the physics.** Use ease-out for entrances and exits, ease-in-out for movement, linear motion for progress, and springs for gestures.
 4. **Design the fallback.** Reduced motion should keep useful opacity and color feedback while removing travel, scale, parallax, and overshoot.
 
 ## Motion tokens
@@ -88,18 +88,48 @@ const visible = {
   "ai-agents": {
     title: "Agent Guide",
     description:
-      "Install the beUI agent skill, connect the MCP server, or consume the agent-friendly registry endpoints directly.",
+      "Choose official beUI components or local Asharca source with one skill; no self-hosted service is required.",
     body: `## Agent skill
 
-Install the skill when you want coding agents to choose existing beUI components before inventing custom motion widgets.
+Use the asharca/ui edition of the beui skill. Unchanged components keep official @beui installation and usage. Added or modified components use this repository, its source policy, and its local usage reference. Existing local customizations take precedence.
+
+After the changes are merged into the default branch:
 
 \`\`\`bash
 ${GITHUB_SKILL_INSTALL}
 \`\`\`
 
-## MCP server
+## Project components without deployment
 
-Connect the hosted beUI MCP server at \`https://mcp.beui.dev/mcp\`.
+Before this branch is merged, clone it and install the skill from the local checkout:
+
+\`\`\`bash
+git clone --single-branch --branch rebuild/beui-workspace https://github.com/asharca/ui.git asharca-ui-source
+# Run the next command from the consuming project; adjust the absolute path.
+npx skills add /absolute/path/asharca-ui-source/skills/beui --skill beui
+\`\`\`
+
+A skill install does not copy the whole component repository. From the source checkout:
+
+\`\`\`bash
+git rev-parse HEAD
+bun install --frozen-lockfile
+bun scripts/export-component.ts workspace-shell --out /absolute/new-directory/workspace-shell.json
+\`\`\`
+
+Then in the configured consumer, review the complete proposed changes before installing:
+
+\`\`\`bash
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json --dry-run
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json --diff
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json
+\`\`\`
+
+The exporter includes all required source files, helpers and MIT license without starting Next.js or MCP. See skills/beui/source-policy.json and skills/beui/references/workspace.md for exact APIs and update rules. Ordinary unchanged components still use official @beui commands. Shared helpers and local customizations must not be overwritten by either source.
+
+## MCP server (optional, official components only)
+
+This upstream service does not contain Asharca workspace modifications. The local skill workflow does not require MCP. Connect the hosted beUI MCP server at \`https://mcp.beui.dev/mcp\` only when you need the official catalog.
 
 \`\`\`bash
 # Claude Code
@@ -141,25 +171,31 @@ Available tools: \`list_components\`, \`search_components\`, \`get_component\`, 
 
 ## Agent flow
 
+Choose component ownership first. For unchanged official components only:
+
 1. Fetch \`https://beui.dev/r\` to discover components.
 2. Select the closest item by its published name and description.
 3. Fetch \`https://beui.dev/r/{slug}\` for source, files, and dependencies.
-4. Write every returned file to its declared path.
-5. Install the external dependencies from the response.
+4. Inspect all files and merge them into the consumer's actual paths, preserving local changes.
+5. Install compatible external dependencies from the response.
+
+Use the local export above for Asharca source; do not substitute a similar official component.
 
 ## shadcn flow
 
 \`\`\`bash
-# Official registry namespace
+# Unchanged official component
+npx shadcn@latest view @beui/animated-toast-stack
+npx shadcn@latest add @beui/animated-toast-stack --dry-run
 npx shadcn@latest add @beui/animated-toast-stack
 
-# Direct registry URL
+# Official registry URL alternative
 npx shadcn@latest add https://beui.dev/r/animated-toast-stack.json
 \`\`\`
 
 ## Entry shape
 
-Registry entries include the component slug, name, description, category, documentation URLs, package dependencies, internal helpers, and every source file required by the install.
+Registry detail entries include the component slug, name, description, category, documentation URLs, package dependencies, internal helpers, and every source file required by the install. The local exporter produces a self-contained shadcn install item instead, including alias-aware file targets and provenance metadata.
 
 ## Generative UI
 
@@ -255,30 +291,16 @@ beUI components own their files and ship through a shadcn-compatible registry. G
 } as const;
 
 export type GuideSlug = keyof typeof guides;
-
 export const GUIDE_SLUGS = Object.keys(guides) as GuideSlug[];
-
 export function buildGuideMarkdown(slug: string) {
   const guide = guides[slug as GuideSlug];
   if (!guide) return null;
-
   const documentation = `${SITE_URL}/docs/${slug}`;
   const markdown = `${documentation}.md`;
   const lines = [
-    "---",
-    `title: ${JSON.stringify(guide.title)}`,
-    `description: ${JSON.stringify(guide.description)}`,
-    `documentation: ${JSON.stringify(documentation)}`,
-    `markdown: ${JSON.stringify(markdown)}`,
-    "---",
-    "",
-    `# ${guide.title}`,
-    "",
-    `> ${guide.description}`,
-    "",
-    guide.body,
-    "",
+    "---", `title: ${JSON.stringify(guide.title)}`, `description: ${JSON.stringify(guide.description)}`,
+    `documentation: ${JSON.stringify(documentation)}`, `markdown: ${JSON.stringify(markdown)}`, "---", "",
+    `# ${guide.title}`, "", `> ${guide.description}`, "", guide.body, "",
   ];
-
   return lines.join("\n");
 }

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "upstream": {
+    "repository": "starc007/ui-components",
+    "baseline": "1e23f4b10a404c17d9649086cf561e152527e2de",
+    "namespace": "@beui",
+    "catalogUrl": "https://beui.dev/r/registry.json"
+  },
+  "project": {
+    "repository": "asharca/ui",
+    "ref": "rebuild/beui-workspace",
+    "reference": "references/workspace.md",
+    "entries": [
+      {
+        "slug": "workspace-shell",
+        "category": "blocks",
+        "files": [
+          "components/workspace/workspace-shell.tsx",
+          "components/workspace/workspace-sidebar.tsx",
+          "components/workspace/workspace-tab-bar.tsx"
+        ],
+        "exports": ["WorkspaceShell", "openWorkspaceWindow", "WorkspaceSidebar", "WorkspaceTabBar"]
+      },
+      {
+        "slug": "workspace-tab-bar",
+        "category": "blocks",
+        "files": ["components/workspace/workspace-tab-bar.tsx"],
+        "exports": ["WorkspaceTabBar"]
+      }
+    ]
+  },
+  "rules": {
+    "existingLocalChanges": "preserve-and-review",
+    "modifiedTransitiveDependency": "project",
+    "unknownSource": "inspect-before-install",
+    "sameNamedOfficialFallback": false,
+    "selfHostedServiceRequired": false
+  }
+}

@@ -1,45 +1,128 @@
 ---
 name: beui
-description: Pick and install beUI (@beui) animated React components through public MCP or the shadcn registry. Use when building motion UI, agent/chat interfaces, toasts, docks, bottom sheets, drawers, popovers, sliders, loaders, 404 pages, or any beui.dev component. Maps user intent to exact @beui install slugs instead of inventing custom widgets.
+description: "Build UI with two sources: unchanged beUI components use the official @beui installation and APIs; Asharca-added or modified components use asharca/ui source and local usage. Use for React motion, agent/chat interfaces, workspace shells, browser-like tab bars, and updating customized components. No self-hosted website or MCP is required."
 ---
 
-# beUI
+# Asharca UI + beUI
 
-Use beUI as copy-paste source through its public MCP or the `@beui` shadcn registry.
+Keep the existing skill name `beui` for installation compatibility. This is the
+**asharca/ui edition**, not the unmodified official skill. Read the bundled
+[source policy](source-policy.json) before choosing an installation source.
 
-See the [AI agents guide](https://beui.dev/docs/ai-agents) for current connection instructions and endpoints.
-The public MCP at `https://mcp.beui.dev/mcp` needs no authentication.
+## Source decision — before discovery or installation
 
-## Workflow
+1. Inspect the consuming project's existing components, aliases, dependencies,
+   theme, and local changes first. Already installed/customized files win; do not
+   overwrite them just because an upstream component has the same name.
+2. **Project-owned components:** use the entries in `source-policy.json` and
+   [local installation and usage](references/workspace.md). This currently means
+   `workspace-shell`, `workspace-tab-bar`, and the `WorkspaceSidebar` companion
+   included with the shell. Use the actual named exports/props in asharca/ui.
+3. **Unchanged components:** use the official workflow below, including official
+   `@beui/<slug>` commands and beUI documentation. Routine site branding, removed
+   marketing, or edited demo text does not make an unchanged UI primitive a fork.
+4. **A new/unknown local modification:** inspect the source and its transitive
+   helpers against the pinned upstream baseline recorded in the policy. If a
+   component OR one of its required helpers differs intentionally, treat every
+   affected install entry as project-owned and add it to the policy before release.
+   Never infer "official" solely from an unchanged filename. When the comparison
+   cannot be made, preserve the local code and report what still needs checking.
 
-1. Discover current components with the public MCP's `list_components` or `search_components` when connected. Otherwise, fetch the live registry:
+The policy separates ownership from API names: ordinary `tabs` is not the
+Asharca `WorkspaceTabBar`, and ordinary `chat-app` is not its inset workspace.
+Do not install an official lookalike as a fallback when a project component is
+unavailable. Do not invent published `@asharca` or official workspace slugs.
+
+## Project workflow — no deployment or MCP
+
+Use an explicitly supplied local asharca/ui checkout first. A skill installation
+contains these instructions/references; **it does not install the UI repository**.
+If necessary, obtain the repository/ref in `source-policy.json`, record
+`git rev-parse HEAD`, and read that same snapshot throughout the task. Until this
+branch is merged, do not clone the default branch and claim it has the workspace.
+Never reset, clean, or force-pull a user's dirty checkout.
+
+From that source checkout (not the consuming project), install locked build-time
+dependencies when needed and export the selected local entry:
+
+```bash
+bun install --frozen-lockfile
+bun scripts/export-component.ts workspace-shell --out /absolute/new-directory/workspace-shell.json
+```
+
+This reads the existing source dependency graph and writes self-contained JSON.
+It does not start Next.js, build the website, deploy a service, or modify the
+consumer. Choose a new output path; the exporter refuses existing output files.
+The exported item includes its required beUI primitives/helpers from the SAME
+snapshot; do not replace that closure with arbitrarily newer official files.
+
+Then in the already configured consuming project:
+
+```bash
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json --dry-run
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json --diff
+# After reviewing every affected file and dependency:
+npx shadcn@latest add /absolute/new-directory/workspace-shell.json
+```
+
+Use the user's package runner; `--overwrite` is not the default. Existing files
+must be reviewed/merged, especially shared `lib/utils`, `lib/ease`, hooks and
+`components/motion/*`. A local JSON path is not a URL or a source .tsx file.
+Without Bun, follow the manual source-graph procedure in the bundled reference;
+never require a running registry server or silently switch to the upstream copy.
+
+## Official workflow — unchanged components only
+
+MCP is optional. A previously configured official MCP may help inspect an
+unchanged upstream component, but cannot supply this repository's workspace or
+local modifications. No MCP connection is needed to use this skill.
+
+1. Discover official install names from the live official catalog:
 
 ```bash
 curl -fsS https://beui.dev/r/registry.json
 ```
 
-2. For CLI installation, pick the closest install slug from `items[].name` in the live registry. Public MCP catalog slugs can name documentation pages with multiple installable variants. Do not assume every page slug is an install slug.
-3. Inspect the selected component with MCP `get_component`, or inspect an installable item through the CLI:
+For unchanged components, the live registry is the source of truth for currently
+available upstream install slugs (`items[].name`). It is NOT the source of truth
+for Asharca modifications. A documentation page slug may have several separately
+installable variants. The picker below is guidance, not a frozen online catalog.
+
+2. Inspect and install only the verified official item:
 
 ```bash
 npx shadcn@latest view @beui/<slug>
-```
-
-4. Install the complete files returned by MCP using the project's paths and aliases, then install the listed package dependencies. Preserve existing helpers and local modifications. Alternatively, install a verified registry slug with the user's package runner:
-
-```bash
+npx shadcn@latest add @beui/<slug> --dry-run
 npx shadcn@latest add @beui/<slug>
-# or
-pnpm dlx shadcn@latest add @beui/<slug>
-# or
-bunx --bun shadcn@latest add @beui/<slug>
+# Or: pnpm dlx shadcn@latest add @beui/<slug>
+# Or: bunx --bun shadcn@latest add @beui/<slug>
 ```
 
-5. Read the files that were added, then compose with the named exports. There is no `beui` runtime package. Validate any CLI command returned by MCP against the live install slugs before running it.
+Read the installed named exports and current official usage; there is no `beui`
+runtime package. Official CLI/registry use can require internet access, but it
+never requires the user to deploy a website or MCP. If offline, use an available
+source snapshot and state its version; do not invent a live verification result.
 
-The live registry is the source of truth. Use the table below only to resolve common lookalikes.
+## Coexistence and updates
 
-## Picker
+Both sources may be used in one application. Their source files can overlap even
+when install slugs differ. Review the WHOLE proposed file list before either
+installation and never let an official update overwrite an Asharca-modified
+primitive/helper or a consumer's customization. Keep compatible React, Tailwind,
+and Motion dependencies and the consumer's existing theme/aliases.
+
+Record source repository, ref/commit, entry slug and destination files in the
+consumer's own update notes. Upgrade official entries through official diffs;
+re-export project entries from the chosen asharca/ui revision and compare that
+JSON. Where both the consumer and upstream changed, merge deliberately and test.
+A manifest classifies sources; it is not an automatic three-way merge engine.
+
+Validate with the project's type/lint/unit commands. In asharca/ui, use
+`bun run check` and `bun test`; do not start servers, run builds/browser tests, or
+take screenshots unless the user separately asks. Credentials and model calls
+belong to the host application, not this skill.
+
+## Official component picker
 
 | User asks for | Install `@beui/...` | Avoid |
 | --- | --- | --- |
@@ -49,7 +132,7 @@ The live registry is the source of truth. Use the table below only to resolve co
 | Side panel or app drawer | `drawer` | `bottom-sheet` |
 | App chrome sidebar | `animated-sidebar` | `bounce-sidebar`, `ai-sidebar` |
 | AI files, folders, bookmarks | `ai-sidebar` | `animated-sidebar` |
-| Whole agent workspace | `chat-app` | hand-rolled chat shell |
+| Standard beUI chat layout (no Asharca tabs) | `chat-app` | custom chat shell |
 | Streaming thread that follows tokens | `message-scroller`, `message` | custom scroll math |
 | Just a chat bubble | `message-bubble` | custom bubble |
 | Prompt box or composer | `prompt-input` | textarea plus custom buttons |
@@ -96,7 +179,7 @@ The live registry is the source of truth. Use the table below only to resolve co
 | iOS wheel picker | `wheel-picker` | `select` |
 | macOS dock | `dock` | `expandable-action-bar` |
 | Icon actions with labels | `expandable-action-bar` | `dock` |
-| Overflow action rail | `overflow-actions` | `expandable-action-bar` |
+| Overflow action rail | `overflow-actions` | `dock` |
 | Icon tabs with active label | `expandable-tabs` | `tabs` |
 | Morphing tab content room | `morphing-tabs` | `tabs` |
 | Pill or underline tabs | `tabs` | `expandable-tabs` |
@@ -136,20 +219,20 @@ The live registry is the source of truth. Use the table below only to resolve co
 
 ## Composition rules
 
-- Prefer installed beUI source over custom one-off motion widgets.
+- Prefer installed source and preserve local modifications; choose its update source before running an installer.
 - Import named exports from the files shadcn adds.
 - Use `className` for layout and small styling changes. Do not fork internals unless the user asks.
 - Keep helpers installed by the registry, such as `@/lib/ease`, `@/lib/utils`, and hooks.
 - If adding new motion around beUI components, use `useReducedMotion()` from `motion/react`.
 - Gate decorative hover effects like magnetic pull and tilt behind `useHoverCapable()`.
-- Animate `transform` and `opacity`; avoid layout-property animation.
+- Prefer `transform` and `opacity`. Keep the existing workspace layout/height animations rather than replacing its tested geometry.
 
 ## In this repo
 
-When contributing to beUI itself, follow `AGENTS.md`. A new public component needs source, preview, registry entry, and a passing `bun run check:registry`. Never rename existing `/r/{name}.json` slugs.
+When contributing to asharca/ui, follow `AGENTS.md` and the source policy above. A new public component needs source, preview, registry entry, and a passing `bun run check:registry`. Never rename existing `/r/{name}.json` slugs.
 
 Chart components (`heat-calendar`, `returns-calendar`, `price-target-fan`) live under `/charts` in the docs. Their `@beui` install slugs are unchanged.
 
 Compose charts from their root and exported parts. `HeatCalendar` provides `HeatCalendarGrid`, `HeatCalendarLegend`, and `HeatCalendarTooltip`; `ReturnsCalendar` provides `ReturnsCalendarGrid` and `ReturnsCalendarTooltip`. Put each calendar tooltip inside its grid. Both accept `selection`, `defaultSelection`, and `onSelectionChange`.
 
-`PriceTargetFan` provides Header, Plot, Svg, Axes, History, Targets, Now, Cursor, and Tooltip parts (prefix each with `PriceTargetFan`). Put SVG parts inside Svg and put Tooltip beside Svg inside Plot. Pass `current`, `targets`, and an optional chronological `history` of `{ date: ISOString, price }`; omitted history renders no historical series. Use `active`, `defaultActive`, and `onActiveChange` to control the readout. Each chart exports a `use...` hook for custom descendant content; tooltip children may be a render function. Sample data belongs in the consuming app, not the chart implementation. `HeatCalendar.endDate` uses the UTC calendar date.
+`PriceTargetFan` provides Header, Plot, Svg, Axes, History, Targets, Now, Cursor, Tooltip parts (prefix each with `PriceTargetFan`). Put SVG parts inside Svg and put Tooltip beside Svg inside Plot. Pass `current`, `targets`, and an optional chronological `history` of `{ date: ISOString, price }`; omitted history renders no historical series. Use `active`, `defaultActive`, and `onActiveChange` to control the readout. Each chart exports a `use...` hook for custom descendant content; tooltip children may be a render function. Sample data belongs in the consuming app, not the chart implementation. `HeatCalendar.endDate` uses the UTC calendar date.
