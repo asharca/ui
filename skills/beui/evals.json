@@ -10,9 +10,10 @@
     { "id": "attachments", "prompt": "Chat composer attachments for images, audio, and files.", "expected_slugs": ["attachment-upload"], "not_slugs": ["file-upload"], "expected_sources": { "attachment-upload": "official" } },
     { "id": "project-folder", "prompt": "Add an animated project folder card that opens into details.", "expected_slugs": ["project-folder"], "not_slugs": ["file-upload"], "expected_sources": { "project-folder": "official" } },
     { "id": "command-palette", "prompt": "Add a Cmd+K command palette.", "expected_slugs": ["command-palette"], "not_slugs": ["combobox"], "expected_sources": { "command-palette": "official" } },
-    { "id": "asharca-workspace", "prompt": "Use the Asharca inset shell with sidebar and browser-like tabs, not the generic beUI ChatApp.", "expected_slugs": ["workspace-shell"], "not_slugs": ["chat-app", "tabs"], "expected_sources": { "workspace-shell": "project" } },
-    { "id": "asharca-tabs", "prompt": "Reuse our connected workspace tab bar with pin, close and independent window actions.", "expected_slugs": ["workspace-tab-bar"], "not_slugs": ["tabs", "expandable-tabs"], "expected_sources": { "workspace-tab-bar": "project" } },
-    { "id": "mixed-sources", "prompt": "Build our WorkspaceShell with an unchanged official toast. Do not deploy a registry or MCP.", "expected_slugs": ["workspace-shell", "animated-toast-stack"], "not_slugs": ["chat-app"], "expected_sources": { "workspace-shell": "project", "animated-toast-stack": "official" } },
-    { "id": "ordinary-tabs", "prompt": "I only need the unchanged beUI pill tabs, not the Asharca workspace.", "expected_slugs": ["tabs"], "not_slugs": ["workspace-tab-bar"], "expected_sources": { "tabs": "official" } }
+    { "id": "asharca-workspace", "prompt": "Use the Asharca inset shell with sidebar and browser-like tabs.", "expected_slugs": ["workspace-shell"], "not_slugs": [], "expected_sources": { "workspace-shell": "project" } },
+    { "id": "asharca-tabs", "prompt": "Use the Asharca workspace tab bar with pin, close and independent window actions.", "expected_slugs": ["workspace-tab-bar"], "not_slugs": [], "expected_sources": { "workspace-tab-bar": "project" } },
+    { "id": "mixed-sources", "prompt": "Compose WorkspaceShell with official beUI tabs in a content panel and a toast for saved changes.", "expected_slugs": ["workspace-shell", "tabs", "animated-toast-stack"], "not_slugs": [], "expected_sources": { "workspace-shell": "project", "tabs": "official", "animated-toast-stack": "official" } },
+    { "id": "ordinary-tabs", "prompt": "Use the official beUI pill tabs.", "expected_slugs": ["tabs"], "not_slugs": [], "expected_sources": { "tabs": "official" } },
+    { "id": "official-chat-app", "prompt": "Use the official beUI ChatApp layout.", "expected_slugs": ["chat-app"], "not_slugs": [], "expected_sources": { "chat-app": "official" } }
   ]
 }

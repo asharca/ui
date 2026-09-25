@@ -65,10 +65,10 @@ Shell 默认共享 muted 底色和 12px 内容圆角。标签与正文使用相�
 
 ## Skill 与无需部署的源码安装
 
-本仓库的 `skills/beui/SKILL.md` 采用双来源规则：未修改组件沿用官方
-`@beui` 安装和 API；新增或修改的组件使用当前仓库的实现与使用说明。
-`skills/beui/source-policy.json` 记录定制入口；修改公共依赖时，所有受影响的
-安装项也要归入自有来源。网站展示文案的修改不等同于组件 API 修改。
+本仓库的 `skills/beui/SKILL.md` 保留 beUI 的正常安装与使用方式，补充自定义
+Shell、Sidebar 和 Tab Bar 的 API、源码安装与组合示例。
+官方组件可以照常使用，也可以放进工作区的内容和操作区域。
+`skills/beui/source-policy.json` 是自定义组件导出的入口索引，不设置官方组件禁用规则。
 
 不部署本站或 MCP 也能导出组件。在本仓库根目录执行：
 
@@ -78,9 +78,9 @@ bun scripts/export-component.ts workspace-shell --out /绝对路径/新目录/wo
 ```
 
 然后在已配置 shadcn 的业务项目里，先用同一本地 JSON 的 `--dry-run`、
-`--diff` 检查完整文件和依赖，再执行安装。不要默认覆盖 `lib/utils`、
-`lib/ease`、Motion 组件等共享文件；保留业务定制及现有主题。
-完整示例和手动复制兜底见 [Skill 使用说明](../skills/beui/references/workspace.md)。
+`--diff` 检查文件和依赖，再执行安装。审查 `lib/utils`、`lib/ease`、
+Motion 组件等共享文件的差异，保留业务定制及现有主题。
+完整示例和手动复制方式见 [Skill 使用说明](../skills/beui/references/workspace.md)。
 导出只生成源码 JSON，不启动 Next.js 或 MCP；下载源码和依赖可能仍需联网。
 
 ## Registry 安装（可选的服务方式）
@@ -93,6 +93,29 @@ npx shadcn@latest add http://localhost:3000/r/workspace-tab-bar.json
 ```
 
 Registry 会解析 beUI 源码依赖并一并安装。这里的 `@beui/workspace-shell` **不是**官方 beUI 已发布的命名空间条目。部署自有域名时设置 `NEXT_PUBLIC_SITE_URL=https://你的域名` 后重新构建，工作区文档会使用自有 Registry 地址。原上游组件入口仍保留 `@beui` 官方地址。
+
+### llms.txt 中的工作区链接
+
+这两个 Markdown 路径保持固定：
+
+```text
+/components/blocks/workspace-shell.md
+/components/blocks/workspace-tab-bar.md
+```
+
+域名由 `lib/signature.ts` 的 `pageUrlFor()` 读取 `NEXT_PUBLIC_SITE_URL` 后拼接；
+工作区条目未配置该变量时，回退到 `http://localhost:3000`。
+**它不会根据访问者的域名、Host 请求头或部署平台自动切换地址。**
+
+部署时在构建环境设置实际站点的地址，例如：
+
+```dotenv
+NEXT_PUBLIC_SITE_URL=https://ui.example.com
+```
+
+`ui.example.com` 仅为示例。`app/llms.txt/route.ts` 使用 `force-static`；
+更换部署地址后需重新构建并部署，不能只给已生成的产物修改运行时环境变量。
+这段说明不改变现有 URL 生成逻辑，也不影响无需站点的 Skill 和本地 JSON 导出。
 
 这是项目基线更换，不承诺旧版 `@asharca` 的全部组件路径/API 不变；已安装在其他业务项目的旧源码不会自动被替换。先审查依赖和导入路径，不用全量覆盖升级旧项目。
 

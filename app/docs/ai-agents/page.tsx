@@ -8,7 +8,7 @@ import { GuideShell } from "@/components/app/docs/guide-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_PATH = "/docs/ai-agents";
-const DESCRIPTION = "Choose official beUI components or local Asharca source with one skill; no self-hosted service is required.";
+const DESCRIPTION = "Use official beUI components with additional Asharca workspace APIs, installation steps and examples; no self-hosted service is required.";
 export const metadata: Metadata = {
   title: "AI Agents",
   description: DESCRIPTION,
@@ -26,7 +26,7 @@ const ENDPOINTS = [
   { label: "Raw source", url: "/r/{slug}/raw", desc: "Plain text .tsx ready to drop in." },
 ];
 const MCP_URL = "https://mcp.beui.dev/mcp";
-const MCP_CLI_SNIPPET = `# Optional: unchanged official components only
+const MCP_CLI_SNIPPET = `# Optional official beUI MCP connection
 # Claude Code
 claude mcp add --transport http beui https://mcp.beui.dev/mcp
 
@@ -57,12 +57,12 @@ bun scripts/export-component.ts workspace-shell --out /absolute/new-directory/wo
 npx shadcn@latest add /absolute/new-directory/workspace-shell.json --dry-run
 npx shadcn@latest add /absolute/new-directory/workspace-shell.json --diff
 npx shadcn@latest add /absolute/new-directory/workspace-shell.json`;
-const FETCH_SNIPPET = `// Optional official discovery; do not use it for Asharca modifications.
+const FETCH_SNIPPET = `// Optional official beUI component discovery
 const idx = await fetch('https://beui.dev/r').then((r) => r.json());
 const entry = await fetch(\`https://beui.dev/r/\${slug}\`).then((r) => r.json());
-// Inspect every source file and dependency before writing or installing.
-// Preserve existing helpers, local changes, aliases and theme configuration.`;
-const SHADCN_SNIPPET = `# Unchanged official component
+// Inspect source files and dependencies before installing.
+// Preserve the project's local changes, aliases and theme configuration.`;
+const SHADCN_SNIPPET = `# Official beUI component
 npx shadcn@latest view @beui/animated-toast-stack
 npx shadcn@latest add @beui/animated-toast-stack --dry-run
 npx shadcn@latest add @beui/animated-toast-stack
@@ -91,21 +91,21 @@ export default function AIAgentsPage() {
         <h1 className="text-3xl font-medium tracking-tight text-foreground">For AI agents</h1>
         <CopyPage pageUrl={`${SITE_URL}${PAGE_PATH}`} markdownPath={`${PAGE_PATH}.md`} componentName="Agent Guide" />
       </div>
-      <p className="mt-3 max-w-2xl text-muted-foreground">Use one skill to choose between unchanged official components and Asharca source. The local-source workflow does not require a deployed website or MCP.</p>
+      <p className="mt-3 max-w-2xl text-muted-foreground">Use official beUI components as usual, with additional installation and usage examples for the Asharca workspace. These components can be freely combined without deploying your own website or MCP.</p>
     </header>
 
     <h2 id="agent-skill" className={heading}>Agent skill</h2>
-    <p className="mt-2 text-muted-foreground">This repository&apos;s skill keeps official installation and usage for unchanged beUI components. Added or modified components, including the Workspace Shell and Tab Bar, use asharca/ui source and its bundled local usage guide. Existing project customizations take precedence.</p>
+    <p className="mt-2 text-muted-foreground">This skill supplements the normal beUI instructions with WorkspaceShell, WorkspaceSidebar and WorkspaceTabBar APIs and examples. Choose the components that fit your interface; official beUI components remain available throughout the application.</p>
     <p className="mt-4 text-sm text-muted-foreground">After the changes are merged into the default branch:</p>
     <div className="mt-4"><CodeBlock code={GITHUB_SKILL_INSTALL} lang="bash" filename="terminal" /></div>
-    <p className="mt-4 text-sm text-muted-foreground">Before merging, install the skill from the selected local branch. A skill installation does not copy the complete component repository:</p>
+    <p className="mt-4 text-sm text-muted-foreground">Before merging, install from the selected local branch. A skill installation supplies documentation, not the complete component repository:</p>
     <div className="mt-4"><CodeBlock code={LOCAL_SKILL_SNIPPET} lang="bash" filename="local-skill" /></div>
-    <p className="mt-4 text-sm text-muted-foreground">From that source checkout, export a local registry item; then review and install the JSON in your consuming project:</p>
+    <p className="mt-4 text-sm text-muted-foreground">For a custom workspace component, export its local registry item, then review and install the JSON in the consuming project:</p>
     <div className="mt-4"><CodeBlock code={LOCAL_COMPONENT_SNIPPET} lang="bash" filename="local-component" /></div>
-    <p className="mt-4 text-sm text-muted-foreground">Read skills/beui/source-policy.json and its bundled references/workspace.md before choosing a source. The exporter writes files only; it does not start a server. Official and project components may share helpers, so review every affected file before either installation.</p>
+    <p className="mt-4 text-sm text-muted-foreground">The bundled references/workspace.md contains the component APIs and a minimal composition. source-policy.json is the custom export inventory, not a selection rule. The exporter does not start a server. Review shared-file differences and preserve local edits during installation.</p>
 
     <h2 id="mcp-server" className={heading}>MCP server (optional)</h2>
-    <p className="mt-2 text-muted-foreground">For unchanged official components, the upstream beUI MCP can list, search and inspect its catalog. It does not serve Asharca modifications and is not required by the skill. Hosted at <code className={inlineCode}>{MCP_URL}</code>.</p>
+    <p className="mt-2 text-muted-foreground">The official beUI MCP provides discovery and source inspection for its hosted catalog. Connecting it is optional; the custom workspace examples and local export work independently. Hosted at <code className={inlineCode}>{MCP_URL}</code>.</p>
     <div className="mt-4"><CodeBlock code={MCP_CLI_SNIPPET} lang="bash" filename="terminal" /></div>
     <p className="mt-4 text-muted-foreground">Any other client: add it manually to your MCP config.</p>
     <div className="mt-4"><CodeBlock code={MCP_MANUAL_SNIPPET} lang="json" filename="mcp.json" /></div>
@@ -120,11 +120,11 @@ export default function AIAgentsPage() {
     </ul>
 
     <h2 id="agent-flow" className={heading}>Agent flow</h2>
-    <p className="mt-2 text-muted-foreground">Choose ownership first. The following is an optional upstream discovery example, not a way to retrieve local Asharca changes. Inspect complete dependency graphs before merging files.</p>
+    <p className="mt-2 text-muted-foreground">Explore official components with the catalog below. For the custom workspace, the bundled reference describes its APIs and local export. Compose either or both as needed.</p>
     <div className="mt-4"><CodeBlock code={FETCH_SNIPPET} lang="ts" filename="agent.ts" /></div>
 
     <h2 id="shadcn-flow" className={heading}>shadcn flow</h2>
-    <p className="mt-2 text-muted-foreground">Unchanged official components retain their official install commands. For local modifications use the exported JSON above. Preserve the target app&apos;s theme and existing helpers.</p>
+    <p className="mt-2 text-muted-foreground">Official components retain their normal install commands. The local JSON above provides the additional workspace components. Review changes to shared helpers and retain the target app&apos;s theme.</p>
     <div className="mt-4"><CodeBlock code={SHADCN_SNIPPET} lang="bash" filename="terminal" /></div>
 
     <h2 id="entry-shape" className={heading}>Entry shape</h2>

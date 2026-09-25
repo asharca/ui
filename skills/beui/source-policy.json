@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "description": "Reference inventory for exporting Asharca custom components. Official beUI components remain available for normal use and composition.",
   "upstream": {
     "repository": "starc007/ui-components",
     "baseline": "1e23f4b10a404c17d9649086cf561e152527e2de",
@@ -28,12 +29,5 @@
         "exports": ["WorkspaceTabBar"]
       }
     ]
-  },
-  "rules": {
-    "existingLocalChanges": "preserve-and-review",
-    "modifiedTransitiveDependency": "project",
-    "unknownSource": "inspect-before-install",
-    "sameNamedOfficialFallback": false,
-    "selfHostedServiceRequired": false
   }
 }

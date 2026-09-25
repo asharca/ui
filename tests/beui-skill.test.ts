@@ -45,12 +45,12 @@ describe("beUI skill", () => {
     expect(readme).not.toContain("npx skills add https://beui.dev");
   });
 
-  test("keeps official discovery available after the project source decision", async () => {
+  test("keeps normal official discovery alongside custom documentation", async () => {
     const skill = await readFile(SKILL_PATH, "utf8");
     expect(existsSync(CATALOG_PATH)).toBe(false);
     expect(skill).toContain("curl -fsS https://beui.dev/r/registry.json");
     expect(skill).toContain("items[].name");
-    expect(skill).toContain("For unchanged components, the live registry is the source of truth");
+    expect(skill).toContain("registry is the source of truth for official install names");
     expect(skill).toContain("source-policy.json");
     expect(skill).not.toContain("!`curl");
     expect(skill).not.toContain("when this skill loads");

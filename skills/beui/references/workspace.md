@@ -1,13 +1,13 @@
-# Asharca components: local installation and usage
+# Asharca workspace components
 
-This reference ships with the `beui` skill from **asharca/ui**. It covers only
-Asharca additions/modifications; use official usage for unchanged beUI primitives.
-The versioned `source-policy.json` beside the skill classifies the current entries.
+This reference supplements the normal beUI instructions with custom components
+from **asharca/ui**. Official beUI components can be freely combined with these
+additions. `source-policy.json` beside the skill is a custom export inventory
+with source paths and revision information.
 
 ## Obtain source without deploying a service
 
-Prefer a local checkout the user supplies. Otherwise, from a directory outside
-the business project, use the branch in the policy (currently not yet merged):
+Use a local checkout supplied by the user, or obtain the current work branch:
 
 ```bash
 git clone --single-branch --branch rebuild/beui-workspace https://github.com/asharca/ui.git asharca-ui-source
@@ -16,25 +16,22 @@ git rev-parse HEAD
 bun install --frozen-lockfile
 ```
 
-After reviewing the chosen revision, use the same snapshot for all source files.
-A downloaded skill may outlive this branch: consult the repository's current refs
-and ask for/resolve the intended revision rather than silently using an older
-main. Updating an existing checkout must preserve local work; never force-reset.
+The branch is not yet merged. Select the appropriate repository revision and use
+that snapshot consistently; keep local work when updating an existing checkout.
 
-Export a self-contained local registry item; no dev server, build, or MCP runs:
+Export a self-contained local registry item; no server, build or MCP is needed:
 
 ```bash
 bun scripts/export-component.ts workspace-shell --out /absolute/new-directory/workspace-shell.json
-# Only the tab bar, when no shell/sidebar is needed:
+# Standalone tab bar:
 bun scripts/export-component.ts workspace-tab-bar --out /absolute/new-directory/workspace-tab-bar.json
 ```
 
-The output contains real source plus all internal dependencies, preserves MIT
-notices, and uses the existing shadcn file targets. Existing output files are not
-overwritten. Source dependencies are read locally; obtaining Bun/npm packages
-may require network access. No claim of a fully offline package installation.
+The output contains the component and its internal dependencies, MIT notices and
+shadcn file targets. Existing output files are preserved. Downloading the source
+or Bun/npm packages may require network access.
 
-In the consumer, read its `components.json` and review installation before writing:
+In the consumer, read `components.json` and review the proposed installation:
 
 ```bash
 npx shadcn@latest add /absolute/new-directory/workspace-shell.json --dry-run
@@ -42,35 +39,34 @@ npx shadcn@latest add /absolute/new-directory/workspace-shell.json --diff
 npx shadcn@latest add /absolute/new-directory/workspace-shell.json
 ```
 
-The command runs in the consumer, not asharca/ui. Never pass raw .tsx as a registry
-JSON file. Do not use `--overwrite` or accept replacement of shared helpers without
-review. Older/custom CLIs may require a compatible shadcn version or manual alias
-mapping; inspect their output instead of claiming a successful install.
+The command runs in the consumer, not asharca/ui. The input is the exported JSON.
+Review shared helpers and local changes before accepting file replacements. Use
+compatible dependencies and adapt the targets to the consumer's actual aliases.
 
-## Components and exact boundaries
+## Component APIs
 
-`WorkspaceShell` exports from `components/workspace/workspace-shell.tsx`; it
-extends beUI `AnimatedSidebarProviderProps` (`open`, `defaultOpen`, `onOpenChange`,
-mobile state, etc.). It has `sidebar`, `tabBar`, `mobileHeader`, `header`, `footer`,
-`scroll` and `contentProps` slots. Set a height on its container. `scroll="content"`
-scrolls the content pane; `scroll="none"` lets an editor/chat child own scrolling.
-It does NOT use the removed legacy `collapsed` / `onCollapsedChange` API.
+`WorkspaceShell` exports from `components/workspace/workspace-shell.tsx` and
+extends beUI `AnimatedSidebarProviderProps` (`open`, `defaultOpen`, `onOpenChange`
+and mobile state). Its slots are `sidebar`, `tabBar`, `mobileHeader`, `header`,
+`footer`, `scroll` and `contentProps`. Set a height on the container.
+`scroll="content"` scrolls the content pane; `scroll="none"` lets a child editor
+or chat own its scrolling.
 
-`WorkspaceSidebar` takes `groups`, `activeId`, `onSelect`, `title`, `footer`,
-`className`. It consumes the shell's beUI provider; do not create a second provider.
-It is bundled with `workspace-shell`, not a separately advertised official slug.
+`WorkspaceSidebar` accepts `groups`, `activeId`, `onSelect`, `title`, `footer`
+and `className`. It consumes the shell's provider and is included in the
+`workspace-shell` install entry.
 
-`WorkspaceTabBar` takes `tabs`, `activeTabId`, `onSelect`, and optional callbacks
+`WorkspaceTabBar` accepts `tabs`, `activeTabId`, `onSelect` and optional callbacks
 `onClose`, `onReorder(sourceId, targetId)`, `onPinnedChange(id, pinned)`,
-`onOpenInNewWindow`, `onNewTab`. `WorkspaceTab` supports `id`, `title`, `icon`,
-`pinned`, `dirty`, `closable`, `detachable`, `tabId`, `panelId`. It is not the
-ordinary beUI `Tabs` API. Pinning, ordering, draft storage and dirty-close
-confirmation are host-owned; do not invent server-side behavior.
+`onOpenInNewWindow` and `onNewTab`. `WorkspaceTab` supports `id`, `title`, `icon`,
+`pinned`, `dirty`, `closable`, `detachable`, `tabId` and `panelId`.
+Pinning, ordering, draft persistence and dirty-close confirmation are owned by
+the host application.
 
 ## Minimal composition
 
-Adapt these imports to the consumer's actual aliases. This is source composition,
-not an npm package import. Keep inactive panels mounted to preserve child state.
+Adapt these imports to the consumer's actual aliases. Keep inactive panels
+mounted to preserve their child state.
 
 ```tsx
 "use client";
@@ -104,31 +100,27 @@ export default function Workspace() {
 ```
 
 For mobile, supply `mobileHeader` with beUI `AnimatedSidebarTrigger` inside the
-same provider, as shown in the full repository preview. For a complete working
-example read `components/previews/blocks/workspace-shell.preview.tsx` and
-`docs/workspace.md` from the selected revision; do not copy private demo imports.
-Multiple workspaces must generate unique tab/panel IDs rather than reusing this
-single-instance example's literals.
+same provider. The complete example is in
+`components/previews/blocks/workspace-shell.preview.tsx`; additional details are
+in `docs/workspace.md`. Generate unique tab/panel IDs for multiple workspaces.
+Official beUI components can be used in any of the content or action slots.
 
-`openWorkspaceWindow` allows same-origin HTTP(S) URLs only and must run in a user
-activation. A blocked popup returns null; preserve the original tab/draft. Copy
-only minimal approved state, never credentials, the whole store or model secrets.
+`openWorkspaceWindow` accepts same-origin HTTP(S) URLs and runs during user
+activation. A blocked popup returns null; preserve the original tab and draft.
+Transfer only the intended panel state, rather than credentials or the whole store.
 
-## Manual fallback and future modifications
+## Manual installation and updates
 
 Without Bun, inspect `lib/registry.ts` for the entry, main file and `extraFiles`.
-Recursively resolve static imports, re-exports and dynamic imports (`@/` and
-relative paths) using `lib/source-files.ts` rules. Copy the complete graph from
-the SAME source revision, map aliases, preserve existing utilities, and install
-the declared external packages at compatible versions. Do not copy site code,
-analytics, globals/reset or the entire app. Read `app/docs/theme/page.tsx` for
-required theme tokens and merge only missing tokens into the consumer's theme.
+Resolve static imports, re-exports and dynamic imports recursively using
+`lib/source-files.ts`. Copy the complete graph, map aliases, preserve existing
+utilities and add compatible external dependencies. Merge the theme tokens
+needed by the components into the consumer's existing theme.
 
-When any official implementation/helper is intentionally modified, add the
-impacted install slugs to `source-policy.json` with their real category/files and
-update this reference/evals. Use the same exporter for those entries. Website-only
-copy changes do not convert an unchanged primitive into a project-owned API.
+Add future custom components to the export inventory and document their APIs
+here or in another bundled reference. The inventory describes custom additions;
+it does not control which official components an application may use.
 
-Validate the consumer's types/lint/unit tests and inspect its diff; record the
-source commit and installed file paths. Update by re-exporting and merging, not
-by replacing all shared files with the latest official version.
+For updates, export from the desired revision, compare the files, and merge the
+changes appropriate to the project. Check types, lint and unit tests. Record the
+source commit and destination paths to make future updates easier.

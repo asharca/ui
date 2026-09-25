@@ -52,11 +52,12 @@ npx skills add asharca/ui --skill beui
 npx skills add /实际路径/asharca-ui-source/skills/beui --skill beui
 ```
 
-Skill 保留 `beui` 安装名，但采用双来源策略：**未修改组件沿用官方
-`@beui/...` 安装和使用方式；新增或修改组件使用 asharca/ui 的源码及接口**。
-已有业务定制优先保留，不用上游同名组件覆盖。Skill 本身不要求部署网站或 MCP。
+Skill 保留 `beui` 安装名，在官方组件的正常使用说明上，补充 **Workspace Shell、
+Workspace Sidebar 和 Workspace Tab Bar** 的安装、API 与组合示例。
+官方组件继续使用 `@beui/...` 和官方文档，可以与自定义组件自由组合；
+Skill 不设置禁止使用官方组件或强制判断组件归属的规则，也不要求部署网站或 MCP。
 
-在已下载的当前分支源码根目录，可导出自有组件的完整安装 JSON：
+在已下载的当前分支源码根目录，可导出自定义组件的完整安装 JSON：
 
 ```bash
 bun install --frozen-lockfile
@@ -64,7 +65,9 @@ bun scripts/export-component.ts workspace-shell --out /绝对路径/新目录/wo
 ```
 
 然后在业务项目中，先用 `shadcn add` 加该 JSON 的 `--dry-run` / `--diff`
-检查所有文件和共享依赖，再确认安装。导出不启动站点；下载源码和包仍可能需要联网。
+检查文件与共享依赖，再确认安装，保留现有主题和业务定制。
+导出不启动站点；下载源码和包仍可能需要联网。
 
-来源清单：[source-policy.json](skills/beui/source-policy.json)。完整安装、组合、
-更新和手动复制说明：[Skill 本地参考](skills/beui/references/workspace.md)。
+自定义组件索引：[source-policy.json](skills/beui/source-policy.json)，仅供源码导出和
+查阅，不作为官方组件的使用限制。完整安装与组合示例见
+[Skill 工作区说明](skills/beui/references/workspace.md)。

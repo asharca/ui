@@ -9,12 +9,14 @@ test("the exporter cannot mistake a consumer or unrelated directory for its sour
   expect(() => assertSourceCheckout(os.tmpdir())).toThrow("source checkout");
 });
 
-test("the downloadable agent guide preserves the same two-source workflow", () => {
+test("the downloadable agent guide supplements official use with custom components", () => {
   const guide = buildGuideMarkdown("ai-agents");
-  expect(guide).toContain("Unchanged components keep official @beui installation");
+  expect(guide).toContain("Official beUI components remain available");
   expect(guide).toContain("source-policy.json");
   expect(guide).toContain("bun scripts/export-component.ts workspace-shell");
-  expect(guide).toContain("MCP server (optional, official components only)");
+  expect(guide).toContain("MCP server (optional)");
   expect(guide).toContain("--dry-run");
   expect(guide).toContain("--diff");
+  expect(guide).not.toContain("Choose component ownership first");
+  expect(guide).not.toContain("do not substitute a similar official component");
 });

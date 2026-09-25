@@ -88,10 +88,10 @@ const visible = {
   "ai-agents": {
     title: "Agent Guide",
     description:
-      "Choose official beUI components or local Asharca source with one skill; no self-hosted service is required.",
+      "Use official beUI components with additional Asharca workspace APIs, installation steps and examples; no self-hosted service is required.",
     body: `## Agent skill
 
-Use the asharca/ui edition of the beui skill. Unchanged components keep official @beui installation and usage. Added or modified components use this repository, its source policy, and its local usage reference. Existing local customizations take precedence.
+The asharca/ui edition of the beui skill supplements normal beUI usage with WorkspaceShell, WorkspaceSidebar and WorkspaceTabBar installation, APIs and examples. Official beUI components remain available and can be freely combined with these additions. Choose components that fit the interface and the user's preferences.
 
 After the changes are merged into the default branch:
 
@@ -99,7 +99,7 @@ After the changes are merged into the default branch:
 ${GITHUB_SKILL_INSTALL}
 \`\`\`
 
-## Project components without deployment
+## Custom components without deployment
 
 Before this branch is merged, clone it and install the skill from the local checkout:
 
@@ -109,7 +109,7 @@ git clone --single-branch --branch rebuild/beui-workspace https://github.com/ash
 npx skills add /absolute/path/asharca-ui-source/skills/beui --skill beui
 \`\`\`
 
-A skill install does not copy the whole component repository. From the source checkout:
+A skill install supplies documentation, not the whole component repository. From the source checkout:
 
 \`\`\`bash
 git rev-parse HEAD
@@ -117,7 +117,7 @@ bun install --frozen-lockfile
 bun scripts/export-component.ts workspace-shell --out /absolute/new-directory/workspace-shell.json
 \`\`\`
 
-Then in the configured consumer, review the complete proposed changes before installing:
+Then in the configured consumer, review the proposed changes before installing:
 
 \`\`\`bash
 npx shadcn@latest add /absolute/new-directory/workspace-shell.json --dry-run
@@ -125,11 +125,11 @@ npx shadcn@latest add /absolute/new-directory/workspace-shell.json --diff
 npx shadcn@latest add /absolute/new-directory/workspace-shell.json
 \`\`\`
 
-The exporter includes all required source files, helpers and MIT license without starting Next.js or MCP. See skills/beui/source-policy.json and skills/beui/references/workspace.md for exact APIs and update rules. Ordinary unchanged components still use official @beui commands. Shared helpers and local customizations must not be overwritten by either source.
+The exporter includes all required source files, helpers and the MIT license without starting Next.js or MCP. The custom entry inventory is skills/beui/source-policy.json; APIs and examples are in skills/beui/references/workspace.md. The inventory is reference data, not a restriction on using official components. Review shared-file changes and preserve the consuming project's customizations.
 
-## MCP server (optional, official components only)
+## MCP server (optional)
 
-This upstream service does not contain Asharca workspace modifications. The local skill workflow does not require MCP. Connect the hosted beUI MCP server at \`https://mcp.beui.dev/mcp\` only when you need the official catalog.
+The official beUI MCP provides discovery and source inspection for its hosted catalog. Connecting it is optional; custom workspace examples and local export work independently. The hosted address is \`https://mcp.beui.dev/mcp\`.
 
 \`\`\`bash
 # Claude Code
@@ -171,20 +171,20 @@ Available tools: \`list_components\`, \`search_components\`, \`get_component\`, 
 
 ## Agent flow
 
-Choose component ownership first. For unchanged official components only:
+Explore official components through their published catalog:
 
 1. Fetch \`https://beui.dev/r\` to discover components.
-2. Select the closest item by its published name and description.
+2. Select an item by its published name and description.
 3. Fetch \`https://beui.dev/r/{slug}\` for source, files, and dependencies.
-4. Inspect all files and merge them into the consumer's actual paths, preserving local changes.
+4. Review the files and merge them into the consumer's paths, preserving local changes.
 5. Install compatible external dependencies from the response.
 
-Use the local export above for Asharca source; do not substitute a similar official component.
+For the additional Asharca workspace components, the local export and bundled reference above provide the source and APIs. Compose official and custom components together as needed.
 
 ## shadcn flow
 
 \`\`\`bash
-# Unchanged official component
+# Official beUI component
 npx shadcn@latest view @beui/animated-toast-stack
 npx shadcn@latest add @beui/animated-toast-stack --dry-run
 npx shadcn@latest add @beui/animated-toast-stack
