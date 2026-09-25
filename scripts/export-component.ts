@@ -1,14 +1,22 @@
 import { execFileSync } from "node:child_process";
+import { realpathSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { allShadcnTargets, buildShadcnItem } from "@/lib/registry-server";
 import { withSignature } from "@/lib/signature";
 import policy from "@/skills/beui/source-policy.json";
 
+export function assertSourceCheckout(cwd = process.cwd()) {
+  if (realpathSync(cwd) !== realpathSync(path.resolve(import.meta.dir, ".."))) {
+    throw new Error("Run the exporter from the asharca/ui source checkout, not the consuming project.");
+  }
+}
+
 /** Export reviewed project-owned source without a Next server or remote MCP.
  * Uses the same transitive dependency graph and alias targets as the registry.
  */
 export async function createLocalRegistryItem(slug: string) {
+  assertSourceCheckout();
   const owned = policy.project.entries.find((entry) => entry.slug === slug);
   if (!owned) {
     throw new Error(`Not a project-owned install entry: ${slug}. Check source-policy.json; unchanged components use the official registry.`);
