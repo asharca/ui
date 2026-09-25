@@ -1,8 +1,8 @@
 import ts from "typescript";
 import { staticResourcePath, withBasePath } from "./paths";
 
-/** Apply deployment-only URL changes to the temporary site, never library
- * components or the published registry source. Next Link handles its own prefix. */
+/** Apply deployment-only URL changes to the temporary site, never the source
+ * checkout or the published registry source. Next Link handles its own prefix. */
 export function transformSiteSource(source: string, filename: string, siteUrl: string, basePath: string) {
   const kind = /\.[jt]sx$/.test(filename) ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, kind);
@@ -41,6 +41,16 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
       if (ts.isTemplateExpression(node) && node.head.text.startsWith("/api/og")) {
         return ts.factory.createStringLiteral(`${siteUrl}/api/og.png`);
       }
+      if (ts.isTemplateExpression(node) && node.head.text === "/r/" && node.templateSpans.length === 1) {
+        const span = node.templateSpans[0];
+        const tail = span.literal.text === "" ? "/detail.json" : span.literal.text === "/raw" ? "/raw.txt" : span.literal.text;
+        return ts.factory.updateTemplateExpression(node, ts.factory.createTemplateHead(`${siteUrl}/r/`), [
+          ts.factory.updateTemplateSpan(span, span.expression, ts.factory.createTemplateTail(tail)),
+        ]);
+      }
+      if (ts.isTemplateExpression(node) && node.head.text === "/" && node.templateSpans.length === 1 && node.templateSpans[0].literal.text === ".json") {
+        return ts.factory.updateTemplateExpression(node, ts.factory.createTemplateHead(`${siteUrl}/`), node.templateSpans);
+      }
       // The copy menu uses a native anchor with a variable Markdown path.
       if (ts.isPropertyAssignment(node) && node.name.getText(file) === "href" && ts.isIdentifier(node.initializer) && node.initializer.text === "markdownPath") {
         return ts.factory.updatePropertyAssignment(node, node.name, ts.factory.createConditionalExpression(
@@ -50,11 +60,12 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
           ts.factory.createToken(ts.SyntaxKind.ColonToken), node.initializer,
         ));
       }
-      // Endpoint descriptors in the agent guide and static manifest fields.
+      // Endpoint descriptors, demo action defaults and static manifest fields.
       if (ts.isStringLiteral(node) && ts.isPropertyAssignment(node.parent)) {
         const name = node.parent.name.getText(file);
         if (name === "url" && node.text.startsWith("/r")) return ts.factory.createStringLiteral(staticResourcePath(node.text));
-        if (name === "src" || name === "start_url" || name === "manifest") return ts.factory.createStringLiteral(prefix(node.text));
+        if (name === "src" || name === "start_url" || name === "manifest" || name === "homeHref" || name === "browseHref") return ts.factory.createStringLiteral(prefix(node.text));
+        if (name === "url" && filename.replace(/\\/g, "/").includes("/components/previews/")) return ts.factory.createStringLiteral(prefix(node.text));
       }
       return ts.visitEachChild(node, visit, context);
     };

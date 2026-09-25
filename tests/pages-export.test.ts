@@ -42,10 +42,35 @@ describe("GitHub Pages publication adapter", () => {
     expect(output).toContain('https://beui.dev/r');
   });
   test("uses a static OpenGraph resource and a scoped web manifest", () => {
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: TS source fixture, not an interpolated test string.
     const input = 'const image = `/api/og?component=${slug}`; const manifest = { start_url: "/", icons: [{src: "/beui-mark.png"}] };';
     const output = transformSiteSource(input, "test.ts", "https://asharca.github.io/ui", "/ui");
     expect(output).toContain('https://asharca.github.io/ui/api/og.png');
     expect(output).toContain('start_url: "/ui/"');
     expect(output).toContain('src: "/ui/beui-mark.png"');
+  });
+  test("publishes absolute metadata URLs for static registry resources", () => {
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Intentionally exercise template expressions in source.
+    const input = 'const detail = `/r/${slug}`; const raw = `/r/${slug}/raw`; const item = `/r/${slug}.json`; const directory = `/${slug}.json`;';
+    const output = transformSiteSource(input, "test.ts", "https://asharca.github.io/ui", "/ui");
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Check the printed source expression.
+    expect(output).toContain('https://asharca.github.io/ui/r/${slug}/detail.json');
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Check the printed source expression.
+    expect(output).toContain('https://asharca.github.io/ui/r/${slug}/raw.txt');
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Check the printed source expression.
+    expect(output).toContain('https://asharca.github.io/ui/r/${slug}.json');
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Check the printed source expression.
+    expect(output).toContain('https://asharca.github.io/ui/${slug}.json');
+  });
+  test("scopes demo links and 404 defaults to the project base path", () => {
+    const input = 'const links = { homeHref: "/", browseHref: "/components/motion", url: "/docs/ai-agents" };';
+    const output = transformSiteSource(input, "/stage/components/previews/demo.tsx", "https://asharca.github.io/ui", "/ui");
+    expect(output).toContain('homeHref: "/ui/"');
+    expect(output).toContain('browseHref: "/ui/components/motion"');
+    expect(output).toContain('url: "/ui/docs/ai-agents"');
+  });
+  test("keeps TypeScript generic functions intact instead of parsing them as JSX", () => {
+    const output = transformSiteSource('const pick = <T>(value: T) => value;', "test.ts", "https://asharca.github.io/ui", "/ui");
+    expect(output).toContain('const pick = <T>(value: T) => value;');
   });
 });
