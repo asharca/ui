@@ -1,137 +1,73 @@
-# Asharca UI
+# Asharca Workspace · based on beUI
 
-简约的 React 组件源码。预览、安装，然后在自己的项目中修改。
+项目仓库：[asharca/ui](https://github.com/asharca/ui)。项目链接、Star 统计和 Skill 安装均使用此仓库；上游来源与 MIT 署名另行保留。
 
-[组件网站](https://asharca.github.io/ui/) · [安装指南](https://asharca.github.io/ui/docs/installation/) · [更新指南](https://asharca.github.io/ui/docs/updating/) · [llms.txt](https://asharca.github.io/ui/llms.txt)
+以 [beUI](https://github.com/starc007/ui-components) 的完整 Next.js / Bun 源码为基础，仅增加 Asharca 风格的 **Workspace Shell、Workspace Tab Bar 及其侧栏组合**。上游 MIT 许可和组件实现保留，不再叠加旧版 Vite/Registry 或复制 Agent 组件的架构。
 
-## 使用
+## 本地调试
 
-需要 React 19、TypeScript、Tailwind CSS 4，以及已初始化的 shadcn 项目。
+Node.js 24，Bun 1.3.14：
 
-```sh
-npx shadcn@latest init
-npx shadcn@latest add https://asharca.github.io/ui/r/button.json
+```bash
+bun install --frozen-lockfile
+bun run dev
 ```
 
-```tsx
-import { Button } from "@/components/asharca/button";
+打开 **http://localhost:3000/workspace**。
 
-export function Example() {
-  return <Button>开始使用</Button>;
-}
+组件文档：`/components/blocks/workspace-shell`、`/components/blocks/workspace-tab-bar`。
+
+```bash
+bun run check
+bun test
+(cd mcp && bun install --frozen-lockfile && bun run typecheck)
 ```
 
-安装路径遵循 `components.json` 的 `aliases.components`，上面的 `@/` 是示例别名。每个安装条目包含完整的关联文件和所需依赖，不覆盖已有主题。组件页面提供同源的 CLI、手动安装、用法和源码。
+默认 CI 只执行静态检查和代码测试，不启动站点、生产构建或浏览器，也不截图。浏览器回归脚本保留，仅在明确需要时手动执行。
 
-分支新加入的组件需要合并并部署后才会出现在上述线上安装源；PR 构建不会自动部署。
+布局、组件属性、独立窗口、Registry 安装与部署说明见 [docs/workspace.md](docs/workspace.md)。原始 beUI 项目说明见 [README.beui.md](README.beui.md)。
 
-## 更新已安装的组件
+## 源码与历史
 
-源码属于业务项目，升级 Motion、Radix 等 npm 依赖不会自动更新本地组件的样式、布局或动画。`shadcn@latest` 是 CLI 版本，不是 Asharca 组件版本。
+上游固定提交：`starc007/ui-components@1e23f4b10a404c17d9649086cf561e152527e2de`。
 
-先保存现有工作、确认工作区干净，在**业务项目中**创建更新分支。已有 `components.json` 不要重新初始化，不要为了更新组件重置主题或切换预设。
+保留当前 GitHub 仓库身份，采用上游源码树重建；这**没有建立 GitHub 原生的 fork-network 关系**。重建前主分支与 Agent 迁移分别保留为：
 
-```sh
-git status --short
-git switch -c chore/update-asharca-ui
-git rev-parse HEAD
+- `archive/pre-beui-rebuild-main-2026-09-24`
+- `archive/pre-beui-rebuild-agents-2026-09-24`
 
-npx shadcn@latest add https://asharca.github.io/ui/r/button.json --dry-run
-npx shadcn@latest add https://asharca.github.io/ui/r/button.json --diff button.tsx
-npx shadcn@latest add https://asharca.github.io/ui/r/button.json --diff utils.ts
-npx shadcn@latest add https://asharca.github.io/ui/r/button.json --view button.tsx
+细节见 [UPSTREAM.md](UPSTREAM.md)。不继承 beUI 的线上部署凭据或统计脚本，当前 CI 只验证，不自动部署。工作区示例是本地状态演示，不连接真实模型或 MCP 服务。
+
+## 本仓库的 beUI Skill
+
+合并到默认分支后，可直接安装：
+
+```bash
+npx skills add asharca/ui --skill beui
 ```
 
-根据项目包管理器，也可用 `pnpm dlx shadcn@latest`、现代 Yarn 的 `yarn dlx shadcn@latest` 或 `bunx --bun shadcn@latest`。配置过 `registries.@asharca` 后可将完整 URL 换成 `@asharca/button`；不要省略来源写成官方的 `add button`。
+合并前，从当前分支的本地源码目录安装（在业务项目中执行，替换实际路径）：
 
-**检查整个依赖闭包，而不只看一个组件文件。** Button 包含 `utils.ts`，WorkspaceShell 包含侧栏、标签栏及其关联组件。限定 `--diff` 的文件，不会限定随后安装的覆盖范围。
-
-有定制时，逐文件合并上游变更，保留业务 API、事件、状态、主题和布局；没有基线或冲突无法确定时，先人工确认。只有确认完整影响范围都可以覆盖、并获得明确许可后，才使用 `add <同一条目地址> --overwrite`。它是覆盖，不是自动合并，不应出现在默认更新命令中。
-
-检查 `package.json`、锁文件与新增文件，运行业务项目已有的类型检查、测试和构建，保留独立更新提交。回退时同时考虑源码、依赖和锁文件，避免丢弃其他业务修改。当前 HTTP Registry 跟随部署变化，不提供不可变版本快照；请保留安装后的源码及锁文件以便复现。
-
-[完整更新指南](https://asharca.github.io/ui/docs/updating/)包括无定制更新、保留定制、可复制的 Agent 提示词、验证、回退和常见问题。网页与导出的 Markdown 来自同一份 `docs/updating.md` 模板，构建时解析安装源。工具行为参考 [官方 CLI](https://ui.shadcn.com/docs/cli) 和 [官方更新工作流](https://github.com/shadcn-ui/ui/blob/main/skills/shadcn/SKILL.md#updating-components)。
-
-## 组件
-
-当前目录包含 **62 项**：恢复重写前全部 55 项组件入口，保留源码站新增的 6 项组件，并新增 WorkspaceShell。组件统一使用当前的中性色、圆角、边框与交互风格，不加载旧展示站样式。
-
-| 分类 | 数量 | 内容 |
-| --- | ---: | --- |
-| 基础组件 | 14 | 按钮、图标按钮、输入、多行输入、搜索、单选、多选、选项卡片、开关、选择器、滑块、Tabs、Accordion |
-| 表单与反馈 | 10 | Field、提交与确认提交、复制、徽标、状态徽标、Alert、进度、Skeleton、Spinner |
-| 数据与布局 | 12 | Card、Page、Section、Panel、Toolbar、EmptyState、Entity、Avatar、DataTable、ChartContainer、ContentPage、RotatingHeadline |
-| 导航与浮层 | 10 | NavigationTabs、Chip、Breadcrumbs、Pagination、Dialog、DropdownMenu、ContextMenu、HoverCard、Popover、Tooltip |
-| AI 组件 | 11 | PromptInput、Message、ToolResult、ApprovalCard、ChatPanel、SafeStreamdown、ToolCallCard、ChatComposerToolbar、ConversationSidebar、ChatShell、ChatThread |
-| 工作区 | 5 | WorkspaceShell、WorkspaceTabBar、WorkspaceSidebar、SidebarActionRail、ToolPlaneLogo |
-
-表格、图表、聊天与工作区使用适合复杂内容的宽画布；预览和安装源码一致，Usage 读取实际示例。
-
-WorkspaceShell 提供 ToolPlane 式内嵌布局：侧栏与外壳共享底色，活动标签与圆角正文同色衔接，无贯穿式分隔线。搭配 WorkspaceSidebar / WorkspaceTabBar 的 `variant="inset"`，现有默认外观不变。外层需明确高度；`scroll="content"` 只滚动正文，`scroll="none"` 由子区域管理滚动。支持固定标题、底部、移动导航入口与可访问性关联，路由和状态仍由应用管理。`--workspace-shell-background`、`--workspace-surface`、`--workspace-gap`、`--workspace-radius` 可局部自定义，不改写全局主题。安装 `workspace-shell` 会包含侧栏、标签栏及其依赖，示例含完整工作台和不带标签栏的轻量消息布局。
-
-DataTable 通过 TanStack Table 提供排序、搜索、分页和稳定 ID 选择。ChartContainer 可组合 Recharts 的图表、提示和图例。这些依赖只进入需要它们的安装条目，不随 Button 等基础组件安装。
-
-AI 组件仅负责界面和交互。模型调用、流式状态、鉴权、持久化和权限校验由宿主应用提供。完整聊天组件恢复工具记录、审批、思考折叠、附件、编辑、重新生成和分支回调；网页示例均为本地模拟，不执行真实工具。
-
-SafeStreamdown 保留原来的组件名称，源码版使用 react-markdown + GFM 重新实现，默认忽略原始 HTML，图片须显式启用。恢复的是原有组件能力和目录入口，不是旧 npm 包的 API 兼容层。
-
-## 开发
-
-Node.js 24，pnpm 10。仓库保留 `private: true`，仅维护网站与源码安装清单，不发布组件包。
-
-```sh
-pnpm install --frozen-lockfile
-pnpm dev
-pnpm check
-pnpm test:consumer
-pnpm exec playwright install chromium
-pnpm test:browser
+```bash
+npx skills add /实际路径/asharca-ui-source/skills/beui --skill beui
 ```
 
-`pnpm build` 生成站点、静态路由、registry JSON 和单一 UTF-8 `llms.txt`。浏览器测试在已构建站点上运行。消费项目测试使用真实 shadcn CLI，验证标准目录、自定义别名，以及更新预览不写入项目文件；不是自动迁移工具。
+Skill 保留 `beui` 安装名，在官方组件的正常使用说明上，补充 **Workspace Shell、
+Workspace Sidebar 和 Workspace Tab Bar** 的安装、API 与组合示例。
+官方组件继续使用 `@beui/...` 和官方文档，可以与自定义组件自由组合；
+Skill 不设置禁止使用官方组件或强制判断组件归属的规则，也不要求部署网站或 MCP。
 
-```text
-registry/ui/          可直接安装的组件源码
-registry/catalog.mjs  唯一组件目录与依赖图
-examples/            网站预览及 Usage 的同一份代码
-docs/updating.md      官网与 Markdown 同源的更新指南模板
-site/                展示站布局与文档界面
-scripts/             构建及验证
-public/              静态资源及生成的 registry、llms.txt
+在已下载的当前分支源码根目录，可导出自定义组件的完整安装 JSON：
+
+```bash
+bun install --frozen-lockfile
+bun scripts/export-component.ts workspace-shell --out /绝对路径/新目录/workspace-shell.json
 ```
 
-`tests/restored-inventory.test.mjs` 保存重写前的独立 55 项目录基线，防止后续整理时误删组件；同时检查每个 Usage 引用的本地文件与外部依赖都包含在安装清单里。
+然后在业务项目中，先用 `shadcn add` 加该 JSON 的 `--dry-run` / `--diff`
+检查文件与共享依赖，再确认安装，保留现有主题和业务定制。
+导出不启动站点；下载源码和包仍可能需要联网。
 
-不提供兼容包、旧界面、主题实验室、迁移脚本或自有 Skill 安装流程。公共 AI 文档仅有 `llms.txt` 作为入口，更新指南是其索引的页面文档。
-
-## 部署
-
-GitHub 项目 Pages：
-
-```sh
-SITE_URL=https://asharca.github.io/ui/ BASE_PATH=/ui/ pnpm build
-```
-
-自定义域名：
-
-```sh
-SITE_URL=https://your-domain.example/ BASE_PATH=/ pnpm build
-```
-
-部署 `dist/`。每个文档路由有独立 HTML 入口，可直接打开和刷新；registry 与 `llms.txt` 是静态文件，不经过 SPA HTML 回退。`SITE_URL` 是对外可访问的完整地址；浏览器中的安装和更新命令根据当前站点生成。
-
-## 设计与许可
-
-展示结构、克制的视觉语言和组件交互参考 [beUI](https://beui.dev/)，保留本项目品牌与独立实现，不包含对方的商业推广或用户评价。
-
-MIT License。参考来源与许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
-
-## 表头批量操作与富文本消息
-
-DataTable 默认勾选后在表头原位置展示数量和批量操作，取消选择后恢复；selectionToolbar 接口不变，selectionPresentation="toolbar" 可保留旧展示方式。
-
-用户输入与 AI 输出的完整组件是 ChatThread，正文渲染是 SafeStreamdown，输入编辑器是 PromptInput。正文支持 GFM 表格；通过 SafeStreamdown 的 allowMermaid 或 ChatThread 的 markdownOptions={{ allowMermaid: true }} 启用本地 Mermaid 图表。图表支持源码切换、复制、缩放和失败回退；流式回复结束后绘制。远程图片仍单独 opt-in。详情见 [设计与边界](docs/table-and-rich-messages.md)。
-
-- [DataTable 演示](https://asharca.github.io/ui/components/data-table/)
-- [完整富文本对话](https://asharca.github.io/ui/components/chat-thread/)
-- [表格、流程图与时序图](https://asharca.github.io/ui/components/safe-streamdown/)
+自定义组件索引：[source-policy.json](skills/beui/source-policy.json)，仅供源码导出和
+查阅，不作为官方组件的使用限制。完整安装与组合示例见
+[Skill 工作区说明](skills/beui/references/workspace.md)。

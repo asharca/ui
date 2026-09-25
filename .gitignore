@@ -1,20 +1,54 @@
-node_modules/
-dist/
-public/r/
-public/registry.json
-public/llms.txt
-playwright-report/
-test-results/
-.consumer/
-.env
-.env.*
-!.env.example
-.DS_Store
-*.tsbuildinfo
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Generated page documentation, not a second authored AI documentation tree.
-.generated/
-public/api-reference/
-public/components/
-public/components.md
-public/docs/
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+/examples/shadcn-vite-install/
+
+# next.js
+/.next/
+/out/
+/.open-next/
+/.cloudflare/
+/.wrangler/
+.dev.vars*
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# local working notes
+/docs/
+/.brand-preview/
+/app/globals.css.bak
+
+# editor / local agent config
+.claude/
+.env
+
+# Workspace browser review output
+/test-results/
+/playwright-report/

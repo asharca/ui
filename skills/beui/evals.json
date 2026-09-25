@@ -1,0 +1,19 @@
+{
+  "skill_name": "beui",
+  "evals": [
+    { "id": "toast", "prompt": "Show a toast when the form saves.", "expected_slugs": ["animated-toast-stack"], "not_slugs": ["notification-stack"], "expected_sources": { "animated-toast-stack": "official" } },
+    { "id": "bottom-sheet", "prompt": "Add a mobile bottom sheet like Vaul.", "expected_slugs": ["bottom-sheet"], "not_slugs": ["drawer", "center-morph-modal"], "expected_sources": { "bottom-sheet": "official" } },
+    { "id": "thinking", "prompt": "Add a thinking indicator while the agent works.", "expected_slugs": ["thinking-shimmer"], "not_slugs": ["loader", "text-shimmer"], "expected_sources": { "thinking-shimmer": "official" } },
+    { "id": "gooey-popover", "prompt": "I want a liquid gooey popover that oozes out of the button.", "expected_slugs": ["popover"], "not_slugs": ["popover-morph"], "expected_sources": { "popover": "official" } },
+    { "id": "wave-slider", "prompt": "Build an equalizer-style wave slider.", "expected_slugs": ["range-slider-wave"], "not_slugs": ["range-slider"], "expected_sources": { "range-slider-wave": "official" } },
+    { "id": "chat", "prompt": "Build a streaming AI chat with a prompt box and a thread that follows new tokens.", "expected_slugs": ["message-scroller", "message", "prompt-input"], "not_slugs": ["loader"], "expected_sources": { "message-scroller": "official", "message": "official", "prompt-input": "official" } },
+    { "id": "attachments", "prompt": "Chat composer attachments for images, audio, and files.", "expected_slugs": ["attachment-upload"], "not_slugs": ["file-upload"], "expected_sources": { "attachment-upload": "official" } },
+    { "id": "project-folder", "prompt": "Add an animated project folder card that opens into details.", "expected_slugs": ["project-folder"], "not_slugs": ["file-upload"], "expected_sources": { "project-folder": "official" } },
+    { "id": "command-palette", "prompt": "Add a Cmd+K command palette.", "expected_slugs": ["command-palette"], "not_slugs": ["combobox"], "expected_sources": { "command-palette": "official" } },
+    { "id": "asharca-workspace", "prompt": "Use the Asharca inset shell with sidebar and browser-like tabs.", "expected_slugs": ["workspace-shell"], "not_slugs": [], "expected_sources": { "workspace-shell": "project" } },
+    { "id": "asharca-tabs", "prompt": "Use the Asharca workspace tab bar with pin, close and independent window actions.", "expected_slugs": ["workspace-tab-bar"], "not_slugs": [], "expected_sources": { "workspace-tab-bar": "project" } },
+    { "id": "mixed-sources", "prompt": "Compose WorkspaceShell with official beUI tabs in a content panel and a toast for saved changes.", "expected_slugs": ["workspace-shell", "tabs", "animated-toast-stack"], "not_slugs": [], "expected_sources": { "workspace-shell": "project", "tabs": "official", "animated-toast-stack": "official" } },
+    { "id": "ordinary-tabs", "prompt": "Use the official beUI pill tabs.", "expected_slugs": ["tabs"], "not_slugs": [], "expected_sources": { "tabs": "official" } },
+    { "id": "official-chat-app", "prompt": "Use the official beUI ChatApp layout.", "expected_slugs": ["chat-app"], "not_slugs": [], "expected_sources": { "chat-app": "official" } }
+  ]
+}

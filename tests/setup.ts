@@ -1,10 +1,45 @@
-import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
-afterEach(cleanup);
-Object.defineProperty(window, 'matchMedia', { writable: true, value: (query: string) => ({ matches: query.includes('prefers-reduced-motion'), media: query, onchange: null, addListener: vi.fn(), removeListener: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: () => false }) });
-globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
-HTMLElement.prototype.scrollIntoView = vi.fn();
-HTMLElement.prototype.hasPointerCapture = () => false;
-HTMLElement.prototype.setPointerCapture = () => undefined;
-HTMLElement.prototype.releasePointerCapture = () => undefined;
+import { GlobalRegistrator } from "@happy-dom/global-registrator";
+
+GlobalRegistrator.register();
+
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
+
+// Browser APIs that motion + react-use-measure touch but happy-dom omits.
+// Stubbed so components mount in the test DOM without throwing.
+if (typeof window.matchMedia !== "function") {
+  window.matchMedia = (query: string) =>
+    ({
+      // Render the reduced-motion path in tests: deterministic, no JS springs
+      // or scroll engines to settle, so axe sees stable markup.
+      matches: query.includes("prefers-reduced-motion"),
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
+
+class StubObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+}
+
+globalThis.ResizeObserver ??= StubObserver as unknown as typeof ResizeObserver;
+globalThis.IntersectionObserver ??=
+  StubObserver as unknown as typeof IntersectionObserver;
+
+if (typeof window.scrollTo !== "function") {
+  window.scrollTo = () => {};
+}
+
+URL.createObjectURL ??= () => "blob:test-upload";
+URL.revokeObjectURL ??= () => {};
