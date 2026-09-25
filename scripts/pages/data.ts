@@ -75,7 +75,8 @@ if (import.meta.main) {
   await writePagesData(directory, siteUrl);
   await mkdir(path.join(directory, "api"), { recursive: true });
   await writeFile(path.join(directory, "api/github-stars.json"), JSON.stringify({ count: await getGithubStarCount(), snapshot: true }));
-  const props = Object.fromEntries(allRegistryTargets().map((entry) => [entry.file, getComponentProps(entry.file)]));
+  const apiFiles = new Set(allComponents().flatMap((entry) => [entry.file, ...(entry.examples ?? []).map((example) => example.file)]));
+  const props = Object.fromEntries([...apiFiles].map((file) => [file, getComponentProps(file)]));
   const lib = path.resolve(directory, "../lib");
   await writeFile(path.join(lib, "pages-props.json"), JSON.stringify(props));
   await writeFile(path.join(lib, "props-extractor.ts"), `import data from "./pages-props.json";

@@ -14,7 +14,7 @@ export async function buildPages() {
   // Set before importing registry/metadata modules that read environment constants.
   process.env.NEXT_PUBLIC_SITE_URL = siteUrl;
   const stage = await mkdtemp(path.join(os.tmpdir(), "asharca-pages-"));
-  const copyPaths = ["app", "components", "lib", "assets", "public", "package.json", "bun.lock", "tsconfig.json", "postcss.config.mjs", "next.config.mjs"];
+  const copyPaths = ["app", "components", "lib", "assets", "public", ".gitignore", "package.json", "bun.lock", "tsconfig.json", "postcss.config.mjs", "next.config.mjs"];
   for (const item of copyPaths) await cp(path.join(root, item), path.join(stage, item), { recursive: true });
   await symlink(path.join(root, "node_modules"), path.join(stage, "node_modules"), "dir");
   // These endpoints are materialized below as files with explicit MIME extensions.
@@ -42,6 +42,17 @@ export async function buildPages() {
     const file = path.join(stage, rel);
     await writeFile(file, transformSiteSource(await readFile(file, "utf8"), file, siteUrl, basePath));
   }
+  // Static metadata routes need an explicit export mode in Next 16.
+  for (const rel of ["app/sitemap.ts", "app/manifest.ts"]) {
+    const file = path.join(stage, rel);
+    await writeFile(file, `${await readFile(file, "utf8")}\nexport const dynamic = "force-static";\n`);
+  }
+  await writeFile(path.join(stage, "app/robots.ts"), `import type { MetadataRoute } from 'next';
+export const dynamic = 'force-static';
+export default function robots(): MetadataRoute.Robots {
+  return { rules: { userAgent: '*', allow: [${JSON.stringify(`${basePath}/`)}, ${JSON.stringify(`${basePath}/api/og.png`)}], disallow: [${JSON.stringify(`${basePath}/api/`)}] }, sitemap: ${JSON.stringify(`${siteUrl}/sitemap.xml`)}, host: ${JSON.stringify(new URL(siteUrl).origin)} };
+}
+`);
   const publicDir = path.join(stage, "public");
   const data = Bun.spawn([process.execPath, "scripts/pages/data.ts", publicDir, siteUrl], {
     cwd: root, stdout: "inherit", stderr: "inherit", env: { ...process.env, NEXT_PUBLIC_SITE_URL: siteUrl },
