@@ -23,7 +23,9 @@ bun test
 (cd mcp && bun install --frozen-lockfile && bun run typecheck)
 ```
 
-默认 CI 只执行静态检查和代码测试，不启动站点、生产构建或浏览器，也不截图。浏览器回归脚本保留，仅在明确需要时手动执行。
+代码校验 CI 继续只执行静态检查和测试。独立 Pages 发布流程在 `main` 更新后构建静态站点并自动部署；不启动开发/生产服务，也不运行浏览器或截图。
+
+站点：[asharca.github.io/ui](https://asharca.github.io/ui/)。工作区：[Workspace](https://asharca.github.io/ui/workspace/)。静态发布与服务能力区别见 [Pages 部署说明](docs/pages-deployment.md)。
 
 布局、组件属性、独立窗口、Registry 安装与部署说明见 [docs/workspace.md](docs/workspace.md)。原始 beUI 项目说明见 [README.beui.md](README.beui.md)。
 
@@ -36,17 +38,17 @@ bun test
 - `archive/pre-beui-rebuild-main-2026-09-24`
 - `archive/pre-beui-rebuild-agents-2026-09-24`
 
-细节见 [UPSTREAM.md](UPSTREAM.md)。不继承 beUI 的线上部署凭据或统计脚本，当前 CI 只验证，不自动部署。工作区示例是本地状态演示，不连接真实模型或 MCP 服务。
+细节见 [UPSTREAM.md](UPSTREAM.md)。不继承 beUI 的线上部署凭据或统计脚本，发布流程只部署当前仓库的 GitHub Pages。工作区示例是本地状态演示，不连接真实模型或 MCP 服务。
 
 ## 本仓库的 beUI Skill
 
-合并到默认分支后，可直接安装：
+从默认分支安装：
 
 ```bash
 npx skills add asharca/ui --skill beui
 ```
 
-合并前，从当前分支的本地源码目录安装（在业务项目中执行，替换实际路径）：
+也可以从本地源码目录安装（在业务项目中执行，替换实际路径）：
 
 ```bash
 npx skills add /实际路径/asharca-ui-source/skills/beui --skill beui
@@ -57,7 +59,7 @@ Workspace Sidebar 和 Workspace Tab Bar** 的安装、API 与组合示例。
 官方组件继续使用 `@beui/...` 和官方文档，可以与自定义组件自由组合；
 Skill 不设置禁止使用官方组件或强制判断组件归属的规则，也不要求部署网站或 MCP。
 
-在已下载的当前分支源码根目录，可导出自定义组件的完整安装 JSON：
+在已下载的源码根目录，可导出自定义组件的完整安装 JSON：
 
 ```bash
 bun install --frozen-lockfile

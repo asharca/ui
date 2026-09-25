@@ -7,7 +7,7 @@
 使用 Node.js 24 与 Bun 1.3.14。安装 Bun 后：
 
 ```bash
-git clone --branch rebuild/beui-workspace https://github.com/asharca/ui.git
+git clone https://github.com/asharca/ui.git
 cd ui
 bun install --frozen-lockfile
 bun run dev
@@ -15,7 +15,7 @@ bun run dev
 
 在浏览器打开 `http://localhost:3000/workspace`。这是去除文档站点导航的独立演示页。
 
-两个组件的原生 beUI 文档页面是：
+两个组件的文档页面是：
 
 - `/components/blocks/workspace-shell`
 - `/components/blocks/workspace-tab-bar`
@@ -24,13 +24,13 @@ bun run dev
 
 ```bash
 git fetch origin
-git switch rebuild/beui-workspace
+git switch main
 git pull --ff-only
 bun install --frozen-lockfile
 bun run dev
 ```
 
-旧的 `pnpm dev`、`registry/ui/*`、`examples/*` 和 Vite 端口说明不再适用。工作分支名在合并后仍可用于查看这次重建，日常开发应以届时默认分支为准。
+旧的 `pnpm dev`、`registry/ui/*`、`examples/*` 和 Vite 端口说明不再适用。重建已经合并到 main，日常开发使用当前默认分支。
 
 ## 修改位置
 
@@ -94,6 +94,13 @@ npx shadcn@latest add http://localhost:3000/r/workspace-tab-bar.json
 
 Registry 会解析 beUI 源码依赖并一并安装。这里的 `@beui/workspace-shell` **不是**官方 beUI 已发布的命名空间条目。部署自有域名时设置 `NEXT_PUBLIC_SITE_URL=https://你的域名` 后重新构建，工作区文档会使用自有 Registry 地址。原上游组件入口仍保留 `@beui` 官方地址。
 
+Pages 发布完成后可直接使用：
+
+```bash
+npx shadcn@latest add https://asharca.github.io/ui/r/workspace-shell.json
+npx shadcn@latest add https://asharca.github.io/ui/r/workspace-tab-bar.json
+```
+
 ### llms.txt 中的工作区链接
 
 这两个 Markdown 路径保持固定：
@@ -107,21 +114,21 @@ Registry 会解析 beUI 源码依赖并一并安装。这里的 `@beui/workspace
 工作区条目未配置该变量时，回退到 `http://localhost:3000`。
 **它不会根据访问者的域名、Host 请求头或部署平台自动切换地址。**
 
-部署时在构建环境设置实际站点的地址，例如：
+Pages 工作流明确设置：
 
 ```dotenv
-NEXT_PUBLIC_SITE_URL=https://ui.example.com
+NEXT_PUBLIC_SITE_URL=https://asharca.github.io/ui
 ```
 
-`ui.example.com` 仅为示例。`app/llms.txt/route.ts` 使用 `force-static`；
+`app/llms.txt/route.ts` 使用 `force-static`；
 更换部署地址后需重新构建并部署，不能只给已生成的产物修改运行时环境变量。
-这段说明不改变现有 URL 生成逻辑，也不影响无需站点的 Skill 和本地 JSON 导出。
+这不影响无需站点的 Skill 和本地 JSON 导出。
 
 这是项目基线更换，不承诺旧版 `@asharca` 的全部组件路径/API 不变；已安装在其他业务项目的旧源码不会自动被替换。先审查依赖和导入路径，不用全量覆盖升级旧项目。
 
-## 验证
+## 验证与发布
 
-默认只运行代码检查，不启动项目：
+日常代码检查不启动项目：
 
 ```bash
 bun run check
@@ -131,4 +138,4 @@ bun test
 
 完整测试保留上游测试；其中联网测试需要访问 beui.dev。仅在明确要求浏览器验证时，再手动生产构建、安装 Chromium 并运行 `bun run test:workspace:browser`；这不是 Skill 安装或本地组件导出的前提。
 
-旧 GitHub Pages/Vite 部署工作流和上游的自动部署目标已移除，当前只提供验证 CI。本工程需要兼容 Next.js 的部署环境；这次源码重建不等于网站已部署。
+旧 Vite 发布流程已替换为独立的 Next.js 静态 Pages 发布流程。`main` 更新后自动构建并部署到 `https://asharca.github.io/ui/`，包括工作区、组件文档、Markdown 和安装 JSON。该流程不启动服务或浏览器。普通 `bun run build` 仍保留 Next.js 服务端部署方式；Pages 与服务端能力区别见 [Pages 部署说明](pages-deployment.md)。
