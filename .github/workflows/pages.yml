@@ -1,0 +1,79 @@
+name: Publish GitHub Pages
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - '.github/workflows/pages.yml'
+      - 'scripts/build-pages.ts'
+      - 'scripts/pages/**'
+      - 'scripts/verify-pages.ts'
+      - 'tests/pages-export.test.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SITE_URL: https://asharca.github.io/ui
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - name: Code checks and tests
+        run: |
+          bun run check
+          bun test
+      - name: Build and verify static site, documentation and registry
+        run: bun scripts/build-pages.ts
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the verified main artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify the live commit and workspace endpoints
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          base="${PAGE_URL%/}"
+          for attempt in $(seq 1 18); do
+            if curl --fail --silent --show-error "$base/build-info.json?commit=$EXPECTED_SHA" | jq -e --arg sha "$EXPECTED_SHA" '.commit == $sha' >/dev/null; then
+              curl --fail --silent --show-error "$base/workspace/" -o /dev/null
+              curl --fail --silent --show-error "$base/components/blocks/workspace-shell.md" -o /dev/null
+              curl --fail --silent --show-error "$base/r/workspace-shell.json" | jq -e '.name == "workspace-shell" and (.files | length > 0)' >/dev/null
+              curl --fail --silent --show-error "$base/llms.txt" | grep -F "$base/components/blocks/workspace-tab-bar.md"
+              echo "Verified live Pages commit $EXPECTED_SHA at $base"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Pages deployment was submitted but live verification did not reach the expected commit.' >&2
+          exit 1
