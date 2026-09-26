@@ -93,6 +93,7 @@ const LEGACY_COMPONENT_REDIRECTS = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["127.0.0.1"],
   turbopack: { resolveAlias: cloudflareAliases },
   webpack(config) {
     for (const [name, file] of Object.entries(cloudflareAliases)) {

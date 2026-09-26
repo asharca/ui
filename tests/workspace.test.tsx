@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { WorkspaceShell, openWorkspaceWindow } from "@/components/workspace/workspace-shell";
 import { WorkspaceTabBar, type WorkspaceTab } from "@/components/workspace/workspace-tab-bar";
 import { WorkspaceSidebar } from "@/components/workspace/workspace-sidebar";
@@ -15,6 +15,24 @@ describe("beUI workspace", () => {
     fireEvent.change(input, { target: { value: "未提交的内容" } }); rerender(view(false));
     expect(screen.getByRole("textbox")).toBe(input);
     expect((input as HTMLInputElement).value).toBe("未提交的内容");
+  });
+  test("keeps the header trigger focused through repeated folds without stealing footer focus", () => {
+    const view = (open: boolean) => <WorkspaceShell open={open} sidebar={<WorkspaceSidebar
+      title="Workspace" logo={<span>W</span>} groups={[]}
+      footer={<button type="button">Account</button>}
+    />} />;
+    const { rerender } = render(view(true));
+    const trigger = screen.getByRole("button", { name: "折叠工作区侧栏" });
+    act(() => trigger.focus());
+    for (const open of [false, true, false, true]) {
+      rerender(view(open));
+      expect(document.activeElement).toBe(trigger);
+      expect(trigger.getAttribute("aria-expanded")).toBe(String(open));
+    }
+    const account = screen.getByRole("button", { name: "Account" });
+    act(() => account.focus());
+    rerender(view(false));
+    expect(document.activeElement).toBe(account);
   });
   test("controlled selection does not move until the host updates", () => {
     const select = mock(() => {});
@@ -66,7 +84,7 @@ describe("beUI workspace", () => {
     const item = await buildShadcnItem("blocks", "workspace-tab-bar");
     expect(item).not.toBeNull();
     const files = item?.files.map((file) => file.path) ?? [];
-    expect(files.some((path) => path.endsWith("components/motion/context-menu.tsx"))).toBe(true);
+    expect(files.some((path) => path.endsWith("components/motion/popover-morph.tsx"))).toBe(true);
     expect(files.some((path) => path.endsWith("components/workspace/workspace-tab-bar.tsx"))).toBe(true);
     expect(files.some((path) => path.includes("agent-internal"))).toBe(false);
   });

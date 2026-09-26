@@ -105,7 +105,7 @@ describe("local component export without a server", () => {
   test("standalone tabs include their dependencies and validate custom export entry names", async () => {
     const item = await createLocalRegistryItem("workspace-tab-bar");
     expect(item.files.some((file) => file.path === "components/workspace/workspace-shell.tsx")).toBe(false);
-    expect(item.files.some((file) => file.path === "components/motion/context-menu.tsx")).toBe(true);
+    expect(item.files.some((file) => file.path === "components/motion/popover-morph.tsx")).toBe(true);
     await expect(createLocalRegistryItem("workspace-sidebar")).rejects.toThrow("Not a project-owned");
     await expect(createLocalRegistryItem("button-base")).rejects.toThrow("Not a project-owned");
     await expect(createLocalRegistryItem("../package.json")).rejects.toThrow("Not a project-owned");

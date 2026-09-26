@@ -52,9 +52,16 @@ and mobile state). Its slots are `sidebar`, `tabBar`, `mobileHeader`, `header`,
 `scroll="content"` scrolls the content pane; `scroll="none"` lets a child editor
 or chat own its scrolling.
 
-`WorkspaceSidebar` accepts `groups`, `activeId`, `onSelect`, `title`, `footer`
-and `className`. It consumes the shell's provider and is included in the
-`workspace-shell` install entry.
+`WorkspaceSidebar` accepts `groups`, `activeId`, `onSelect`, `title`, `logo`,
+`footer` and `className`. It consumes the shell's provider and is included in
+the `workspace-shell` install entry. The collapsed 36px header aligns its logo
+with menu icons; hover or keyboard focus reveals the toggle. Expanding grows
+the header to 64px and reveals the title behind the moving toggle. Header
+content remains vertically centered while the logo keeps its horizontal anchor.
+Compact hover starts a fresh interaction: the logo slides down and fades out
+with SPRING_LAYOUT, without a clipping edge. Menu groups and rows share a 4px gap. Demo
+footer icons keep the same left padding and row height in both states.
+Reduced motion switches these states without movement.
 
 `WorkspaceTabBar` accepts `tabs`, `activeTabId`, `onSelect` and optional callbacks
 `onClose`, `onReorder(sourceId, targetId)`, `onPinnedChange(id, pinned)`,
