@@ -1,10 +1,13 @@
 "use client";
 
-import { Bot, Boxes, Check, Command, FileText, LayoutDashboard, Menu, Moon, Plug, Settings2, Sun } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { Bot, Boxes, Check, ChevronsUpDown, CircleUserRound, Command, FileText, LayoutDashboard, LogOut, Menu, Moon, Plug, Settings2, Sun } from "lucide-react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 import { Button } from "@/components/motion/button/base";
-import { AnimatedSidebarTrigger } from "@/components/motion/animated-sidebar";
+import { AnimatedSidebarTrigger, useAnimatedSidebar } from "@/components/motion/animated-sidebar";
+import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "@/components/motion/popover";
+import { cn } from "@/lib/utils";
 import { WorkspaceShell, openWorkspaceWindow } from "@/components/workspace/workspace-shell";
 import { WorkspaceSidebar } from "@/components/workspace/workspace-sidebar";
 import { WorkspaceTabBar, type WorkspaceTab } from "@/components/workspace/workspace-tab-bar";
@@ -32,6 +35,87 @@ function readSnapshot(key: string): Snapshot | null {
     if (value.version !== 1 || typeof value.id !== "string" || value.id.length > 128 || typeof value.title !== "string" || value.title.length > 128 || typeof value.note !== "string" || value.note.length > 20000) return null;
     return value as Snapshot;
   } catch { return null; }
+}
+
+const workspaces = [
+  { id: "local", name: "本地工作区", hint: "个人 · 免费", mark: <Command className="size-3.5" /> },
+  { id: "acme", name: "Acme 团队", hint: "12 名成员", mark: <Boxes className="size-3.5" /> },
+  { id: "solo", name: "独立项目", hint: "个人 · Pro", mark: <FileText className="size-3.5" /> },
+];
+type WorkspaceOption = (typeof workspaces)[number];
+
+/** Sidebar footer: workspace switcher + avatar, both goo Popovers like the
+ *  animated-sidebar sample. Lives in the preview so the reusable sidebar
+ *  never invents business data. */
+function WorkspaceFooter({ compact }: { compact: boolean }) {
+  const [current, setCurrent] = useState<WorkspaceOption | undefined>(workspaces[0]);
+  if (!current) return null;
+  return (
+    <div className="flex w-full flex-col gap-1">
+      <Popover side="top" align="start">
+        <PopoverTrigger>
+          <button type="button" aria-label="切换工作区" className="flex h-9 w-full items-center gap-2 overflow-hidden rounded-lg px-1 py-1 text-left text-xs text-muted-foreground outline-none transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-background text-foreground">{current.mark}</span>
+            {!compact && <span className="min-w-0 flex-1 truncate">{current.name}</span>}
+            {!compact && <ChevronsUpDown className="size-3.5 shrink-0" />}
+          </button>
+        </PopoverTrigger>
+        <WorkspaceSwitcherContent workspaces={workspaces} currentId={current.id} onPick={setCurrent} />
+      </Popover>
+      <Popover side="top" align="start">
+        <PopoverTrigger>
+          <button type="button" aria-label="账户菜单" className="flex h-9 w-full items-center gap-2 overflow-hidden rounded-lg px-1 py-1 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#d5ff66] text-[11px] font-semibold text-[#172000]">AS</span>
+            {!compact && <span className="min-w-0 flex-1"><span className="block truncate text-xs leading-4 font-medium text-foreground">Ava Stone</span><span className="block truncate text-[10px] leading-3 text-muted-foreground">ava@solace.app</span></span>}
+          </button>
+        </PopoverTrigger>
+        <AccountMenuContent />
+      </Popover>
+    </div>
+  );
+}
+
+function WorkspaceSwitcherContent({ workspaces, currentId, onPick }: {
+  workspaces: WorkspaceOption[];
+  currentId: string;
+  onPick: (workspace: WorkspaceOption) => void;
+}) {
+  const { setOpen } = usePopoverContext("PopoverContent");
+  return <PopoverContent className="w-60 p-1.5">
+    <p className="px-2.5 pb-1 pt-2 text-[10px] font-medium text-muted-foreground">工作区</p>
+    {workspaces.map((workspace) => (
+      <button key={workspace.id} type="button" onClick={() => { onPick(workspace); setOpen(false); }}
+        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60">
+        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-foreground">{workspace.mark}</span>
+        <span className="min-w-0 flex-1"><span className="block truncate text-xs font-medium text-foreground">{workspace.name}</span><span className="block truncate text-[10px] text-muted-foreground">{workspace.hint}</span></span>
+        {currentId === workspace.id && <Check className="size-3.5 shrink-0 text-foreground" />}
+      </button>
+    ))}
+  </PopoverContent>;
+}
+
+const ACCOUNT_ITEMS = [["个人资料", CircleUserRound], ["偏好设置", Settings2], ["退出登录", LogOut]] as const;
+
+function AccountMenuContent() {
+  const { setOpen } = usePopoverContext("PopoverContent");
+  return <PopoverContent className="w-56 p-1.5">
+    <p className="px-2.5 pb-1 pt-2 text-xs font-medium text-foreground">Ava Stone</p>
+    <p className="px-2.5 pb-1.5 text-[10px] text-muted-foreground">ava@solace.app</p>
+    <div className="my-1 h-px bg-border" />
+    {ACCOUNT_ITEMS.map(([label, Icon]) => (
+      <button key={label} type="button" onClick={() => setOpen(false)}
+        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs text-foreground outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60">
+        <Icon className="size-3.5 shrink-0 text-muted-foreground" />{label}
+      </button>
+    ))}
+  </PopoverContent>;
+}
+
+/** WorkspaceSidebar renders its footer inside the AnimatedSidebar tree, so the
+ *  bridge can read the collapse state there and hand it to the demo footer. */
+function WorkspaceSidebarFooterBridge(props: { title: string; logo?: ReactNode; groups: typeof groups; activeId: string; onSelect: (id: string) => void }) {
+  const { open, isMobile } = useAnimatedSidebar();
+  return <WorkspaceSidebar {...props} footer={<WorkspaceFooter compact={!open && !isMobile} />} />;
 }
 
 /** This demo owns all sample state; reusable components never invent business data. */
@@ -114,7 +198,7 @@ export function WorkspaceDemo({ fullPage = false, detachedKey }: { fullPage?: bo
   if (!loaded) return <p role="status" className="p-6 text-sm">正在读取此窗口的便签…</p>;
   if (invalid) return <div className="grid h-dvh place-content-center gap-3 p-6"><h1 className="text-lg font-semibold">此窗口的本地状态已不可用</h1><p className="text-sm text-muted-foreground">原工作区未受影响。</p><a href="/workspace" className="underline underline-offset-4">返回工作区</a></div>;
   return <WorkspaceShell className={fullPage ? "h-dvh" : "h-[640px] rounded-2xl"} open={open} onOpenChange={setOpen} openMobile={mobileOpen} onOpenMobileChange={setMobileOpen}
-    sidebar={detachedKey ? undefined : <WorkspaceSidebar groups={groups} activeId={active} onSelect={select} title="Asharca Workspace" footer={<div className="flex h-9 items-center gap-2 text-xs text-muted-foreground"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-background"><Command className="size-3.5" /></span>本地工作区</div>} />}
+    sidebar={detachedKey ? undefined : <WorkspaceSidebarFooterBridge title="Asharca Workspace" logo={<Image src="/beui-mark.png" alt="" aria-hidden="true" width={28} height={28} className="size-7 rounded-lg" />} groups={groups} activeId={active} onSelect={select} />}
     mobileHeader={detachedKey ? undefined : <><AnimatedSidebarTrigger aria-label="打开工作区导航" className="size-8"><Menu className="size-4" /></AnimatedSidebarTrigger><span className="text-xs font-medium">Asharca Workspace</span></>}
     tabBar={<WorkspaceTabBar tabs={tabs.map((tab) => ({ ...tab, dirty: isDirty(tab.id), tabId: tabId(tab.id), panelId: panelId(tab.id) }))} activeTabId={active} onSelect={setActive} onClose={close} onReorder={reorder} onPinnedChange={pin} onNewTab={add} onOpenInNewWindow={openWindow}
       actions={<Button variant="ghost" size="icon" aria-label="切换深浅主题" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>{themeReady && resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}</Button>} />}

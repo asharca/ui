@@ -225,7 +225,7 @@ interface PopoverContextValue {
 
 const PopoverContext = createContext<PopoverContextValue | null>(null);
 
-function usePopoverContext(component: string) {
+export function usePopoverContext(component: string) {
   const ctx = useContext(PopoverContext);
   if (!ctx) throw new Error(`${component} must be used within <Popover>`);
   return ctx;

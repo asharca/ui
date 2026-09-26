@@ -49,6 +49,10 @@ Shell 直接使用 beUI `AnimatedSidebarProvider`；侧栏使用其菜单、折�
 
 Shell 默认共享 muted 底色和 12px 内容圆角。标签与正文使用相同的左右对齐线；首个标签激活时，对应的正文左上角取消圆角，使标签与面板连成一个面。侧栏展开 224px、收起 64px，可通过 provider 样式覆盖 `--sidebar-width` / `--sidebar-width-icon`。`--workspace-gap`、`--workspace-radius`、`--workspace-shell-background`、`--workspace-surface` 控制工作区外观。
 
+`WorkspaceSidebar` 的 `logo` 与下方菜单图标共用水平中心线。桌面收起时头部行高 36px，仅显示 logo；hover 时 logo 向下退出、展开图标从右向左滑入，移开后反向恢复。键盘聚焦同样显示展开图标；未提供 logo 时始终保留按钮图标。展开后行高 64px，按钮随侧栏右边缘移动，标题在按钮左侧逐步揭示，不再对每帧测得的宽度追加弹簧。触屏不触发装饰性 hover，减少动态效果偏好下直接切换。
+
+头部 logo、标题与按钮保持垂直居中，logo 的水平位置不随展开/折叠改变；进入折叠态时清除上一状态的 hover，避免误触发下滑。折叠态 hover 时 logo 向下移动 20px，并使用原有 SPRING_LAYOUT 节奏同步淡出；头部不裁切 logo，因此不会出现下滑被截断的硬边。菜单组间与组内统一使用 4px 间距。底部工作区与账户按钮始终保持 36px 行高、相同左内边距和左对齐，不在侧栏收窄途中切换为居中布局。
+
 `WorkspaceShell` 必须有明确的外部高度；全屏示例使用 `h-dvh`。`scroll="content"` 让内容独立滚动，`scroll="none"` 把滚动交给编辑器或聊天组件。标签激活状态、排序、数据和保存逻辑都由宿主控制。
 
 `WorkspaceTabBar` 支持固定/取消固定、关闭、新建、拖动重排、中键关闭、可选双击关闭、方向键/Home/End/Delete，以及 Alt+方向键排序。重排不跨越固定分组，固定或不可关闭标签、最后一个标签不触发关闭回调。减少动态效果偏好下关闭跨标签的选中面移动。标签按钮与关闭/更多按钮是兄弟节点，不嵌套交互控件。

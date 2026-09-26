@@ -93,19 +93,20 @@ test('keyboard reordering, fixed boundary and dirty close confirmation are real'
 test('beUI action popover and context menu preserve tab identity and pin rules', async ({ page }) => {
   await ready(page);
   await page.getByRole('button', { name: 'Agents操作', exact: true }).click();
-  const pin = page.getByRole('button', { name: '固定标签', exact: true });
+  const menu = page.getByRole('menu', { name: 'Agents操作' });
+  const pin = menu.getByRole('menuitem', { name: '固定标签', exact: true });
   await expect(pin).toBeVisible();
   await pin.click();
   await expect(page.getByRole('button', { name: '关闭 Agents', exact: true })).toHaveCount(0);
   await tab(page, 'MCP 服务').focus();
   await page.keyboard.press('Shift+F10');
-  const menu = page.getByRole('menu');
-  await expect(menu).toBeVisible();
-  await expect(menu.getByRole('menuitem', { name: '向左移动', exact: true })).toBeDisabled();
+  const mcpMenu = page.getByRole('menu', { name: 'MCP 服务操作' });
+  await expect(mcpMenu).toBeVisible();
+  await expect(mcpMenu.getByRole('menuitem', { name: '向左移动', exact: true })).toBeDisabled();
   await page.keyboard.press('Escape');
-  await expect(menu).toHaveCount(0);
+  await expect(mcpMenu).toHaveCount(0);
   await page.getByRole('button', { name: 'Agents操作', exact: true }).click();
-  await page.getByRole('button', { name: '取消固定', exact: true }).click();
+  await menu.getByRole('menuitem', { name: '取消固定', exact: true }).click();
   await expect(page.getByRole('button', { name: '关闭 Agents', exact: true })).toBeVisible();
 });
 
@@ -129,7 +130,7 @@ test('independent window receives only its minimal snapshot and survives refresh
   await page.evaluate(() => sessionStorage.setItem('unrelated-private-state', 'not-for-copying'));
   await page.getByRole('button', { name: 'Agents操作', exact: true }).click();
   const popupEvent = page.waitForEvent('popup');
-  await page.getByRole('button', { name: '在独立窗口打开', exact: true }).click();
+  await page.getByRole('menuitem', { name: '在独立窗口打开', exact: true }).click();
   const popup = await popupEvent;
   await expect(popup.getByRole('textbox', { name: 'Agents便签' })).toHaveValue('独立窗口里的便签');
   expect(await popup.evaluate(() => window.opener)).toBeNull();
@@ -147,7 +148,7 @@ test('blocked popups report failure without deleting the original draft', async 
   await ready(page);
   await page.evaluate(() => { window.open = () => null; });
   await page.getByRole('button', { name: '概览操作', exact: true }).click();
-  await page.getByRole('button', { name: '在独立窗口打开', exact: true }).click();
+  await page.getByRole('menuitem', { name: '在独立窗口打开', exact: true }).click();
   // Next.js also has a route-announcer alert outside the application shell.
   await expect(workspace(page).getByRole('alert')).toContainText('拦截');
   await expect(page.getByRole('textbox', { name: '概览便签' })).toHaveValue('整理本周的工作区任务');
