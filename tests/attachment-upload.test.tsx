@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -21,7 +22,8 @@ const FILE_ITEM: AttachmentUploadItem = {
 
 describe("AttachmentUpload", () => {
   test("shows pending feedback before removing an attachment", async () => {
-    const onRemove = mock(() => {});
+    const { promise: removed, resolve } = Promise.withResolvers<void>();
+    const onRemove = mock((_item: AttachmentUploadItem) => resolve());
     const { getByLabelText, queryByLabelText, queryByText } = render(
       <AttachmentUpload defaultValue={[FILE_ITEM]} onRemove={onRemove} />,
     );
@@ -30,12 +32,15 @@ describe("AttachmentUpload", () => {
 
     expect(getByLabelText("Removing brief.pdf")).toBeTruthy();
     expect(queryByText("brief.pdf")).toBeTruthy();
+    expect(onRemove).not.toHaveBeenCalled();
 
-    await waitFor(() => {
-      expect(onRemove).toHaveBeenCalledWith(FILE_ITEM);
-      expect(queryByLabelText("Removing brief.pdf")).toBeNull();
-      expect(queryByLabelText("Remove brief.pdf")).toBeNull();
-    });
+    // Await the lifecycle callback, not mutations from Motion's animated styles.
+    await act(async () => { await removed; });
+    expect(onRemove).toHaveBeenCalledTimes(1);
+    expect(onRemove).toHaveBeenCalledWith(FILE_ITEM);
+    expect(queryByText("brief.pdf")).toBeNull();
+    expect(queryByLabelText("Removing brief.pdf")).toBeNull();
+    expect(queryByLabelText("Remove brief.pdf")).toBeNull();
   });
 
   test("rejects files over the size limit", () => {
