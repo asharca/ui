@@ -9,7 +9,7 @@ import {
   AnimatedSidebarHeader, AnimatedSidebarMenu, AnimatedSidebarMenuButton,
   AnimatedSidebarMenuItem, AnimatedSidebarTrigger, useAnimatedSidebar,
 } from "@/components/motion/animated-sidebar";
-import { SPRING_LAYOUT } from "@/lib/ease";
+import { EASE_OUT, SPRING_LAYOUT } from "@/lib/ease";
 import { useHoverCapable } from "@/lib/hooks/use-hover-capable";
 import { useOnOpen } from "@/lib/hooks/use-on-open";
 import { cn } from "@/lib/utils";
@@ -56,15 +56,19 @@ export function WorkspaceSidebar({ groups, activeId, onSelect, title = "工作�
       }
     }
   }, [compact]);
-  const transition = reduced ? { duration: 0 } : SPRING_LAYOUT;
+  // Opacity must not inherit spring velocity when hover reverses mid-flight.
+  const transition = reduced ? { duration: 0 } : {
+    ...SPRING_LAYOUT,
+    opacity: { type: "tween" as const, duration: 0.14, ease: EASE_OUT },
+  };
   return <AnimatedSidebar ariaLabel={`${title}导航`} variant="inset"
     className={cn(!isMobile && "h-full", className)} panelClassName="static m-0 h-full rounded-none bg-transparent">
-    <AnimatedSidebarHeader className="px-3.5 py-2">
+    <AnimatedSidebarHeader className="px-3.5 pt-2 pb-0">
       <motion.div
         initial={false}
         animate={{ height: compact ? 36 : 64 }}
         transition={transition}
-        onMouseEnter={() => setHovered(compact)}
+        onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocusCapture={(event) => setFocused(event.target.matches(":focus-visible"))}
         onBlurCapture={() => setFocused(false)}
