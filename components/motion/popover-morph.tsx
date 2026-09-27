@@ -269,14 +269,26 @@ function MorphPopoverSurface({
   );
 
   const left = layout
-    ? align === "end"
-      ? layout.trigger.left + layout.trigger.width - layout.content.width
-      : layout.trigger.left
+    ? Math.max(
+        8,
+        Math.min(
+          align === "end"
+            ? layout.trigger.left + layout.trigger.width - layout.content.width
+            : layout.trigger.left,
+          window.innerWidth - layout.content.width - 8,
+        ),
+      )
     : 0;
   const top = layout
-    ? side === "bottom"
-      ? layout.trigger.top + layout.trigger.height + sideOffset
-      : layout.trigger.top - layout.content.height - sideOffset
+    ? Math.max(
+        8,
+        Math.min(
+          side === "bottom"
+            ? layout.trigger.top + layout.trigger.height + sideOffset
+            : layout.trigger.top - layout.content.height - sideOffset,
+          window.innerHeight - layout.content.height - 8,
+        ),
+      )
     : 0;
 
   // Both directions travel between the exact same hidden/show states. Exit
