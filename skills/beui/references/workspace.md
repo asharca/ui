@@ -58,8 +58,10 @@ the `workspace-shell` install entry. The collapsed 36px header aligns its logo
 with menu icons; hover or keyboard focus reveals the toggle. Expanding grows
 the header to 64px and reveals the title behind the moving toggle. Header
 content remains vertically centered while the logo keeps its horizontal anchor.
-Compact hover starts a fresh interaction: the logo slides down and fades out
-with SPRING_LAYOUT, without a clipping edge. Menu groups and rows share a 4px gap. Demo
+Compact hover starts a fresh interaction: the logo slides down with SPRING_LAYOUT,
+without a clipping edge. Logo and toggle opacity use a separate 140ms EASE_OUT
+tween so rapid hover reversals cannot inherit spring velocity and briefly brighten.
+Menu groups and rows share a 4px gap. Demo
 footer icons keep the same left padding and row height in both states.
 Reduced motion switches these states without movement.
 
