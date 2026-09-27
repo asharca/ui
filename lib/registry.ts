@@ -499,14 +499,14 @@ export const registry: CategoryEntry[] = [
       {
         slug: "morphing-modal",
         name: "Morphing Modal",
-        description: "Family-app-style modal. A single panel that morphs its height as you navigate between inner views, with blur cross-fade on content.",
+        description: "Family-app-style modal. A body-portalled panel that morphs its height between inner views with a blur cross-fade and scroll locking through the closing animation. Exit fades stay at their final values until removal.",
         file: "components/motion/morphing-modal.tsx",
       },
       {
         slug: "center-morph-modal",
         name: "Center Morph Modal",
         description:
-          "A composable modal whose full-size surface unfolds from its exact center toward every edge, then folds back the same way with an inset close control.",
+          "A composable modal whose full-size surface unfolds from a fully collapsed center, then folds back with an inset close control and stays collapsed until removal. Keeps focus stable across updates and the page scroll-locked until the exit completes.",
         file: "components/motion/center-morph-modal.tsx",
         badge: "new",
         launchedAt: "2026-07-21",

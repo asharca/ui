@@ -42,10 +42,10 @@ const COMPONENT_DATES = {
   "motion/tooltip": { publishedAt: "2026-05-17", updatedAt: "2026-09-14" },
   "motion/context-menu": { publishedAt: "2026-07-27", updatedAt: "2026-07-27" },
   "motion/popover": { publishedAt: "2026-07-07", updatedAt: "2026-09-22" },
-  "motion/morphing-modal": { publishedAt: "2026-05-17", updatedAt: "2026-08-20" },
+  "motion/morphing-modal": { publishedAt: "2026-05-17", updatedAt: "2026-09-27" },
   "motion/center-morph-modal": {
     publishedAt: "2026-07-21",
-    updatedAt: "2026-09-25",
+    updatedAt: "2026-09-27",
   },
   "motion/text-animation": { publishedAt: "2026-05-17", updatedAt: "2026-09-22" },
   "motion/number": { publishedAt: "2026-05-17", updatedAt: "2026-09-04" },
