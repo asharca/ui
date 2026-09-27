@@ -130,6 +130,40 @@ describe("portalled popovers", () => {
     fireEvent.pointerDown(document.body);
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
+  test("Morph stays inside the viewport when its trigger is at an edge", async () => {
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 300 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 200 });
+    const originalWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
+    const originalHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
+    Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+      configurable: true,
+      get() { return this.getAttribute("role") === "dialog" ? 192 : 0; },
+    });
+    Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+      configurable: true,
+      get() { return this.getAttribute("role") === "dialog" ? 100 : 0; },
+    });
+    const { getByRole } = render(
+      <MorphPopover>
+        <MorphPopoverTrigger><button type="button">Open at edge</button></MorphPopoverTrigger>
+        <MorphPopoverContent>Edge actions</MorphPopoverContent>
+      </MorphPopover>,
+    );
+    const trigger = getByRole("button", { name: "Open at edge" });
+    Object.defineProperty(trigger, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ left: 0, top: 180, width: 40, height: 20, right: 40, bottom: 200 }),
+    });
+    fireEvent.click(trigger);
+    const panel = document.querySelector<HTMLElement>("[data-morph-popover-portal]");
+    await waitFor(() => {
+      expect(panel?.style.left).toBe("8px");
+      expect(panel?.style.top).toBe("92px");
+    });
+    if (originalWidth) Object.defineProperty(HTMLElement.prototype, "offsetWidth", originalWidth);
+    if (originalHeight) Object.defineProperty(HTMLElement.prototype, "offsetHeight", originalHeight);
+  });
+
 });
 
 describe("Escape from the morph panel", () => {
