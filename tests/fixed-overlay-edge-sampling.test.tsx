@@ -1,5 +1,6 @@
 import { FunnelChart } from "@/components/charts/funnel-chart";
 import { afterEach, describe, expect, test } from "bun:test";
+import { setTimeout as delay } from "node:timers/promises";
 import {
   act,
   cleanup,
@@ -27,6 +28,7 @@ import { CommandPalette } from "@/components/motion/command-palette";
 import { Drawer } from "@/components/motion/drawer";
 import { MorphingModal } from "@/components/motion/morphing-modal";
 import { MorphingSearch } from "@/components/motion/morphing-search";
+import { ModelSelector } from "@/components/motion/model-selector";
 import { ProjectFolder } from "@/components/motion/project-folder";
 import { TableMenu } from "@/components/motion/table/table-menu";
 
@@ -325,7 +327,7 @@ const IMAGE_ITEM = {
 // only reaches its overlay through an interaction. Add a row here when you ship
 // an overlay, and a row for its closed state too when it stays mounted.
 const cases: Array<
-  [name: string, render: () => ReactElement, open?: (view: RenderResult) => void]
+  [name: string, render: () => ReactElement, open?: (view: RenderResult) => unknown]
 > = [
   ["CommandPalette closed", () => <CommandPalette items={[]} />],
   ["CommandPalette open", () => <CommandPalette items={[]} open />],
@@ -395,6 +397,23 @@ const cases: Array<
     () => <MorphingSearch items={[{ id: "one", title: "Alpha" }]} defaultOpen />,
   ],
   [
+    "ModelSelector open",
+    () => <ModelSelector defaultOpen models={[{ id: "one", name: "Sonnet", provider: "Anthropic" }]} />,
+  ],
+  [
+    "ModelSelector hover details",
+    () => <ModelSelector defaultOpen models={[{ id: "one", name: "Sonnet", provider: "Anthropic" }]} />,
+    async ({ getByRole }) => {
+      fireEvent.pointerEnter(getByRole("option"), { pointerType: "mouse" });
+      await act(() => delay(1550));
+      expect(getByRole("complementary", { name: "Model details" }).textContent).toContain("Sonnet");
+    },
+  ],
+  [
+    "ModelSelector closed",
+    () => <ModelSelector models={[{ id: "one", name: "Sonnet", provider: "Anthropic" }]} />,
+  ],
+  [
     "AnimatedSidebar mobile closed",
     () =>
       withMobileViewport(() => (
@@ -434,9 +453,9 @@ const cases: Array<
 
 describe("fixed full-viewport overlays", () => {
   for (const [name, renderCase, openCase] of cases) {
-    test(`${name} leaves no sampling layer`, () => {
+    test(`${name} leaves no sampling layer`, async () => {
       const view = render(renderCase());
-      openCase?.(view);
+      await openCase?.(view);
 
       expect(classesOf(samplingLayers(document.body))).toEqual([]);
     });

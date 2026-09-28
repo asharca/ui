@@ -1782,6 +1782,26 @@ export const registry: CategoryEntry[] = [
         ],
       },
       {
+        slug: "model-selector",
+        name: "Model Selector",
+        description: "Model selector built on Morph Popover with small, medium, and large sizes, pinned and recent models, provider groups, slim theme-aware scrollbars, keyboard navigation, and floating hover details.",
+        file: "components/motion/model-selector.tsx",
+        badge: "new",
+        launchedAt: "2026-09-28",
+        keywords: ["model selector", "ai model picker", "provider groups", "search models"],
+        examples: [
+          {
+            slug: "default",
+            name: "Model Selector",
+            description: "Use the preview's Size button to cycle through small, medium, and large while preserving the selected model. Set size to sm (320 × 360), md (400 × 440, default), or lg (480 × 520). Trigger, row density, search typography and hover card scale together; every size fits the viewport. Search by name, provider, or capability; select with arrow keys or Page Up/Down and Enter. Hover for 1.5 seconds to inspect details without an exit flash.",
+            installSlug: "model-selector",
+            file: "components/motion/model-selector.tsx",
+            previewKey: "blocks/model-selector",
+            previewFile: "components/previews/blocks/model-selector.preview.tsx",
+          },
+        ],
+      },
+      {
         slug: "expandable-action-bar",
         name: "Expandable Action Bar",
         description: "Compact icon actions that expand into labeled controls on hover or focus with shared layout motion.",

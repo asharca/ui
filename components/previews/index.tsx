@@ -170,6 +170,9 @@ export const previews: Record<string, ComponentType> = {
       (m) => m.MorphingSearchPreview,
     ),
   ),
+  "blocks/model-selector": dynamic(() =>
+    import("./blocks/model-selector.preview").then((m) => m.ModelSelectorPreview),
+  ),
   "blocks/feedback-widget": dynamic(() =>
     import("./blocks/feedback-widget.preview").then((m) => m.FeedbackWidgetPreview),
   ),
