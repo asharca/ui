@@ -147,6 +147,7 @@ const COMPONENT_DATES = {
   "blocks/dynamic-island": { publishedAt: "2026-06-10", updatedAt: "2026-09-22" },
   "blocks/command-palette": { publishedAt: "2026-05-17", updatedAt: "2026-09-22" },
   "blocks/morphing-search": { publishedAt: "2026-08-18", updatedAt: "2026-08-22" },
+  "blocks/model-selector": { publishedAt: "2026-09-28", updatedAt: "2026-09-28" },
   "blocks/expandable-action-bar": { publishedAt: "2026-06-05", updatedAt: "2026-09-22" },
   "blocks/overflow-actions": { publishedAt: "2026-06-19", updatedAt: "2026-06-28" },
   "blocks/expandable-tabs": { publishedAt: "2026-06-14", updatedAt: "2026-06-28" },
