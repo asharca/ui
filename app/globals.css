@@ -225,6 +225,30 @@
 }
 
 @layer base {
+    /* Match ModelSelector; utility-layer opt-outs keep hidden scrollbars hidden. */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent) transparent;
+    }
+    *:hover {
+        scrollbar-color: color-mix(in oklab, var(--foreground) 30%, transparent) transparent;
+    }
+    *::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    *::-webkit-scrollbar-track,
+    *::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+        border-radius: 9999px;
+        background: color-mix(in oklab, var(--foreground) 20%, transparent);
+    }
+    *::-webkit-scrollbar-thumb:hover {
+        background: color-mix(in oklab, var(--foreground) 30%, transparent);
+    }
+
     button:not(:disabled),
     [role="button"]:not(:disabled),
     a {

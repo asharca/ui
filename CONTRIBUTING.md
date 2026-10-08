@@ -24,6 +24,10 @@ Every component follows the same motion language:
 
 Internal imports are safe: the registry build follows `@/lib` and relative imports and bundles them with the component.
 
+## Site Scrollbars
+
+`app/globals.css` styles visible native scrollbars to match ModelSelector: thin tracks, transparent track backgrounds and theme-aware translucent thumbs that darken on hover. Both scroll axes are covered. Keep intentional scrollbar-hiding utilities; the base styles do not override them or reserve extra gutter space. ModelSelector retains its own styles for standalone registry installs; other copied components use the consuming application's scrollbar styles.
+
 ## Pull Requests
 
 1. Open or comment on an issue before starting larger work.
