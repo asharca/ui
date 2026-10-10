@@ -31,6 +31,8 @@ export interface TooltipProps {
   anchorRef?: RefObject<HTMLElement | SVGElement | null>;
   /** Point within the anchor, as fractions of its rendered width and height. */
   anchorPoint?: { x: number; y: number };
+  /** Follow real pointer coordinates; keyboard focus still uses the anchor. */
+  followCursor?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   id?: string;
@@ -74,6 +76,7 @@ export function Tooltip({
   wrapperClassName,
   anchorRef: externalAnchorRef,
   anchorPoint,
+  followCursor = false,
   open: controlledOpen,
   onOpenChange,
   id: providedId,
@@ -95,6 +98,7 @@ export function Tooltip({
   const anchorRef = externalAnchorRef ?? wrapperRef;
   const hover = useHoverGesture();
   const surfaceRef = useRef<HTMLSpanElement>(null);
+  const pointer = useRef<{ x: number; y: number } | null>(null);
 
   // Anchor point in viewport coords, on the edge of the trigger facing `side`.
   // Position:fixed means these viewport coords place the tooltip directly, so
@@ -103,13 +107,14 @@ export function Tooltip({
     const el = anchorRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const cx = r.left + r.width * (anchorPoint?.x ?? 0.5);
-    const cy = r.top + r.height * (anchorPoint?.y ?? 0.5);
+    const cursor = followCursor ? pointer.current : null;
+    const cx = cursor?.x ?? r.left + r.width * (anchorPoint?.x ?? 0.5);
+    const cy = cursor?.y ?? r.top + r.height * (anchorPoint?.y ?? 0.5);
     const point: Record<Side, { top: number; left: number }> = {
-      top: { top: (anchorPoint ? cy : r.top) - GAP, left: cx },
-      bottom: { top: (anchorPoint ? cy : r.bottom) + GAP, left: cx },
-      left: { top: cy, left: (anchorPoint ? cx : r.left) - GAP },
-      right: { top: cy, left: (anchorPoint ? cx : r.right) + GAP },
+      top: { top: (cursor || anchorPoint ? cy : r.top) - GAP, left: cx },
+      bottom: { top: (cursor || anchorPoint ? cy : r.bottom) + GAP, left: cx },
+      left: { top: cy, left: (cursor || anchorPoint ? cx : r.left) - GAP },
+      right: { top: cy, left: (cursor || anchorPoint ? cx : r.right) + GAP },
     };
     const next = point[side];
     const width = surfaceRef.current?.offsetWidth ?? 0;
@@ -119,7 +124,31 @@ export function Tooltip({
     next.left = Math.max(GAP + dx, Math.min(next.left, window.innerWidth - GAP - width + dx));
     next.top = Math.max(GAP + dy, Math.min(next.top, window.innerHeight - GAP - height + dy));
     setCoords(previous => previous?.top === next.top && previous.left === next.left ? previous : next);
-  }, [side, anchorRef, anchorPoint]);
+  }, [side, anchorRef, anchorPoint, followCursor]);
+
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current;
+    if (!followCursor || !anchor) return;
+    const track = (event: Event) => {
+      if (!(event instanceof globalThis.PointerEvent) || (event.pointerType !== "mouse" && event.pointerType !== "pen")) return;
+      pointer.current = { x: event.clientX, y: event.clientY };
+      if (open) place();
+    };
+    const reset = () => {
+      pointer.current = null;
+      if (open) place();
+    };
+    anchor.addEventListener("pointerenter", track);
+    anchor.addEventListener("pointermove", track);
+    anchor.addEventListener("pointerleave", reset);
+    anchor.addEventListener("focusin", reset);
+    return () => {
+      anchor.removeEventListener("pointerenter", track);
+      anchor.removeEventListener("pointermove", track);
+      anchor.removeEventListener("pointerleave", reset);
+      anchor.removeEventListener("focusin", reset);
+    };
+  }, [anchorRef, followCursor, open, place]);
 
   const positioned = coords !== null;
   useLayoutEffect(() => {

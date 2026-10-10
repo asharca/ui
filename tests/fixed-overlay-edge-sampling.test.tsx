@@ -31,6 +31,13 @@ import { MorphingSearch } from "@/components/motion/morphing-search";
 import { ModelSelector } from "@/components/motion/model-selector";
 import { ProjectFolder } from "@/components/motion/project-folder";
 import { TableMenu } from "@/components/motion/table/table-menu";
+import { CompositionChart } from "@/components/charts/composition-chart";
+import { StatusBar } from "@/components/charts/status-bar";
+import { Treemap } from "@/components/charts/treemap";
+import { VolumeProfile } from "@/components/charts/volume-profile";
+import { BreadcrumbEllipsis } from "@/components/motion/breadcrumb";
+import { DateRangePickerDropdown } from "@/components/motion/date-range-picker";
+import { MorphingLightbox } from "@/components/motion/morphing-lightbox";
 
 const originalMatchMedia = window.matchMedia;
 
@@ -329,6 +336,57 @@ const IMAGE_ITEM = {
 const cases: Array<
   [name: string, render: () => ReactElement, open?: (view: RenderResult) => unknown]
 > = [
+  ["ImageViewer closed", () => <MorphingLightbox images={[{ id: "image", src: "/image.png", alt: "Landscape", width: 800, height: 600 }]} />],
+  ["ImageViewer open", () => <MorphingLightbox images={[{ id: "image", src: "/image.png", alt: "Landscape", width: 800, height: 600 }]} defaultValue="image" />],
+  ["DateRangePicker closed", () => <DateRangePickerDropdown label="Reporting period" defaultMonth="2026-10-01" />],
+  [
+    "DateRangePicker open",
+    () => <DateRangePickerDropdown label="Reporting period" defaultMonth="2026-10-01" />,
+    async ({ getByRole }) => {
+      fireEvent.click(getByRole("button", { name: /^Reporting period:/ }));
+      await waitFor(() => expect(getByRole("dialog")).toBeTruthy());
+    },
+  ],
+  [
+    "Breadcrumb overflow open",
+    () => <BreadcrumbEllipsis><a href="/ancestor">Ancestor</a></BreadcrumbEllipsis>,
+    async ({ getByRole }) => {
+      fireEvent.click(getByRole("button", { name: "Show hidden paths" }));
+      await waitFor(() => expect(getByRole("dialog")).toBeTruthy());
+    },
+  ],
+  [
+    "Treemap tooltip open",
+    () => <Treemap data={[{ id: "equity", label: "Equity", value: 60 }]} />,
+    async ({ getByRole }) => {
+      fireEvent.focus(getByRole("button"));
+      await waitFor(() => expect(getByRole("tooltip")).toBeTruthy());
+    },
+  ],
+  [
+    "VolumeProfile tooltip open",
+    () => <VolumeProfile data={[{ id: "low", priceLow: 100, priceHigh: 110, volume: 20 }]} />,
+    async ({ getByRole }) => {
+      fireEvent.focus(getByRole("slider"));
+      await waitFor(() => expect(getByRole("tooltip")).toBeTruthy());
+    },
+  ],
+  [
+    "StatusBar tooltip open",
+    () => <StatusBar data={[{ id: "first", label: "Oct 5", status: "operational" }]} />,
+    async ({ getByRole }) => {
+      fireEvent.focus(getByRole("slider"));
+      await waitFor(() => expect(getByRole("tooltip")).toBeTruthy());
+    },
+  ],
+  [
+    "CompositionChart tooltip open",
+    () => <CompositionChart periods={["Oct"]} series={[{ id: "equity", name: "Equity", color: "#6366f1", values: [60] }]} />,
+    async ({ getByRole }) => {
+      fireEvent.focus(getByRole("slider"));
+      await waitFor(() => expect(getByRole("tooltip")).toBeTruthy());
+    },
+  ],
   ["CommandPalette closed", () => <CommandPalette items={[]} />],
   ["CommandPalette open", () => <CommandPalette items={[]} open />],
   [

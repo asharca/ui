@@ -7,7 +7,6 @@ import Image from "next/image";
 import { Button } from "@/components/motion/button/base";
 import { AnimatedSidebarTrigger, useAnimatedSidebar } from "@/components/motion/animated-sidebar";
 import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "@/components/motion/popover";
-import { cn } from "@/lib/utils";
 import { WorkspaceShell, openWorkspaceWindow } from "@/components/workspace/workspace-shell";
 import { WorkspaceSidebar } from "@/components/workspace/workspace-sidebar";
 import { WorkspaceTabBar, type WorkspaceTab } from "@/components/workspace/workspace-tab-bar";

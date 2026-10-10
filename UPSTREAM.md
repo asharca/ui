@@ -11,6 +11,20 @@ Previous snapshots:
 
 Upstream deployment workflows are intentionally not enabled in this repository.
 
+## Selected component sync — 2026-10-10
+
+Imported the 14 new catalog entries from [`starc007/ui-components@9deb728d936b5f89c859ab6c1f169235aa24b3ad`](https://github.com/starc007/ui-components/commit/9deb728d936b5f89c859ab6c1f169235aa24b3ad), including their source dependencies, previews, public usage compositions and upstream accessibility/behavior tests:
+
+- Motion: `alert`, `collapsible`, `aspect-ratio`, `arc-picker`, `sortable-stack`, `image-viewer`, `date-range-picker`, `color-selector`, `breadcrumb`.
+- Charts: `treemap`, `volume-profile`, `status-bar`, `composition-chart`.
+- Agents: `voice-orb`.
+
+`image-viewer` installs as `@beui/morphing-lightbox`; `sortable-stack` retains its upstream install slug despite its Sortable List display name. Native tab props, positioned morph-popover autofocus/viewport fitting and cursor-following tooltips were integrated into the existing local primitives. The image viewer includes the upstream modal focus/scroll scope. No new npm dependency was needed.
+
+Publication dates preserve upstream dates; local launch and affected bundle update dates are 2026-10-10. This is a selected component import, not a full upstream merge: the original baseline above remains unchanged, and local Workspace, deployment, branding, tests and in-progress edits are retained.
+
+Verified with `bun run check` (106 catalog components), public MCP typechecking, and all 647 tests using `NODE_OPTIONS=--experimental-strip-types bun test`. Node 22.12 needs this flag for the existing docs-highlighter test's direct TypeScript import. All 14 new install JSON and markdown route handlers returned 200 with their source bundles. Browser/WebGL visuals were not exercised; the test suite still emits non-failing Motion/React warnings.
+
 ## Downstream changes
 
 - `components/workspace/*`: only the custom workspace shell, tabs and native beUI sidebar composition.

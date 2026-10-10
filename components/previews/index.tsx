@@ -4,6 +4,51 @@ import type { ComponentType } from "react";
 // Every preview is a client component dragging the library + motion with it.
 // Lazy chunks keep a page's JS limited to the previews it actually renders.
 export const previews: Record<string, ComponentType> = {
+  "motion/alert": dynamic(() =>
+    import("./motion/alert.preview").then((m) => m.AlertPreview),
+  ),
+  "motion/collapsible": dynamic(() =>
+    import("./motion/collapsible.preview").then((m) => m.CollapsiblePreview),
+  ),
+  "motion/aspect-ratio": dynamic(() =>
+    import("./motion/aspect-ratio.preview").then((m) => m.AspectRatioPreview),
+  ),
+  "motion/arc-picker": dynamic(() =>
+    import("./motion/arc-picker.preview").then((m) => m.ArcPickerPreview),
+  ),
+  "agents/voice-orb": dynamic(() =>
+    import("./agents/voice-orb.preview").then((m) => m.VoiceOrbPreview),
+  ),
+  "motion/sortable-stack": dynamic(() =>
+    import("./motion/sortable-stack.preview").then((m) => m.SortableListPreview),
+  ),
+  "motion/morphing-lightbox": dynamic(() =>
+    import("./motion/morphing-lightbox.preview").then((m) => m.MorphingLightboxPreview),
+  ),
+  "motion/image-viewer": dynamic(() =>
+    import("./motion/morphing-lightbox.preview").then((m) => m.MorphingLightboxPreview),
+  ),
+  "motion/date-range-picker": dynamic(() =>
+    import("./motion/date-range-picker.preview").then((m) => m.DateRangePickerPreview),
+  ),
+  "motion/color-selector": dynamic(() =>
+    import("./motion/color-selector.preview").then((m) => m.ColorSelectorPreview),
+  ),
+  "motion/breadcrumb": dynamic(() =>
+    import("./motion/breadcrumb.preview").then((m) => m.BreadcrumbPreview),
+  ),
+  "charts/treemap": dynamic(() =>
+    import("./charts/treemap.preview").then((m) => m.TreemapPreview),
+  ),
+  "charts/volume-profile": dynamic(() =>
+    import("./charts/volume-profile.preview").then((m) => m.VolumeProfilePreview),
+  ),
+  "charts/status-bar": dynamic(() =>
+    import("./charts/status-bar.preview").then((m) => m.StatusBarPreview),
+  ),
+  "charts/composition-chart": dynamic(() =>
+    import("./charts/composition-chart.preview").then((m) => m.CompositionChartPreview),
+  ),
   "blocks/workspace-shell": dynamic(() => import("./blocks/workspace-shell.preview").then((m) => m.WorkspaceShellPreview)),
   "blocks/workspace-tab-bar": dynamic(() => import("./blocks/workspace-tab-bar.preview").then((m) => m.WorkspaceTabBarPreview)),
   "agents/chat-app": dynamic(() =>

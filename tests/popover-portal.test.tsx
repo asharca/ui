@@ -157,8 +157,13 @@ describe("portalled popovers", () => {
     fireEvent.click(trigger);
     const panel = document.querySelector<HTMLElement>("[data-morph-popover-portal]");
     await waitFor(() => {
-      expect(panel?.style.left).toBe("8px");
-      expect(panel?.style.top).toBe("92px");
+      expect(panel?.style.visibility).toBe("visible");
+      const left = Number.parseFloat(panel?.style.left ?? "NaN");
+      const top = Number.parseFloat(panel?.style.top ?? "NaN");
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(left + 192).toBeLessThanOrEqual(window.innerWidth);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(top + 100).toBeLessThanOrEqual(trigger.getBoundingClientRect().top);
     });
     if (originalWidth) Object.defineProperty(HTMLElement.prototype, "offsetWidth", originalWidth);
     if (originalHeight) Object.defineProperty(HTMLElement.prototype, "offsetHeight", originalHeight);
