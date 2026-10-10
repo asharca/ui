@@ -272,11 +272,11 @@ export default async function ComponentPage({
         </section>
       ) : null}
 
-      {comp.credit ? (
+      {comp.credit && creditUrl ? (
         <section className="mt-12 border-t border-border pt-8">
           <h2 className="text-sm font-semibold text-foreground">Contributed by</h2>
           <Link
-            href={creditUrl!.toString()}
+            href={creditUrl.toString()}
             target="_blank"
             rel="noreferrer noopener"
             className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-foreground"
