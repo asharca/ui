@@ -23,7 +23,7 @@ Imported the 14 new catalog entries from [`starc007/ui-components@9deb728d936b5f
 
 Publication dates preserve upstream dates; local launch and affected bundle update dates are 2026-10-10. This is a selected component import, not a full upstream merge: the original baseline above remains unchanged, and local Workspace, deployment, branding, tests and in-progress edits are retained.
 
-Verified with `bun run check` (106 catalog components), public MCP typechecking, and all 647 tests using `NODE_OPTIONS=--experimental-strip-types bun test`. Node 22.12 needs this flag for the existing docs-highlighter test's direct TypeScript import. All 14 new install JSON and markdown route handlers returned 200 with their source bundles. Browser/WebGL visuals were not exercised; the test suite still emits non-failing Motion/React warnings.
+Verified the isolated PR snapshot with `bun run check` (106 catalog components), public MCP typechecking, and all 625 tests using `NODE_OPTIONS=--experimental-strip-types bun test`. Node 22.12 needs this flag for the existing docs-highlighter test's direct TypeScript import. All 14 new install JSON and markdown route handlers returned 200 with their source bundles. The pre-existing InlineSlider regression now waits for its frame-scheduled accessible readout instead of assuming thumb movement and React state commit together; a DOM smoke also confirmed drag readout and cancellation of pending drag commits on release. Component runtime behavior is unchanged by this test repair. Browser/WebGL visuals were not exercised; the test suite still emits non-failing Motion/React warnings.
 
 ## Downstream changes
 

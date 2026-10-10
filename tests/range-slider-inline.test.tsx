@@ -19,12 +19,12 @@ describe("InlineSlider snap stops", () => {
     expect(readX()).toBe(startX);
     fireEvent.pointerMove(track, { clientX: startX + 8, pointerId: 1 });
     await waitFor(() => expect(readX()).toBeCloseTo(startX + 5, 2));
-    expect(slider.getAttribute("aria-valuenow")).toBe("51");
+    await waitFor(() => expect(slider.getAttribute("aria-valuenow")).toBe("51"));
     fireEvent.pointerMove(track, { clientX: startX + 9, pointerId: 1 });
     await waitFor(() => expect(readX()).toBeCloseTo(startX + 6, 2));
     // The thumb still responds to a single-pixel move when the rounded
     // readout happens to remain on the same integer.
-    expect(slider.getAttribute("aria-valuenow")).toBe("51");
+    await waitFor(() => expect(slider.getAttribute("aria-valuenow")).toBe("51"));
     const releaseX = readX();
     fireEvent.pointerUp(track, { clientX: startX + 9, pointerId: 1 });
     expect(readX()).toBeCloseTo(releaseX, 2);
