@@ -804,6 +804,29 @@ const cases: Array<[name: string, render: () => ReactElement]> = [
       />
 		),
 	],
+  [
+    "MorphingSearch grouped previews",
+    () => (
+      <MorphingSearch
+        defaultOpen
+        items={[
+          {
+            id: "docs",
+            title: "Documentation",
+            group: "Resources",
+            preview: <a href="/docs">Read the component guide</a>,
+          },
+          {
+            id: "team",
+            title: "Team members",
+            group: "Workspace",
+            preview: <p>People in your workspace.</p>,
+          },
+          { id: "recent", title: "Recent activity" },
+        ]}
+      />
+    ),
+  ],
 	[
 		"MorphingSearch icon only",
 		() => (

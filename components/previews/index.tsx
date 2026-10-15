@@ -28,6 +28,9 @@ export const previews: Record<string, ComponentType> = {
   "motion/image-viewer": dynamic(() =>
     import("./motion/morphing-lightbox.preview").then((m) => m.MorphingLightboxPreview),
   ),
+  "motion/date-time-picker": dynamic(() =>
+    import("./motion/date-time-picker.preview").then((m) => m.DateTimePickerPreview),
+  ),
   "motion/date-range-picker": dynamic(() =>
     import("./motion/date-range-picker.preview").then((m) => m.DateRangePickerPreview),
   ),
@@ -267,6 +270,9 @@ export const previews: Record<string, ComponentType> = {
   ),
   "motion/table": dynamic(() =>
     import("./motion/table.preview").then((m) => m.TablePreview),
+  ),
+  "motion/table-selection": dynamic(() =>
+    import("./motion/table-selection.preview").then((m) => m.TableSelectionPreview),
   ),
   "motion/table-editable": dynamic(() =>
     import("./motion/table-editable.preview").then(

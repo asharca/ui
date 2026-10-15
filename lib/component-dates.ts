@@ -5,6 +5,7 @@
  * maintenance should not refresh every component's public update date.
  */
 const COMPONENT_DATES = {
+  "motion/date-time-picker": { publishedAt: "2026-10-15", updatedAt: "2026-10-15" },
   "motion/alert": { publishedAt: "2026-10-05", updatedAt: "2026-10-10" },
   "motion/collapsible": { publishedAt: "2026-10-05", updatedAt: "2026-10-10" },
   "motion/aspect-ratio": { publishedAt: "2026-10-05", updatedAt: "2026-10-10" },
@@ -71,8 +72,8 @@ const COMPONENT_DATES = {
   "motion/drawer": { publishedAt: "2026-06-22", updatedAt: "2026-08-20" },
   "motion/scroll-animation": { publishedAt: "2026-06-24", updatedAt: "2026-06-28" },
   "motion/range-slider": { publishedAt: "2026-06-24", updatedAt: "2026-09-09" },
-  "motion/wheel-picker": { publishedAt: "2026-07-09", updatedAt: "2026-07-09" },
-  "motion/table": { publishedAt: "2026-07-01", updatedAt: "2026-09-22" },
+  "motion/wheel-picker": { publishedAt: "2026-07-09", updatedAt: "2026-10-15" },
+  "motion/table": { publishedAt: "2026-07-01", updatedAt: "2026-09-28" },
   "motion/shader-background": { publishedAt: "2026-07-02", updatedAt: "2026-10-10" },
   "motion/cylinder-carousel": { publishedAt: "2026-07-04", updatedAt: "2026-10-10" },
   "motion/loader": { publishedAt: "2026-07-04", updatedAt: "2026-07-13" },
@@ -160,7 +161,7 @@ const COMPONENT_DATES = {
   "blocks/swap": { publishedAt: "2026-05-19", updatedAt: "2026-09-22" },
   "blocks/dynamic-island": { publishedAt: "2026-06-10", updatedAt: "2026-09-22" },
   "blocks/command-palette": { publishedAt: "2026-05-17", updatedAt: "2026-09-22" },
-  "blocks/morphing-search": { publishedAt: "2026-08-18", updatedAt: "2026-08-22" },
+  "blocks/morphing-search": { publishedAt: "2026-08-18", updatedAt: "2026-09-28" },
   "blocks/model-selector": { publishedAt: "2026-09-28", updatedAt: "2026-10-10" },
   "blocks/expandable-action-bar": { publishedAt: "2026-06-05", updatedAt: "2026-09-22" },
   "blocks/overflow-actions": { publishedAt: "2026-06-19", updatedAt: "2026-06-28" },

@@ -6,6 +6,7 @@ import {
   type PointerEvent,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -75,6 +76,7 @@ export function WheelPicker({
   "aria-label": ariaLabel,
 }: WheelPickerProps) {
   const reduce = useReducedMotion() ?? false;
+  const id = useId();
   const controlled = value !== undefined;
   const last = options.length - 1;
 
@@ -88,6 +90,7 @@ export function WheelPicker({
 
   const [internal, setInternal] = useState(() => defaultValue ?? value);
   const currentValue = controlled ? value : internal;
+  const activeIndex = indexOf(currentValue);
   const [grabbing, setGrabbing] = useState(false);
 
   // Cylinder geometry. Each row spans `itemAngle`; `radius` seats the rows on
@@ -537,6 +540,8 @@ export function WheelPicker({
       ref={container}
       role="listbox"
       aria-label={ariaLabel}
+      aria-activedescendant={options.length ? `${id}-option-${activeIndex}` : undefined}
+      aria-disabled={disabled || undefined}
       tabIndex={disabled ? -1 : 0}
       onKeyDown={onKeyDown}
       onPointerDown={onPointerDown}
@@ -555,6 +560,11 @@ export function WheelPicker({
       )}
       style={{ height, perspective: 1000 }}
     >
+      {options.map((option, index) => (
+        <span key={optionValue(option)} id={`${id}-option-${index}`} role="option" tabIndex={-1} aria-selected={index === activeIndex} className="sr-only">
+          {optionLabel(option)}
+        </span>
+      ))}
       {/* Curved drum of dimmed rows. */}
       <ul
         ref={drumRef}

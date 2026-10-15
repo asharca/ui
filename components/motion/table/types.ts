@@ -38,6 +38,14 @@ export interface TableProps<T> {
   selectedRowIds?: string[];
   defaultSelectedRowIds?: string[];
   onSelectionChange?: (ids: string[]) => void;
+  /** Replaces column controls while loaded rows are selected; requires `selectable`.
+   * Rows/ids follow the current sort and exclude ids absent from `data`.
+   * `clearSelection` clears every selected id, including unloaded rows. */
+  selectionActions?: (selection: {
+    selectedRows: T[];
+    selectedRowIds: string[];
+    clearSelection: () => void;
+  }) => ReactNode;
   sort?: SortState | null;
   defaultSort?: SortState | null;
   onSortChange?: (sort: SortState | null) => void;

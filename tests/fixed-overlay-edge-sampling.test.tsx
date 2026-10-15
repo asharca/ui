@@ -37,6 +37,7 @@ import { Treemap } from "@/components/charts/treemap";
 import { VolumeProfile } from "@/components/charts/volume-profile";
 import { BreadcrumbEllipsis } from "@/components/motion/breadcrumb";
 import { DateRangePickerDropdown } from "@/components/motion/date-range-picker";
+import { DateTimePicker } from "@/components/motion/date-time-picker";
 import { MorphingLightbox } from "@/components/motion/morphing-lightbox";
 
 const originalMatchMedia = window.matchMedia;
@@ -336,6 +337,15 @@ const IMAGE_ITEM = {
 const cases: Array<
   [name: string, render: () => ReactElement, open?: (view: RenderResult) => unknown]
 > = [
+  ["DateTimePicker closed", () => <DateTimePicker defaultValue="2026-10-15T09:30" />],
+  [
+    "DateTimePicker open",
+    () => <DateTimePicker defaultValue="2026-10-15T09:30" />,
+    async ({ getByRole }) => {
+      fireEvent.click(getByRole("button", { name: /^Choose date and time:/ }));
+      await waitFor(() => expect(getByRole("dialog")).toBeTruthy());
+    },
+  ],
   ["ImageViewer closed", () => <MorphingLightbox images={[{ id: "image", src: "/image.png", alt: "Landscape", width: 800, height: 600 }]} />],
   ["ImageViewer open", () => <MorphingLightbox images={[{ id: "image", src: "/image.png", alt: "Landscape", width: 800, height: 600 }]} defaultValue="image" />],
   ["DateRangePicker closed", () => <DateRangePickerDropdown label="Reporting period" defaultMonth="2026-10-01" />],
@@ -470,6 +480,29 @@ const cases: Array<
   [
     "ModelSelector closed",
     () => <ModelSelector models={[{ id: "one", name: "Sonnet", provider: "Anthropic" }]} />,
+  ],
+  [
+    "MorphingSearch grouped previews open",
+    () => (
+      <MorphingSearch
+        defaultOpen
+        items={[
+          {
+            id: "docs",
+            title: "Documentation",
+            group: "Resources",
+            preview: <a href="/docs">Read the component guide</a>,
+          },
+          {
+            id: "team",
+            title: "Team members",
+            group: "Workspace",
+            preview: <p>People in your workspace.</p>,
+          },
+          { id: "recent", title: "Recent activity" },
+        ]}
+      />
+    ),
   ],
   [
     "AnimatedSidebar mobile closed",

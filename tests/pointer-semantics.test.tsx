@@ -203,6 +203,27 @@ describe("Popover trigger='hover'", () => {
 });
 
 describe("Tooltip", () => {
+  test("cursor-following positions use pointer coordinates but keyboard focus restores the anchor", async () => {
+    const { getByRole } = render(
+      <Tooltip content="Allocation" followCursor open>
+        <button type="button">Inspect allocation</button>
+      </Tooltip>,
+    );
+    const trigger = getByRole("button", { name: "Inspect allocation" });
+    const anchor = trigger.parentElement as HTMLSpanElement;
+    anchor.getBoundingClientRect = () => new DOMRect(100, 100, 80, 40);
+    fireEvent.pointerMove(anchor, { ...mouse, clientX: 240, clientY: 200 });
+    const layer = getByRole("tooltip").parentElement as HTMLElement;
+    expect(layer.style.left).toBe("240px");
+    expect(layer.style.top).toBe("192px");
+    fireEvent.pointerMove(anchor, { ...mouse, clientX: 300, clientY: 220 });
+    expect(layer.style.left).toBe("300px");
+    expect(layer.style.top).toBe("212px");
+    await act(async () => trigger.focus());
+    expect(layer.style.left).toBe("140px");
+    expect(layer.style.top).toBe("92px");
+  });
+
   test("keeps the label up when the trigger is clicked with a mouse", async () => {
     const restore = withTouchCapability();
     const { getByRole } = render(
