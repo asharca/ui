@@ -129,6 +129,14 @@ export const registry: CategoryEntry[] = [
         ],
       },
       {
+        slug: "date-time-picker",
+        name: "Date Time Picker",
+        description: "A compact calendar and time-wheel picker with a softly unfolding popover, AM/PM selection, local timezone readout, Now shortcut and explicit confirmation. Defaults to a 36px trigger, 32px day cells and a 480px desktop panel. Supports keyboard navigation, controlled or uncontrolled local date-time values, forms and reduced motion. Customize individual parts with classNames: trigger, content, calendar, day, selectedDay, time and confirmButton.",
+        file: "components/motion/date-time-picker.tsx",
+        badge: "new",
+        launchedAt: "2026-10-15",
+      },
+      {
         slug: "date-range-picker",
         name: "Date Range Picker",
         description: "Composable date range picker with root, trigger, popover content, calendar, header, grid, summary, footer, clear and preset parts, plus a shared state hook. Compact inline and dropdown compositions, direct month and year selection, and full keyboard navigation.",
@@ -969,7 +977,7 @@ export const registry: CategoryEntry[] = [
         slug: "table",
         name: "Table",
         description:
-          "Virtualized data table that stays smooth at 10k+ rows, with sortable headers, row selection, column resize and reorder, and a sticky header. Minimal, reduced-motion-safe motion.",
+          "Virtualized data table that stays smooth at 10k+ rows, with sortable headers, row selection, optional bulk-action headers, column resize and reorder, and a sticky header. Minimal, reduced-motion-safe motion.",
         file: "components/motion/table/index.tsx",
         badge: "new",
         launchedAt: "2026-07-01",
@@ -991,6 +999,16 @@ export const registry: CategoryEntry[] = [
             file: "components/motion/table/index.tsx",
             previewKey: "motion/table",
             previewFile: "components/previews/motion/table.preview.tsx",
+          },
+          {
+            slug: "selection",
+            name: "Bulk Actions",
+            description:
+              "Select rows to replace column controls with a selected count and custom selectionActions. Activate or delete selected members, clear selection to restore the header, and keep column widths and sorting intact.",
+            installSlug: "table-selection",
+            file: "components/motion/table/index.tsx",
+            previewKey: "motion/table-selection",
+            previewFile: "components/previews/motion/table-selection.preview.tsx",
           },
           {
             slug: "editable",
@@ -1916,10 +1934,22 @@ export const registry: CategoryEntry[] = [
         slug: "morphing-search",
         name: "Morphing Search",
         description:
-          "Search field or compact icon that morphs into a glass results surface, whether opened by click or keyboard shortcut.",
+          "Search field or compact icon that morphs into a glass results surface with keyboard navigation and optional result metadata.",
         file: "components/motion/morphing-search.tsx",
         badge: "new",
         launchedAt: "2026-08-18",
+        examples: [
+          {
+            slug: "default",
+            name: "Default",
+            description:
+              "The original flat results list with a search field, compact icon trigger, and plain-key shortcut.",
+            installSlug: "morphing-search",
+            file: "components/motion/morphing-search.tsx",
+            previewKey: "blocks/morphing-search",
+            previewFile: "components/previews/blocks/morphing-search.preview.tsx",
+          },
+        ],
         keywords: [
           "morphing search react",
           "animated search component",

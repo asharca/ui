@@ -191,3 +191,211 @@ describe("MorphingSearch async results", () => {
     expect(activeRow()?.textContent).toContain("delta");
   });
 });
+
+const GROUPED_ITEMS: MorphingSearchItem[] = [
+  {
+    id: "guide",
+    title: "Alpha guide",
+    group: "Docs",
+    preview: <p>Getting started with the library.</p>,
+  },
+  {
+    id: "team",
+    title: "Team roster",
+    description: "Workspace collaborators",
+    group: "People",
+    preview: <p>Three people belong to this workspace.</p>,
+  },
+  {
+    id: "api",
+    title: "API reference",
+    group: "Docs",
+    keywords: ["onboarding"],
+    preview: <p>Available endpoints and parameters.</p>,
+  },
+  { id: "recent", title: "Recent activity" },
+  {
+    id: "invites",
+    title: "Invites",
+    group: "People",
+    preview: <p>Two invitations are pending.</p>,
+  },
+];
+
+describe("MorphingSearch grouped details", () => {
+  const field = () => within(document.body).getByRole("combobox");
+  const list = () => within(document.body).getByRole("listbox");
+  const details = () =>
+    within(document.body).getByRole("region", { name: "Result details" });
+  const expectPreview = (title: string, content: string) => {
+    expect(within(details()).getByRole("heading").textContent).toBe(title);
+    expect(details().textContent).toContain(content);
+  };
+
+  test.each([
+    [0, "guide", "Alpha guide"],
+    [1, "api", "API reference"],
+    [2, "team", "Team roster"],
+    [3, "invites", "Invites"],
+    [4, "recent", "Recent activity"],
+  ] as const)("selects displayed result %i rather than source order", (steps, id, title) => {
+    const onSelect = mock((_item: MorphingSearchItem) => {});
+    render(<MorphingSearch items={GROUPED_ITEMS} defaultOpen onSelect={onSelect} />);
+
+    expect(
+      within(list()).getAllByRole("group").map((group) => group.getAttribute("aria-label")),
+    ).toEqual(["Docs", "People", "Results"]);
+    const options = within(list()).getAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      "Alpha guide",
+      "API reference",
+      "Team rosterWorkspace collaborators",
+      "Invites",
+      "Recent activity",
+    ]);
+    for (let step = 0; step < steps; step += 1) {
+      fireEvent.keyDown(field(), { key: "ArrowDown" });
+    }
+    expect(field().getAttribute("aria-activedescendant")).toBe(options[steps]?.id);
+    expect(within(details()).getByRole("heading").textContent).toBe(title);
+
+    fireEvent.keyDown(field(), { key: "Enter" });
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0]?.[0].id).toBe(id);
+  });
+
+  test.each([
+    [" DOCS ", ["Alpha guide", "API reference"]],
+    ["collaborators", ["Team rosterWorkspace collaborators"]],
+    ["onboarding", ["API reference"]],
+    ["recent", ["Recent activity"]],
+    ["zz", []],
+  ])("filters searchable fields for %s", (query, expected) => {
+    render(<MorphingSearch items={GROUPED_ITEMS} defaultOpen />);
+
+    fireEvent.change(field(), { target: { value: query } });
+
+    expect(
+      within(list()).queryAllByRole("option").map((option) => option.textContent),
+    ).toEqual(expected);
+    if (expected.length === 0) {
+      expect(within(list()).getByText("No results found.")).not.toBeNull();
+      expect(details().textContent).toBe("Select a result to preview.");
+      expect(field().getAttribute("aria-activedescendant")).toBeNull();
+    }
+  });
+
+  test("updates details on pointer, focus, and keyboard navigation", () => {
+    render(<MorphingSearch items={GROUPED_ITEMS} defaultOpen />);
+    const team = within(list()).getByRole("option", { name: /Team roster/ });
+    const api = within(list()).getByRole("option", { name: "API reference" });
+
+    fireEvent.pointerEnter(team, { pointerType: "mouse" });
+    expectPreview("Team roster", "Three people belong to this workspace.");
+    expect(field().getAttribute("aria-activedescendant")).toBe(team.id);
+
+    fireEvent.focus(api);
+    expectPreview("API reference", "Available endpoints and parameters.");
+    fireEvent.keyDown(field(), { key: "ArrowDown" });
+    expectPreview("Team roster", "Three people belong to this workspace.");
+    fireEvent.keyDown(field(), { key: "ArrowUp" });
+    expectPreview("API reference", "Available endpoints and parameters.");
+
+    fireEvent.pointerMove(team, { pointerType: "mouse" });
+    expectPreview("Team roster", "Three people belong to this workspace.");
+    fireEvent.pointerEnter(api, { pointerType: "touch" });
+    expectPreview("Team roster", "Three people belong to this workspace.");
+  });
+
+  test("clears the query, restores groups, and returns focus to the field", () => {
+    render(<MorphingSearch items={GROUPED_ITEMS} defaultOpen />);
+    const input = field() as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "People" } });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expectPreview("Invites", "Two invitations are pending.");
+    const clear = within(document.body).getByRole("button", { name: "Clear search" });
+    clear.focus();
+
+    fireEvent.click(clear);
+
+    expect(input.value).toBe("");
+    expect(document.activeElement).toBe(input);
+    expect(within(list()).getAllByRole("option")).toHaveLength(5);
+    expect(
+      within(list()).getAllByRole("group").map((group) => group.getAttribute("aria-label")),
+    ).toEqual(["Docs", "People", "Results"]);
+    expectPreview("Alpha guide", "Getting started with the library.");
+  });
+
+  test("replaces stale details when filtering removes the active result", () => {
+    render(<MorphingSearch items={GROUPED_ITEMS} defaultOpen />);
+    fireEvent.keyDown(field(), { key: "ArrowDown" });
+    expectPreview("API reference", "Available endpoints and parameters.");
+
+    fireEvent.change(field(), { target: { value: "recent" } });
+    expectPreview("Recent activity", "No details available.");
+    expect(details().textContent).not.toContain("Available endpoints");
+
+    fireEvent.change(field(), { target: { value: "zz" } });
+    expect(details().textContent).toBe("Select a result to preview.");
+    fireEvent.change(field(), { target: { value: "" } });
+    expectPreview("Alpha guide", "Getting started with the library.");
+  });
+
+  test("does not revive removed active details when source items return", () => {
+    const { rerender } = render(<MorphingSearch items={GROUPED_ITEMS} defaultOpen />);
+    fireEvent.keyDown(field(), { key: "ArrowDown" });
+    expectPreview("API reference", "Available endpoints and parameters.");
+
+    rerender(
+      <MorphingSearch items={GROUPED_ITEMS.filter((item) => item.id !== "api")} defaultOpen />,
+    );
+    expectPreview("Alpha guide", "Getting started with the library.");
+    expect(details().textContent).not.toContain("Available endpoints");
+    rerender(<MorphingSearch items={GROUPED_ITEMS} defaultOpen />);
+    expectPreview("Alpha guide", "Getting started with the library.");
+  });
+
+  test("leaves detail control keys and actions independent of result selection", () => {
+    const onSelect = mock((_item: MorphingSearchItem) => {});
+    const onAction = mock(() => {});
+    render(
+      <MorphingSearch
+        defaultOpen
+        onSelect={onSelect}
+        items={[
+          {
+            ...GROUPED_ITEMS[0],
+            preview: <button type="button" onClick={onAction}>Read full guide</button>,
+          },
+          GROUPED_ITEMS[1],
+        ]}
+      />,
+    );
+    const action = within(details()).getByRole("button", { name: "Read full guide" });
+    action.focus();
+    const activeId = field().getAttribute("aria-activedescendant");
+
+    expect(fireEvent.keyDown(action, { key: "ArrowDown" })).toBe(true);
+    expect(fireEvent.keyDown(action, { key: "ArrowUp" })).toBe(true);
+    expect(fireEvent.keyDown(action, { key: "Enter" })).toBe(true);
+    expect(document.activeElement).toBe(action);
+    expect(field().getAttribute("aria-activedescendant")).toBe(activeId);
+    expect(onSelect).not.toHaveBeenCalled();
+    fireEvent.click(action);
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(within(document.body).getByRole("dialog")).not.toBeNull();
+  });
+
+  test("keeps details optional for flat results", () => {
+    render(<MorphingSearch items={TWO} defaultOpen />);
+
+    expect(within(document.body).queryByRole("region", { name: "Result details" })).toBeNull();
+    expect(within(list()).getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "alpha",
+      "beta",
+    ]);
+  });
+});

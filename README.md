@@ -17,11 +17,17 @@ bun run dev
 
 组件文档：`/components/blocks/workspace-shell`、`/components/blocks/workspace-tab-bar`。
 
+日期时间选择器：`/components/motion/date-time-picker`，源码为 `components/motion/date-time-picker.tsx`。`DateTimePicker` 接受 `value` / `defaultValue` / `onValueChange`，值为本地墙上时间 `YYYY-MM-DDTHH:mm`，不转换时区；`name` 可提交表单值。日历和时间先编辑草稿，点击 Confirm 才提交，Escape 或点击外部丢弃草稿，Now 仅将草稿设为本地当前时间。方向键移动日期，Page Up / Down 切换月份（Shift 切换年份）；减少动态效果时使用原生时间下拉框。
+
+时间滚轮同时向辅助技术暴露当前选项和完整选项列表，键盘可用方向键及 Home / End 调整。
+
 ```bash
 bun run check
 bun test
 (cd mcp && bun install --frozen-lockfile && bun run typecheck)
 ```
+
+单独运行 lint：`bun run lint`。Biome 使用 `recommended` 规则集；formatter 当前禁用，`bun run check` 不检查格式。
 
 代码校验 CI 继续只执行静态检查和测试。独立 Pages 发布流程在 `main` 更新后构建静态站点并自动部署；不启动开发/生产服务，也不运行浏览器或截图。
 
