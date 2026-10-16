@@ -61,9 +61,24 @@ content remains vertically centered while the logo keeps its horizontal anchor.
 Compact hover starts a fresh interaction: the logo slides down with SPRING_LAYOUT,
 without a clipping edge. Logo and toggle opacity use a separate 140ms EASE_OUT
 tween so rapid hover reversals cannot inherit spring velocity and briefly brighten.
-Menu groups and rows share a 4px gap. Demo
-footer icons keep the same left padding and row height in both states.
-Reduced motion switches these states without movement.
+Menu groups have spacing but no visible headings; `groups[].title` supplies only
+the accessible group name. Rows share a 4px gap. The footer has a subtle top
+divider; demo footer icons keep the same left padding and row height in both
+states. Footer menus reuse `MorphPopover` with an opaque background, border and
+contour shadow to separate them from the muted sidebar. Reduced motion switches
+without movement.
+
+Add `children` to a `groups[].items[]` entry for exactly one nested level.
+Children support `id`, `label`, `icon`, `badge`, `href` and `disabled`.
+Nonempty parents toggle rather than navigate or invoke `onSelect`; empty arrays
+remain ordinary navigation items. Multiple parents may stay expanded. An active
+child opens its parent initially and when `activeId` changes; manual collapse is
+still allowed. Child selection uses the content surface color and an indented
+guide; its parent has a quieter branch highlight. In the icon rail, the active
+parent is highlighted and clicking a parent expands the sidebar and its children.
+On mobile, toggling parents keeps the sheet open; selecting a child closes it.
+Closed or disabled branches are inert, including during exit. Hosts must resolve
+child IDs as well as top-level leaves when opening tabs.
 
 `WorkspaceTabBar` accepts `tabs`, `activeTabId`, `onSelect` and optional callbacks
 `onClose`, `onReorder(sourceId, targetId)`, `onPinnedChange(id, pinned)`,

@@ -1,27 +1,41 @@
 "use client";
 
-import { Bot, Boxes, Check, ChevronsUpDown, CircleUserRound, Command, FileText, LayoutDashboard, LogOut, Menu, Moon, Plug, Settings2, Sun } from "lucide-react";
+import { Bot, Boxes, Check, ChevronsUpDown, CircleUserRound, Command, FileText, Folder, LayoutDashboard, LogOut, Menu, MessageSquare, Moon, MoreHorizontal, Play, Plug, Settings2, Sun } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { Button } from "@/components/motion/button/base";
 import { AnimatedSidebarTrigger, useAnimatedSidebar } from "@/components/motion/animated-sidebar";
-import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "@/components/motion/popover";
+import { MorphPopover, MorphPopoverContent, MorphPopoverTrigger } from "@/components/motion/popover-morph";
 import { WorkspaceShell, openWorkspaceWindow } from "@/components/workspace/workspace-shell";
-import { WorkspaceSidebar } from "@/components/workspace/workspace-sidebar";
+import { WorkspaceSidebar, type WorkspaceSidebarGroup } from "@/components/workspace/workspace-sidebar";
 import { WorkspaceTabBar, type WorkspaceTab } from "@/components/workspace/workspace-tab-bar";
 
 const destinations = [
   { id: "overview", label: "概览", icon: <LayoutDashboard /> },
-  { id: "agents", label: "Agents", icon: <Bot /> },
-  { id: "mcp", label: "MCP 服务", icon: <Plug /> },
-  { id: "files", label: "项目文件", icon: <FileText /> },
+  { id: "agent-group", label: "Agents", icon: <Bot />, children: [
+    { id: "agents", label: "全部 Agents", icon: <Bot /> },
+    { id: "conversations", label: "对话", icon: <MessageSquare />, badge: "12" },
+    { id: "runs", label: "运行记录", icon: <Play /> },
+  ] },
+  { id: "mcp-group", label: "MCP 服务", icon: <Plug />, children: [
+    { id: "mcp", label: "全部服务", icon: <Plug /> },
+    { id: "connections", label: "连接配置", icon: <Settings2 /> },
+  ] },
+  { id: "file-group", label: "项目文件", icon: <Folder />, children: [
+    { id: "files", label: "全部文件", icon: <FileText /> },
+    { id: "recent-files", label: "最近打开", icon: <Folder /> },
+  ] },
 ];
-const groups = [
+const groups: WorkspaceSidebarGroup[] = [
   { id: "work", title: "工作台", items: destinations },
   { id: "manage", title: "管理", items: [{ id: "settings", label: "工作区设置", icon: <Settings2 /> }] },
 ];
-const initial: WorkspaceTab[] = destinations.slice(0, 3).map((item, i) => ({ id: item.id, title: item.label, icon: item.icon, pinned: i === 0 }));
+const pages = groups.flatMap((group) => group.items.flatMap((item) => item.children?.length ? item.children : [item]));
+const initial: WorkspaceTab[] = ["overview", "agents", "mcp"].flatMap((id, i) => {
+  const item = pages.find((page) => page.id === id);
+  return item ? [{ id, title: item.label, icon: item.icon, pinned: i === 0 }] : [];
+});
 const defaultNotes = { overview: "整理本周的工作区任务" };
 const storagePrefix = "asharca:beui-workspace:";
 interface Snapshot { version: 1; id: string; title: string; note: string }
@@ -43,33 +57,35 @@ const workspaces = [
 ];
 type WorkspaceOption = (typeof workspaces)[number];
 
-/** Sidebar footer: workspace switcher + avatar, both goo Popovers like the
- *  animated-sidebar sample. Lives in the preview so the reusable sidebar
- *  never invents business data. */
+/** Demo-owned footer menus reuse the bordered, shadowed morph surface so they
+ *  stay distinct from the sidebar in both themes. */
 function WorkspaceFooter({ compact }: { compact: boolean }) {
   const [current, setCurrent] = useState<WorkspaceOption | undefined>(workspaces[0]);
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   if (!current) return null;
   return (
     <div className="flex w-full flex-col gap-1">
-      <Popover side="top" align="start">
-        <PopoverTrigger>
+      <MorphPopover open={workspaceMenuOpen} onOpenChange={setWorkspaceMenuOpen} className="w-full">
+        <MorphPopoverTrigger>
           <button type="button" aria-label="切换工作区" className="flex h-9 w-full items-center gap-2 overflow-hidden rounded-lg px-1 py-1 text-left text-xs text-muted-foreground outline-none transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
-            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-background text-foreground">{current.mark}</span>
-            {!compact && <span className="min-w-0 flex-1 truncate">{current.name}</span>}
+            <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-border/60 bg-background text-foreground">{current.mark}</span>
+            {!compact && <span className="min-w-0 flex-1"><span className="block truncate text-xs font-medium text-foreground">{current.name}</span><span className="block truncate text-[10px] text-muted-foreground">{current.hint}</span></span>}
             {!compact && <ChevronsUpDown className="size-3.5 shrink-0" />}
           </button>
-        </PopoverTrigger>
-        <WorkspaceSwitcherContent workspaces={workspaces} currentId={current.id} onPick={setCurrent} />
-      </Popover>
-      <Popover side="top" align="start">
-        <PopoverTrigger>
+        </MorphPopoverTrigger>
+        <WorkspaceSwitcherContent workspaces={workspaces} currentId={current.id} onPick={(workspace) => { setCurrent(workspace); setWorkspaceMenuOpen(false); }} />
+      </MorphPopover>
+      <MorphPopover open={accountMenuOpen} onOpenChange={setAccountMenuOpen} className="w-full">
+        <MorphPopoverTrigger>
           <button type="button" aria-label="账户菜单" className="flex h-9 w-full items-center gap-2 overflow-hidden rounded-lg px-1 py-1 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring">
             <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#d5ff66] text-[11px] font-semibold text-[#172000]">AS</span>
             {!compact && <span className="min-w-0 flex-1"><span className="block truncate text-xs leading-4 font-medium text-foreground">Ava Stone</span><span className="block truncate text-[10px] leading-3 text-muted-foreground">ava@solace.app</span></span>}
+            {!compact && <MoreHorizontal aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />}
           </button>
-        </PopoverTrigger>
-        <AccountMenuContent />
-      </Popover>
+        </MorphPopoverTrigger>
+        <AccountMenuContent onClose={() => setAccountMenuOpen(false)} />
+      </MorphPopover>
     </div>
   );
 }
@@ -79,35 +95,33 @@ function WorkspaceSwitcherContent({ workspaces, currentId, onPick }: {
   currentId: string;
   onPick: (workspace: WorkspaceOption) => void;
 }) {
-  const { setOpen } = usePopoverContext("PopoverContent");
-  return <PopoverContent className="w-60 p-1.5">
+  return <MorphPopoverContent side="top" align="start" sideOffset={10} className="w-60 border-foreground/15 p-1.5 text-popover-foreground">
     <p className="px-2.5 pb-1 pt-2 text-[10px] font-medium text-muted-foreground">工作区</p>
     {workspaces.map((workspace) => (
-      <button key={workspace.id} type="button" onClick={() => { onPick(workspace); setOpen(false); }}
+      <button key={workspace.id} type="button" onClick={() => onPick(workspace)}
         className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60">
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-foreground">{workspace.mark}</span>
         <span className="min-w-0 flex-1"><span className="block truncate text-xs font-medium text-foreground">{workspace.name}</span><span className="block truncate text-[10px] text-muted-foreground">{workspace.hint}</span></span>
         {currentId === workspace.id && <Check className="size-3.5 shrink-0 text-foreground" />}
       </button>
     ))}
-  </PopoverContent>;
+  </MorphPopoverContent>;
 }
 
 const ACCOUNT_ITEMS = [["个人资料", CircleUserRound], ["偏好设置", Settings2], ["退出登录", LogOut]] as const;
 
-function AccountMenuContent() {
-  const { setOpen } = usePopoverContext("PopoverContent");
-  return <PopoverContent className="w-56 p-1.5">
+function AccountMenuContent({ onClose }: { onClose: () => void }) {
+  return <MorphPopoverContent side="top" align="start" sideOffset={10} className="w-56 border-foreground/15 p-1.5 text-popover-foreground">
     <p className="px-2.5 pb-1 pt-2 text-xs font-medium text-foreground">Ava Stone</p>
     <p className="px-2.5 pb-1.5 text-[10px] text-muted-foreground">ava@solace.app</p>
     <div className="my-1 h-px bg-border" />
     {ACCOUNT_ITEMS.map(([label, Icon]) => (
-      <button key={label} type="button" onClick={() => setOpen(false)}
+      <button key={label} type="button" onClick={onClose}
         className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs text-foreground outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60">
         <Icon className="size-3.5 shrink-0 text-muted-foreground" />{label}
       </button>
     ))}
-  </PopoverContent>;
+  </MorphPopoverContent>;
 }
 
 /** WorkspaceSidebar renders its footer inside the AnimatedSidebar tree, so the
@@ -155,7 +169,7 @@ export function WorkspaceDemo({ fullPage = false, detachedKey }: { fullPage?: bo
   const tabId = (id: string) => `${instance}-tab-${id}`;
   const isDirty = (id: string) => (notes[id] ?? "") !== (saved[id] ?? "");
   function select(id: string) {
-    const item = groups.flatMap((group) => group.items).find((candidate) => candidate.id === id);
+    const item = pages.find((candidate) => candidate.id === id);
     if (!item) return;
     setTabs((current) => current.some((tab) => tab.id === id) ? current : [...current, { id, title: item.label, icon: item.icon }]);
     setActive(id);
