@@ -218,8 +218,20 @@ export const previews: Record<string, ComponentType> = {
       (m) => m.MorphingSearchPreview,
     ),
   ),
-  "blocks/model-selector": dynamic(() =>
-    import("./blocks/model-selector.preview").then((m) => m.ModelSelectorPreview),
+  "blocks/selector": dynamic(() =>
+    import("./blocks/selector.preview").then((m) => m.SelectorPreview),
+  ),
+  "blocks/selector-people-single": dynamic(() =>
+    import("./blocks/selector.preview").then((m) => m.SelectorPeopleSinglePreview),
+  ),
+  "blocks/selector-people": dynamic(() =>
+    import("./blocks/selector.preview").then((m) => m.SelectorPeoplePreview),
+  ),
+  "blocks/selector-workspace": dynamic(() =>
+    import("./blocks/selector.preview").then((m) => m.SelectorWorkspacePreview),
+  ),
+  "blocks/selector-resources": dynamic(() =>
+    import("./blocks/selector.preview").then((m) => m.SelectorResourcesPreview),
   ),
   "blocks/feedback-widget": dynamic(() =>
     import("./blocks/feedback-widget.preview").then((m) => m.FeedbackWidgetPreview),

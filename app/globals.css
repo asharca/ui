@@ -225,7 +225,7 @@
 }
 
 @layer base {
-    /* Match ModelSelector; utility-layer opt-outs keep hidden scrollbars hidden. */
+    /* Match Selector; utility-layer opt-outs keep hidden scrollbars hidden. */
     * {
         scrollbar-width: thin;
         scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent) transparent;

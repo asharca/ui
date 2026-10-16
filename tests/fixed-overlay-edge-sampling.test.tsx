@@ -28,7 +28,7 @@ import { CommandPalette } from "@/components/motion/command-palette";
 import { Drawer } from "@/components/motion/drawer";
 import { MorphingModal } from "@/components/motion/morphing-modal";
 import { MorphingSearch } from "@/components/motion/morphing-search";
-import { ModelSelector } from "@/components/motion/model-selector";
+import { Selector } from "@/components/motion/selector";
 import { ProjectFolder } from "@/components/motion/project-folder";
 import { TableMenu } from "@/components/motion/table/table-menu";
 import { CompositionChart } from "@/components/charts/composition-chart";
@@ -465,21 +465,21 @@ const cases: Array<
     () => <MorphingSearch items={[{ id: "one", title: "Alpha" }]} defaultOpen />,
   ],
   [
-    "ModelSelector open",
-    () => <ModelSelector defaultOpen models={[{ id: "one", name: "Sonnet", provider: "Anthropic" }]} />,
+    "Selector open",
+    () => <Selector defaultOpen options={[{ id: "one", name: "Sonnet", group: "Anthropic" }]} />,
   ],
   [
-    "ModelSelector hover details",
-    () => <ModelSelector defaultOpen models={[{ id: "one", name: "Sonnet", provider: "Anthropic" }]} />,
+    "Selector hover details",
+    () => <Selector defaultOpen options={[{ id: "one", name: "Sonnet", details: <p>Sonnet details</p> }]} />,
     async ({ getByRole }) => {
       fireEvent.pointerEnter(getByRole("option"), { pointerType: "mouse" });
       await act(() => delay(1550));
-      expect(getByRole("complementary", { name: "Model details" }).textContent).toContain("Sonnet");
+      expect(getByRole("complementary", { name: "Option details" }).textContent).toContain("Sonnet");
     },
   ],
   [
-    "ModelSelector closed",
-    () => <ModelSelector models={[{ id: "one", name: "Sonnet", provider: "Anthropic" }]} />,
+    "Selector closed",
+    () => <Selector options={[{ id: "one", name: "Sonnet" }]} />,
   ],
   [
     "MorphingSearch grouped previews open",
