@@ -176,7 +176,7 @@ const COMPONENT_DATES = {
   "blocks/bloom-menu": { publishedAt: "2026-06-26", updatedAt: "2026-06-26" },
   "blocks/feedback-widget": { publishedAt: "2026-06-29", updatedAt: "2026-09-22" },
   "blocks/not-found": { publishedAt: "2026-06-21", updatedAt: "2026-09-22" },
-  "blocks/workspace-shell": { publishedAt: "2026-09-24", updatedAt: "2026-10-10" },
+  "blocks/workspace-shell": { publishedAt: "2026-09-24", updatedAt: "2026-10-16" },
   "blocks/workspace-tab-bar": { publishedAt: "2026-09-24", updatedAt: "2026-10-10" },
 } as const;
 

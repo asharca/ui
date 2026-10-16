@@ -34,6 +34,39 @@ describe("beUI workspace", () => {
     rerender(view(false));
     expect(document.activeElement).toBe(account);
   });
+  test("opens the active child's parent, supports manual collapse and reveals a newly selected child", () => {
+    const select = mock(() => {});
+    const groups = [{ id: "work", title: "Workspace", items: [{ id: "agents", label: "Agents", children: [
+      { id: "all", label: "All agents" }, { id: "runs", label: "Runs" }, { id: "disabled", label: "Unavailable", disabled: true },
+    ] }] }];
+    const view = (activeId: string) => <WorkspaceShell sidebar={<WorkspaceSidebar groups={groups} activeId={activeId} onSelect={select} />} />;
+    const { rerender } = render(view("all"));
+    const parent = screen.getByRole("button", { name: "Agents" });
+    expect(parent.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "All agents" }).getAttribute("aria-current")).toBe("page");
+    expect(parent.getAttribute("aria-current")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Unavailable" }));
+    expect(select).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Runs" }));
+    expect(select).toHaveBeenLastCalledWith("runs");
+    select.mockClear();
+    fireEvent.click(parent);
+    expect(parent.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("button", { name: "Runs" })).toBeNull();
+    expect(select).not.toHaveBeenCalled();
+    rerender(view("runs"));
+    expect(parent.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "Runs" }).getAttribute("aria-current")).toBe("page");
+  });
+  test("clicking an active parent in the icon rail expands the sidebar and keeps children reachable", () => {
+    const groups = [{ id: "work", items: [{ id: "agents", label: "Agents", children: [{ id: "all", label: "All agents" }] }] }];
+    render(<WorkspaceShell defaultOpen={false} sidebar={<WorkspaceSidebar groups={groups} activeId="all" />} />);
+    const parent = screen.getByRole("button", { name: "Agents" });
+    expect(screen.queryByRole("button", { name: "All agents" })).toBeNull();
+    fireEvent.click(parent);
+    expect(parent.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "All agents" }).getAttribute("aria-current")).toBe("page");
+  });
   test("controlled selection does not move until the host updates", () => {
     const select = mock(() => {});
     const { rerender } = render(<WorkspaceTabBar tabs={tabs} activeTabId="a" onSelect={select} />);

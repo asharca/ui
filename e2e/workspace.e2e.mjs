@@ -10,8 +10,8 @@ async function ready(page) {
   await expect(workspace(page)).toHaveAttribute('data-slot', 'sidebar-wrapper');
   await expect(tab(page, '概览')).toHaveAttribute('aria-selected', 'true');
   // An interaction confirms hydration instead of relying on static server text.
-  await tab(page, 'Agents').click();
-  await expect(page.getByRole('textbox', { name: 'Agents便签' })).toBeVisible();
+  await tab(page, '全部 Agents').click();
+  await expect(page.getByRole('textbox', { name: '全部 Agents便签' })).toBeVisible();
   await tab(page, '概览').click();
 }
 
@@ -37,7 +37,7 @@ for (const colorScheme of ['light', 'dark']) {
     await expect(page.getByRole('button', { name: '展开工作区侧栏', exact: true })).toBeVisible();
     const collapsed = await surface.boundingBox();
     expect(collapsed.x).toBeCloseTo(64, 0);
-    await tab(page, 'MCP 服务').click();
+    await tab(page, '全部服务').click();
     await expect(surface).toHaveCSS('border-top-left-radius', '12px');
     await shell.screenshot({ path: info.outputPath(`workspace-${colorScheme}-compact.png`) });
     expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
@@ -49,8 +49,8 @@ test('drafts and content nodes remain mounted across tab switches and sidebar fo
   const original = page.getByRole('textbox', { name: '概览便签' });
   await original.fill('切换标签，保持这份草稿');
   await original.evaluate((node) => { node.dataset.originalDraft = 'true'; });
-  await tab(page, 'Agents').click();
-  await page.getByRole('textbox', { name: 'Agents便签' }).fill('另一份草稿');
+  await tab(page, '全部 Agents').click();
+  await page.getByRole('textbox', { name: '全部 Agents便签' }).fill('另一份草稿');
   await page.getByRole('button', { name: '折叠工作区侧栏', exact: true }).click();
   await tabs(page).getByRole('tab', { name: /概览/ }).click();
   await expect(original).toHaveValue('切换标签，保持这份草稿');
@@ -67,47 +67,47 @@ test('drafts and content nodes remain mounted across tab switches and sidebar fo
 
 test('keyboard reordering, fixed boundary and dirty close confirmation are real', async ({ page }) => {
   await ready(page);
-  await tab(page, 'Agents').focus();
+  await tab(page, '全部 Agents').focus();
   await page.keyboard.press('ArrowRight');
-  await expect(tab(page, 'MCP 服务')).toBeFocused();
+  await expect(tab(page, '全部服务')).toBeFocused();
   await page.keyboard.press('Home');
   await expect(tab(page, '概览')).toBeFocused();
   await page.keyboard.press('Delete');
   await expect(tab(page, '概览')).toBeVisible();
   await page.keyboard.press('End');
-  await expect(tab(page, 'MCP 服务')).toBeFocused();
+  await expect(tab(page, '全部服务')).toBeFocused();
   await page.keyboard.press('Alt+ArrowLeft');
-  await expect(tabs(page).getByRole('tab')).toHaveText(['概览', 'MCP 服务', 'Agents']);
+  await expect(tabs(page).getByRole('tab')).toHaveText(['概览', '全部服务', '全部 Agents']);
   await page.keyboard.press('Alt+ArrowLeft');
-  await expect(tabs(page).getByRole('tab')).toHaveText(['概览', 'MCP 服务', 'Agents']);
-  await page.getByRole('textbox', { name: 'MCP 服务便签' }).fill('未保存内容');
+  await expect(tabs(page).getByRole('tab')).toHaveText(['概览', '全部服务', '全部 Agents']);
+  await page.getByRole('textbox', { name: '全部服务便签' }).fill('未保存内容');
   page.once('dialog', (dialog) => dialog.dismiss());
-  await page.getByRole('button', { name: '关闭 MCP 服务', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: 'MCP 服务便签' })).toHaveValue('未保存内容');
+  await page.getByRole('button', { name: '关闭 全部服务', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '全部服务便签' })).toHaveValue('未保存内容');
   page.once('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: '关闭 MCP 服务', exact: true }).click();
+  await page.getByRole('button', { name: '关闭 全部服务', exact: true }).click();
   await expect(tabs(page).getByRole('tab')).toHaveCount(2);
-  await expect(tab(page, 'Agents')).toBeFocused();
+  await expect(tab(page, '全部 Agents')).toBeFocused();
 });
 
 test('beUI action popover and context menu preserve tab identity and pin rules', async ({ page }) => {
   await ready(page);
-  await page.getByRole('button', { name: 'Agents操作', exact: true }).click();
-  const menu = page.getByRole('menu', { name: 'Agents操作' });
+  await page.getByRole('button', { name: '全部 Agents操作', exact: true }).click();
+  const menu = page.getByRole('menu', { name: '全部 Agents操作' });
   const pin = menu.getByRole('menuitem', { name: '固定标签', exact: true });
   await expect(pin).toBeVisible();
   await pin.click();
-  await expect(page.getByRole('button', { name: '关闭 Agents', exact: true })).toHaveCount(0);
-  await tab(page, 'MCP 服务').focus();
+  await expect(page.getByRole('button', { name: '关闭 全部 Agents', exact: true })).toHaveCount(0);
+  await tab(page, '全部服务').focus();
   await page.keyboard.press('Shift+F10');
-  const mcpMenu = page.getByRole('menu', { name: 'MCP 服务操作' });
+  const mcpMenu = page.getByRole('menu', { name: '全部服务操作' });
   await expect(mcpMenu).toBeVisible();
   await expect(mcpMenu.getByRole('menuitem', { name: '向左移动', exact: true })).toBeDisabled();
   await page.keyboard.press('Escape');
   await expect(mcpMenu).toHaveCount(0);
-  await page.getByRole('button', { name: 'Agents操作', exact: true }).click();
+  await page.getByRole('button', { name: '全部 Agents操作', exact: true }).click();
   await menu.getByRole('menuitem', { name: '取消固定', exact: true }).click();
-  await expect(page.getByRole('button', { name: '关闭 Agents', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '关闭 全部 Agents', exact: true })).toBeVisible();
 });
 
 test('dragging reorders only within the unpinned group', async ({ page }) => {
@@ -119,28 +119,28 @@ test('dragging reorders only within the unpinned group', async ({ page }) => {
   await b.dispatchEvent('dragover', { dataTransfer: transfer });
   await b.dispatchEvent('drop', { dataTransfer: transfer });
   await a.dispatchEvent('dragend', { dataTransfer: transfer });
-  await expect(tabs(page).getByRole('tab')).toHaveText(['概览', 'MCP 服务', 'Agents']);
+  await expect(tabs(page).getByRole('tab')).toHaveText(['概览', '全部服务', '全部 Agents']);
   await transfer.dispose();
 });
 
 test('independent window receives only its minimal snapshot and survives refresh', async ({ page }) => {
   await ready(page);
-  await tab(page, 'Agents').click();
-  await page.getByRole('textbox', { name: 'Agents便签' }).fill('独立窗口里的便签');
+  await tab(page, '全部 Agents').click();
+  await page.getByRole('textbox', { name: '全部 Agents便签' }).fill('独立窗口里的便签');
   await page.evaluate(() => sessionStorage.setItem('unrelated-private-state', 'not-for-copying'));
-  await page.getByRole('button', { name: 'Agents操作', exact: true }).click();
+  await page.getByRole('button', { name: '全部 Agents操作', exact: true }).click();
   const popupEvent = page.waitForEvent('popup');
   await page.getByRole('menuitem', { name: '在独立窗口打开', exact: true }).click();
   const popup = await popupEvent;
-  await expect(popup.getByRole('textbox', { name: 'Agents便签' })).toHaveValue('独立窗口里的便签');
+  await expect(popup.getByRole('textbox', { name: '全部 Agents便签' })).toHaveValue('独立窗口里的便签');
   expect(await popup.evaluate(() => window.opener)).toBeNull();
   expect(await popup.evaluate(() => sessionStorage.getItem('unrelated-private-state'))).toBeNull();
-  await popup.getByRole('textbox', { name: 'Agents便签' }).fill('刷新后继续');
+  await popup.getByRole('textbox', { name: '全部 Agents便签' }).fill('刷新后继续');
   await popup.reload();
-  await expect(popup.getByRole('textbox', { name: 'Agents便签' })).toHaveValue('刷新后继续');
+  await expect(popup.getByRole('textbox', { name: '全部 Agents便签' })).toHaveValue('刷新后继续');
   await expect(tabs(popup).getByRole('tab')).toHaveCount(1);
-  await expect(popup.getByRole('button', { name: '关闭 Agents', exact: true })).toBeDisabled();
-  await expect(page.getByRole('textbox', { name: 'Agents便签' })).toHaveValue('独立窗口里的便签');
+  await expect(popup.getByRole('button', { name: '关闭 全部 Agents', exact: true })).toBeDisabled();
+  await expect(page.getByRole('textbox', { name: '全部 Agents便签' })).toHaveValue('独立窗口里的便签');
   await popup.close();
 });
 
@@ -169,8 +169,11 @@ test('mobile sidebar is usable and returns focus with no page overflow', async (
   await expect(trigger).toBeFocused();
   await trigger.click();
   await dialog.getByRole('button', { name: '项目文件', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '项目文件', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await dialog.getByRole('button', { name: '全部文件', exact: true }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole('textbox', { name: '项目文件便签' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: '全部文件便签' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
