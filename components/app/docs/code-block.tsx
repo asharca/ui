@@ -3,6 +3,7 @@ import {
   transformerNotationHighlight,
   transformerNotationDiff,
   transformerNotationFocus,
+  transformerStyleToClass,
 } from "@shikijs/transformers";
 import { CopyButton } from "./copy-button";
 import { ExpandableCode } from "./expandable-code";
@@ -47,7 +48,12 @@ export async function CodeBlock({
   const langLabel =
     LANG_LABELS[shikiLang] ?? LANG_LABELS[lang] ?? lang.toUpperCase();
 
-  const html = await codeToHtml(code, {
+  // Token colors become short shared classes instead of an inline style on
+  // every span. Pages that bundle many files (the Manual install tab) otherwise
+  // ship megabytes of repeated style attributes, twice: in the HTML and again
+  // in the RSC payload. Class names hash the colors, so blocks agree.
+  const styleToClass = transformerStyleToClass({ classPrefix: "k" });
+  const highlighted = await codeToHtml(code, {
     lang: shikiLang,
     themes: {
       light: "github-light-high-contrast",
@@ -58,8 +64,10 @@ export async function CodeBlock({
       transformerNotationHighlight(),
       transformerNotationDiff(),
       transformerNotationFocus(),
+      styleToClass,
     ],
   });
+  const html = `<style>${styleToClass.getCSS()}</style>${highlighted}`;
 
   const fileDir = filename ? filename.split("/").slice(0, -1).join("/") : null;
   const fileName = filename ? filename.split("/").pop() : null;
@@ -67,15 +75,19 @@ export async function CodeBlock({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-border bg-card",
+        // The card frame: a gray surface holding the header, with the code
+        // on an inset background panel. Radii are concentric: the 16px frame
+        // minus the 8px inset gives the 8px panel.
+        "group relative overflow-hidden rounded-2xl bg-card",
         "font-mono text-[13px]",
+        !filename && "p-2",
         className,
       )}
     >
       {filename ? (
-        <div className="flex items-center justify-between gap-3 border-b border-border bg-background/60 px-4 py-2.5">
+        <div className="flex items-center justify-between gap-3 py-2 pr-3 pl-4">
           <div className="flex min-w-0 items-center gap-2 text-xs">
-            <span className="inline-flex h-5 shrink-0 items-center rounded border border-border bg-card px-1.5 font-mono text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+            <span className="inline-flex h-5 shrink-0 items-center rounded-md bg-background px-1.5 font-mono text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
               {langLabel}
             </span>
 
@@ -89,11 +101,12 @@ export async function CodeBlock({
           <CopyButton text={code} eventLabel={filename ?? lang} />
         </div>
       ) : (
-        <div className="absolute right-3 top-3 z-10">
+        <div className="absolute top-5 right-5 z-10">
           <CopyButton text={code} eventLabel={filename ?? lang} />
         </div>
       )}
 
+      <div className={cn("overflow-hidden rounded-lg bg-background", filename && "mx-2 mb-2")}>
       <ExpandableCode>
         <div
           className={cn(
@@ -112,6 +125,7 @@ export async function CodeBlock({
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </ExpandableCode>
+      </div>
     </div>
   );
 }

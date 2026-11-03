@@ -62,12 +62,15 @@ const REDUCED_VARIANTS: Variants = {
 export function TooltipSurface({
   children,
   side = "top",
+  ready = true,
   className,
   ref,
   ...props
 }: Omit<ComponentProps<typeof motion.span>, "children"> & {
   children?: ReactNode;
   side?: Side;
+  /** Hold the entry animation until the caller has measured its position. */
+  ready?: boolean;
   ref?: Ref<HTMLSpanElement>;
 }) {
   const reduce = useReducedMotion();
@@ -78,7 +81,7 @@ export function TooltipSurface({
       role="tooltip"
       variants={variants}
       initial="initial"
-      animate="animate"
+      animate={ready ? "animate" : "initial"}
       exit="exit"
       className={cn(
         "block whitespace-nowrap rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-lg",

@@ -6,6 +6,14 @@ GlobalRegistrator.register();
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
+// Floating UI reads the layout viewport from the root element. Happy DOM has
+// no layout engine, so its zero client dimensions otherwise clip every sized
+// anchor. Keep these dynamic for tests that resize window.innerWidth/Height.
+Object.defineProperties(document.documentElement, {
+  clientWidth: { configurable: true, get: () => window.innerWidth },
+  clientHeight: { configurable: true, get: () => window.innerHeight },
+});
+
 // Browser APIs that motion + react-use-measure touch but happy-dom omits.
 // Stubbed so components mount in the test DOM without throwing.
 if (typeof window.matchMedia !== "function") {

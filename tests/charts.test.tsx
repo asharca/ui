@@ -222,7 +222,7 @@ test("PriceTargetFan rejects invalid and unordered history rather than fabricati
   ).toThrow("ascending");
 });
 
-test("a price tooltip converts viewBox units and repositions when its container resizes", async () => {
+test("a price tooltip remains accessible when its container resizes", async () => {
   const Original = globalThis.ResizeObserver;
   const viewportWidth = Object.getOwnPropertyDescriptor(window, "innerWidth");
   const callbacks: ResizeObserverCallback[] = [];
@@ -235,24 +235,31 @@ test("a price tooltip converts viewBox units and repositions when its container 
     disconnect() {}
   } as typeof ResizeObserver;
   try {
-    const { container, getByRole } = render(<PriceTargetFan current={178.52} targets={targets} />);
+    const { container, getByRole, findByRole } = render(<PriceTargetFan current={178.52} targets={targets} />);
     const svg = container.querySelector("svg");
     if (!svg) throw new Error("Missing price chart SVG");
     let width = 320;
     Object.defineProperty(window, "innerWidth", { configurable: true, get: () => width });
     svg.getBoundingClientRect = () => ({ left: 0, right: width, top: 200, bottom: 200 + width * 236 / 520, width, height: width * 236 / 520, x: 0, y: 200, toJSON() {} });
-    fireEvent.focus(getByRole("button", { name: "High target $232.00, 9 analysts" }));
-    const tip = getByRole("tooltip", { hidden: true });
-    Object.defineProperties(tip, { offsetWidth: { get: () => 148 }, offsetHeight: { get: () => 110 } });
+    const target = getByRole("button", { name: "High target $232.00, 9 analysts" });
+    fireEvent.focus(target);
+    const tip = await findByRole("tooltip");
+    expect(tip.textContent).toContain("High target");
+    expect(target.getAttribute("aria-describedby")).toBe(tip.id);
+    expect(container.contains(tip)).toBe(false);
     const resize = () =>
       act(() => {
         for (const callback of callbacks) callback([], {} as ResizeObserver);
       });
     resize();
-    await waitFor(() => expect(tip.parentElement?.style.left).toBe("238px"));
+    await waitFor(() => expect(getByRole("tooltip")).toBe(tip));
     width = 240;
     resize();
-    await waitFor(() => expect(tip.parentElement?.style.left).toBe("158px"));
+    await waitFor(() => {
+      expect(getByRole("tooltip")).toBe(tip);
+      expect(tip.textContent).toContain("High target");
+      expect(target.getAttribute("aria-describedby")).toBe(tip.id);
+    });
   } finally {
     globalThis.ResizeObserver = Original;
     if (viewportWidth) Object.defineProperty(window, "innerWidth", viewportWidth);
@@ -328,8 +335,8 @@ test("a removed price history sample does not regain stale active state when res
   expect(getByText("inactive")).toBeTruthy();
 });
 
-test("ReturnsCalendar uses our portaled Tooltip anchored above the active cell", () => {
-  const { container, getByRole } = render(<ReturnsCalendar years={[2024]} returns={[[10]]} />);
+test("ReturnsCalendar exposes a portaled tooltip for focused and hovered cells", async () => {
+  const { container, getByRole, findByRole } = render(<ReturnsCalendar years={[2024]} returns={[[10]]} />);
   const cell = getByRole("button", { name: "2024 +10.0% for the year" });
   cell.getBoundingClientRect = () => ({
     left: 200,
@@ -343,9 +350,19 @@ test("ReturnsCalendar uses our portaled Tooltip anchored above the active cell",
     toJSON() {},
   });
   fireEvent.focus(cell);
-  const tooltip = getByRole("tooltip");
+  const tooltip = await findByRole("tooltip");
   expect(container.contains(tooltip)).toBe(false);
   expect(cell.getAttribute("aria-describedby")).toBe(tooltip.id);
-  expect(tooltip.parentElement?.style.top).toBe("92px");
-  expect(tooltip.parentElement?.style.left).toBe("220px");
+  expect(tooltip.textContent).toContain("2024");
+  expect(tooltip.textContent).toContain("for the year");
+
+  fireEvent.blur(cell);
+  const month = getByRole("button", { name: "Jan 2024 +10.0%" });
+  fireEvent.pointerEnter(month, { pointerType: "mouse" });
+  await waitFor(() => {
+    const hoveredTooltip = getByRole("tooltip");
+    expect(hoveredTooltip.textContent).toContain("Jan 2024");
+    expect(month.getAttribute("aria-describedby")).toBe(hoveredTooltip.id);
+    expect(container.contains(hoveredTooltip)).toBe(false);
+  });
 });

@@ -17,7 +17,14 @@ const PM_COMMANDS = {
 type PM = keyof typeof PM_COMMANDS;
 const PMS = Object.keys(PM_COMMANDS) as PM[];
 
-const REGISTRY_NAMESPACE = "@beui";
+const TOOLS = {
+  shadcn: { name: "shadcn@latest", prefix: "@beui/", runners: PM_COMMANDS },
+  "beui-native": {
+    name: "beui-native",
+    prefix: "",
+    runners: { ...PM_COMMANDS, bun: "bunx" },
+  },
+} as const;
 const workspaceOrigin = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const CYCLE_MS = 1800;
 
@@ -34,35 +41,41 @@ const COMPONENT_SLUGS = registry.flatMap((cat) =>
 export function InstallCommand({
   className,
   slug,
+  slugs = COMPONENT_SLUGS,
+  tool = "shadcn",
 }: {
   className?: string;
   slug?: string;
+  slugs?: readonly string[];
+  tool?: keyof typeof TOOLS;
 }) {
+  const { name, prefix: toolPrefix, runners } = TOOLS[tool];
   const [pm, setPm] = useState<PM>("bun");
   const [nameIndex, setNameIndex] = useState(0);
 
   useEffect(() => {
     if (slug) return;
     const id = setInterval(() => {
-      setNameIndex((i) => (i + 1) % COMPONENT_SLUGS.length);
+      setNameIndex((i) => (i + 1) % slugs.length);
     }, CYCLE_MS);
     return () => clearInterval(id);
-  }, [slug]);
+  }, [slug, slugs]);
 
-  const currentSlug = slug ?? COMPONENT_SLUGS[nameIndex];
-  const workspace = currentSlug.startsWith("workspace-");
-  const prefix = workspace ? `${workspaceOrigin}/r/` : `${REGISTRY_NAMESPACE}/`;
+  const currentSlug = slug ?? slugs[nameIndex % slugs.length];
+  const workspace = tool === "shadcn" && currentSlug.startsWith("workspace-");
+  const prefix = workspace ? `${workspaceOrigin}/r/` : toolPrefix;
   const installName = `${currentSlug}${workspace ? ".json" : ""}`;
-  const copyValue = `${PM_COMMANDS[pm]} shadcn@latest add ${prefix}${installName}`;
+  const runner = runners[pm].split(" ");
+  const copyValue = `${runners[pm]} ${name} add ${prefix}${installName}`;
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border bg-card text-sm",
+        "relative overflow-hidden rounded-2xl bg-card text-sm",
         className,
       )}
     >
-      <div className="flex items-center gap-2 border-b border-border px-3 py-1.5">
+      <div className="flex items-center gap-2 py-2 pr-3 pl-3">
         <Tabs
           value={pm}
           onValueChange={(v) => setPm(v as PM)}
@@ -73,7 +86,7 @@ export function InstallCommand({
               <TabsTrigger
                 key={p}
                 value={p}
-                indicatorClassName="bg-background border border-border shadow-none"
+                indicatorClassName="bg-background shadow-none"
                 className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground aria-[selected=true]:text-foreground [&_[data-tabs-label]]:text-foreground"
               >
                 {p}
@@ -90,18 +103,18 @@ export function InstallCommand({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="mx-2 mb-2 overflow-x-auto rounded-lg bg-background">
         <div className="min-w-max px-5 py-4 font-mono text-[13px] whitespace-nowrap">
           <span className="select-none text-[#6e7781] dark:text-[#8b949e]">{"$ "}</span>
           <span className="text-[#1f6feb] dark:text-[#ffa657]">
-            {PM_COMMANDS[pm].split(" ")[0]}
+            {runner[0]}
           </span>
-          {PM_COMMANDS[pm].split(" ")[1] && (
+          {runner[1] && (
             <span className="text-[#6f42c1] dark:text-[#d2a8ff]">
-              {" "}{PM_COMMANDS[pm].split(" ")[1]}
+              {" "}{runner[1]}
             </span>
           )}
-          <span className="text-[#24292f] dark:text-[#e6edf3]">{" shadcn@latest "}</span>
+          <span className="text-[#24292f] dark:text-[#e6edf3]">{` ${name} `}</span>
           <span className="text-[#0550ae] dark:text-[#79c0ff]">add</span>
           <span className="text-[#24292f]/70 dark:text-[#e6edf3]/60">{" "}{prefix}</span>
           <ActionSwapCascadeText

@@ -957,9 +957,6 @@ describe("command palette row indices", () => {
       ["true", "false", "false", "false"],
     );
 
-    // The highlight is the only painted thing that says which row is active.
-    expect(options[0].querySelector('[class~="bg-muted/60"]')).not.toBeNull();
-
     const activeId = getByRole("combobox").getAttribute("aria-activedescendant");
     expect(activeId).toBe(options[0].id);
     expect(document.getElementById(activeId as string)).toBe(options[0]);

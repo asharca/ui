@@ -1,6 +1,5 @@
 "use client";
 
-import { SwatchBook } from "lucide-react";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,12 +7,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GithubIcon } from "@/components/app/icons";
 import { MobileNav } from "@/components/app/chrome/mobile-nav";
-import { usePreferences } from "@/components/app/preferences/preferences-provider";
 import { PressLink } from "@/components/app/press-link";
 import { SiteSearch } from "@/components/app/chrome/site-search";
 import { ThemeToggle } from "@/components/app/chrome/theme-toggle";
-import { Tooltip } from "@/components/motion/tooltip";
 import { GITHUB_REPOSITORY_URL } from "@/lib/repository";
+import { isNativePath, NATIVE_PATH } from "@/lib/component-paths";
 import { cn } from "@/lib/utils";
 
 function formatStarCount(count: number) {
@@ -41,12 +39,12 @@ export function SiteHeader() {
   }, []);
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
-  const { setPanelOpen } = usePreferences();
   const pathname = usePathname();
   const isComponents = pathname.startsWith("/components/motion");
   const isBlocks = pathname.startsWith("/components/blocks");
   const isAgents = pathname.startsWith("/components/agents");
   const isCharts = pathname.startsWith("/charts");
+  const isNative = isNativePath(pathname);
   const isPlayground = pathname.startsWith("/playground");
   const formattedStarCount =
     typeof githubStarCount === "number"
@@ -60,7 +58,7 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-40 transition-[background,border-color,backdrop-filter] duration-300",
+        "sticky top-0 z-40 transition-[background,border-color,backdrop-filter] duration-300",
         scrolled
           ? "border-b border-border bg-background/70 backdrop-blur-xl backdrop-saturate-150"
           : "border-b border-transparent bg-transparent",
@@ -129,6 +127,15 @@ export function SiteHeader() {
               Charts
             </Link>
             <Link
+              href={NATIVE_PATH}
+              className={cn(
+                "inline-flex rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap transition-colors lg:px-3",
+                isNative ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              React Native
+            </Link>
+            <Link
               href="/playground"
               className={cn(
                 "rounded-md px-1.5 py-1.5 text-sm transition-colors lg:px-3",
@@ -143,18 +150,8 @@ export function SiteHeader() {
         </div>
 
         <nav className="flex items-center gap-2">
-          <SiteSearch className="w-9 shrink-0 justify-center px-0 [&>span]:hidden [&>kbd]:hidden" />
+          <SiteSearch className="w-9 shrink-0 justify-center px-0 lg:w-48 lg:justify-start lg:px-3 xl:w-60 [&>span]:hidden lg:[&>span]:block [&>kbd]:hidden lg:[&>kbd]:inline-block" />
           <ThemeToggle />
-          <Tooltip content="Customize" side="bottom">
-            <button
-              type="button"
-              onClick={() => setPanelOpen(true)}
-              aria-label="Customize theme"
-              className="hidden h-9 w-9 items-center justify-center rounded-full border border-border bg-card/20 text-muted-foreground transition-colors hover:text-foreground lg:flex"
-            >
-              <SwatchBook className="h-4 w-4" />
-            </button>
-          </Tooltip>
           <PressLink
             href={GITHUB_REPOSITORY_URL}
             target="_blank"

@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { SidebarNav } from "@/components/app/chrome/site-sidebar";
 import { BottomSheet } from "@/components/motion/bottom-sheet";
 import { Button } from "@/components/motion/button";
+import { PlatformSwitch } from "@/components/app/docs/native/platform-switch";
+import { hasPlatformSwitch, isNativePath, NATIVE_PATH } from "@/lib/component-paths";
 import { cn } from "@/lib/utils";
 
 /** Mobile nav: a header hamburger that opens the sidebar list in beUI's own bottom sheet. */
@@ -25,6 +27,7 @@ export function MobileNav() {
       <Button
         variant="ghost"
         size="icon"
+        className="rounded-full"
         onClick={() => setOpen(true)}
         aria-label="Open navigation"
         aria-haspopup="dialog"
@@ -39,6 +42,8 @@ export function MobileNav() {
         snapPoints={[0.85]}
       >
         <div className="flex flex-col gap-5 pt-2">
+          {/* The list below follows the platform, so pick it here too. */}
+          {hasPlatformSwitch(pathname) ? <PlatformSwitch layout="block" /> : null}
           <nav className="flex flex-wrap gap-1">
             <Link
               href="/components/motion"
@@ -87,6 +92,18 @@ export function MobileNav() {
               )}
             >
               Charts
+            </Link>
+            <Link
+              href={NATIVE_PATH}
+              onClick={() => setOpen(false)}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-sm transition-colors",
+                isNativePath(pathname)
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              React Native
             </Link>
             <Link
               href="/playground"
