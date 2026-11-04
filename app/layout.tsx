@@ -3,7 +3,6 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "@/components/app/chrome/theme-provider";
-import { PreferencesProvider } from "@/components/app/preferences/preferences-provider";
 import { JsonLd } from "@/components/app/analytics/json-ld";
 import {
   AUTHOR,
@@ -106,9 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen antialiased">
         <JsonLd data={siteJsonLd()} />
         <ThemeProvider>
-          <PreferencesProvider>
-            <WorkspaceAwareFrame>{children}</WorkspaceAwareFrame>
-          </PreferencesProvider>
+          <WorkspaceAwareFrame>{children}</WorkspaceAwareFrame>
         </ThemeProvider>
       </body>
     </html>

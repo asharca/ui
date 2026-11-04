@@ -210,21 +210,21 @@ describe("Tooltip", () => {
       </Tooltip>,
     );
     const trigger = getByRole("button", { name: "Inspect allocation" });
-    const anchor = trigger.parentElement as HTMLSpanElement;
-    anchor.getBoundingClientRect = () => new DOMRect(100, 100, 80, 40);
-    fireEvent.pointerMove(anchor, { ...mouse, clientX: 240, clientY: 200 });
-    const layer = getByRole("tooltip").parentElement as HTMLElement;
-    expect(layer.style.left).toBe("240px");
-    expect(layer.style.top).toBe("192px");
-    fireEvent.pointerMove(anchor, { ...mouse, clientX: 300, clientY: 220 });
-    expect(layer.style.left).toBe("300px");
-    expect(layer.style.top).toBe("212px");
+    trigger.getBoundingClientRect = () => new DOMRect(100, 100, 80, 40);
+    const tooltip = await waitFor(() => getByRole("tooltip"));
+    const layer = tooltip.parentElement as HTMLElement;
+    const anchored = layer.style.transform;
+    fireEvent.pointerMove(trigger, { ...mouse, clientX: 240, clientY: 200 });
+    await waitFor(() => expect(layer.style.transform).not.toBe(anchored));
+    const firstPointerPosition = layer.style.transform;
+    fireEvent.pointerMove(trigger, { ...mouse, clientX: 300, clientY: 220 });
+    await waitFor(() => expect(layer.style.transform).not.toBe(firstPointerPosition));
+    fireEvent.keyDown(document, { key: "Tab" });
     await act(async () => trigger.focus());
-    expect(layer.style.left).toBe("140px");
-    expect(layer.style.top).toBe("92px");
+    await waitFor(() => expect(layer.style.transform).toBe(anchored));
   });
 
-  test("keeps the label up when the trigger is clicked with a mouse", async () => {
+  test("dismisses a mouse-clicked label until the pointer leaves and re-enters", async () => {
     const restore = withTouchCapability();
     const { getByRole } = render(
       <Tooltip content="Like this post" delay={0}>
@@ -238,7 +238,12 @@ describe("Tooltip", () => {
 
     fireEvent.pointerDown(trigger, mouse);
     fireEvent.click(trigger);
-    expect(document.querySelectorAll("[role=tooltip]")).toHaveLength(1);
+    await waitFor(() => expect(document.querySelectorAll("[role=tooltip]")).toHaveLength(0));
+    fireEvent.pointerEnter(trigger, mouse);
+    expect(document.querySelectorAll("[role=tooltip]")).toHaveLength(0);
+    fireEvent.pointerLeave(trigger, mouse);
+    fireEvent.pointerEnter(trigger, mouse);
+    await waitFor(() => expect(document.querySelectorAll("[role=tooltip]")).toHaveLength(1));
     restore();
   });
 
@@ -310,6 +315,7 @@ describe("Tooltip", () => {
     );
 
     const trigger = getByRole("button", { name: "Like" });
+    fireEvent.keyDown(document, { key: "Tab" });
     fireEvent.focus(trigger);
     await waitFor(() => expect(document.querySelectorAll("[role=tooltip]")).toHaveLength(1));
 

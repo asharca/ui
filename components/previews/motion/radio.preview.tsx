@@ -8,10 +8,10 @@ export function RadioPreview() {
 
   return (
     <RadioGroup value={density} onValueChange={setDensity} className="min-w-48">
-      <RadioGroupItem value="compact" label="Compact — more content" />
-      <RadioGroupItem value="comfortable" label="Comfortable — balanced spacing" />
-      <RadioGroupItem value="spacious" label="Spacious — extra room" />
-      <RadioGroupItem value="automatic" label="Automatic — unavailable" disabled />
+      <RadioGroupItem value="compact" label="Compact, more content" />
+      <RadioGroupItem value="comfortable" label="Comfortable, balanced spacing" />
+      <RadioGroupItem value="spacious" label="Spacious, extra room" />
+      <RadioGroupItem value="automatic" label="Automatic, unavailable" disabled />
     </RadioGroup>
   );
 }

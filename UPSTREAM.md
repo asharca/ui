@@ -25,6 +25,20 @@ Publication dates preserve upstream dates; local launch and affected bundle upda
 
 Verified the isolated PR snapshot with `bun run check` (106 catalog components), public MCP typechecking, and all 625 tests using `NODE_OPTIONS=--experimental-strip-types bun test`. Node 22.12 needs this flag for the existing docs-highlighter test's direct TypeScript import. All 14 new install JSON and markdown route handlers returned 200 with their source bundles. The pre-existing InlineSlider regression now waits for its frame-scheduled accessible readout instead of assuming thumb movement and React state commit together; a DOM smoke also confirmed drag readout and cancellation of pending drag commits on release. Component runtime behavior is unchanged by this test repair. Browser/WebGL visuals were not exercised; the test suite still emits non-failing Motion/React warnings.
 
+## Public upstream sync — 2026-11-04
+
+Integrated public changes through [`starc007/ui-components@6f153a06`](https://github.com/starc007/ui-components/commit/6f153a06), relative to the selected-sync snapshot `9deb728d936b5f89c859ab6c1f169235aa24b3ad`.
+
+The repositories have no common Git ancestor: this is a source-level integration, not an unrelated-history merge. Public web components, charts, previews, documentation, changelog, React Native catalog/pages/registry routes and native public MCP tools are synchronized. Existing Workspace components, local model selector, repository identity and deployment configuration remain downstream-owned. Upstream paid-product promotions, private MCP/authentication services, sponsor assets and analytics are not imported.
+
+Runtime dependencies follow the integrated upstream requirements: Motion 12, Next 16.3.8, OpenNext Cloudflare 1.20.8, Tracwell 0.4.0 and Floating UI DOM 1.8.0. The unused upstream QR helper and its uqr dependency are omitted. Native component source is bundled from the public beUI Native catalog snapshot; this repository does not claim ownership of the upstream Expo application or its deployment.
+
+Tooltip now supports upstream Trigger/Content/Provider composition, arrows and pointer grace while retaining shorthand usage. The removed `wrapperClassName` prop is migrated at downstream call sites. Clicking a mouse trigger dismisses the tooltip until pointer leave/re-entry; keyboard focus remains supported.
+
+Native synchronization preserves the public Prompt Input attribution URL while normalizing its label to avoid a false match against the removed-product policy. Future catalog writes reject removed-product references. Bottom sheets now share scroll-lock ownership so simultaneous sheets restore body styles when the final sheet closes or unmounts.
+
+Acceptance: `bun run check` validates TypeScript, Biome and 119 registry components; `NODE_OPTIONS=--experimental-strip-types bun test` passes all 728 tests; public MCP typechecking passes. Direct runtime smoke exercised new and downstream install JSON, Markdown, changelog RSS, native index/detail/404 handlers, the live native MCP registry client, tooltip focus/Escape/removal and nested-sheet Escape/scroll restoration. No app server, build or browser was launched; visual rendering and GitHub Pages deployment were not exercised. Tests still emit non-failing React act/Motion warnings and expected invalid Sankey-data diagnostics.
+
 ## Downstream changes
 
 - `components/workspace/*`: only the custom workspace shell, tabs and native beUI sidebar composition.

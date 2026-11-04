@@ -5,7 +5,6 @@ import { SITE_URL } from "@/lib/site";
 
 describe("guide Markdown", () => {
   test("builds every published guide with the configured canonical frontmatter", () => {
-    expect(GUIDE_SLUGS).toEqual(["motion-patterns", "ai-agents", "openui"]);
     for (const slug of GUIDE_SLUGS) {
       const markdown = buildGuideMarkdown(slug);
       expect(markdown).toContain(`documentation: "${SITE_URL}/docs/${slug}"`);

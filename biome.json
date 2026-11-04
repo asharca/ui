@@ -14,7 +14,8 @@
       "!coverage",
       "!next-env.d.ts",
       "!test-results",
-      "!playwright-report"
+      "!playwright-report",
+      "!lib/native/catalog.json"
     ]
   },
   "formatter": {

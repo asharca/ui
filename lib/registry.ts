@@ -62,6 +62,16 @@ export const registry: CategoryEntry[] = [
       "Free, open-source animated React components built with Motion and Tailwind CSS, available as copy-paste source through the shadcn registry.",
     components: [
       {
+        slug: "timeline",
+        name: "Timeline",
+        description:
+          "A draggable timeline of dated events around a focused card.",
+        file: "components/motion/timeline.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["timeline", "react timeline", "horizontal timeline", "milestone timeline", "release history", "changelog timeline"],
+      },
+      {
         slug: "alert",
         name: "Animated Alert",
         description: "Composable feedback with smooth transitions.",
@@ -145,12 +155,48 @@ export const registry: CategoryEntry[] = [
         launchedAt: "2026-10-10",
       },
       {
+        slug: "card",
+        name: "Card",
+        description: "Composable card with header, title, description, action, content and footer parts. Outlined or muted surfaces, standard or compact spacing, and an opt-in selectable state with press feedback that composes with Checkbox, Radio and Button.",
+        file: "components/motion/card.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["card", "react card component", "selectable card", "settings card", "summary card"],
+      },
+      {
+        slug: "color-picker",
+        name: "Color Picker",
+        description: "Composable color picker whose trigger chip morphs into the saturation and brightness area. A loupe lifts off each thumb while you drag. Includes hue and opacity sliders, hex, RGB and HSL fields, an eye dropper, presets, full keyboard control, and a controlled or uncontrolled value.",
+        file: "components/motion/color-picker.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["color picker", "rgb color picker", "hex color input", "hsl picker", "eyedropper"],
+      },
+      {
         slug: "color-selector",
         name: "Animated Color Selector",
         description: "Composable color swatches with a spring-gliding selection ring, press feedback, native radio keyboard navigation, and controlled or uncontrolled state.",
         file: "components/motion/color-selector.tsx",
         badge: "new",
         launchedAt: "2026-10-10",
+      },
+      {
+        slug: "pagination",
+        name: "Animated Pagination",
+        description:
+          "Page navigation with a gliding current-page pill, page numbers that slide as the window moves, and ellipses that jump several pages.",
+        file: "components/motion/pagination.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+      },
+      {
+        slug: "avatar-group",
+        name: "Animated Avatar Group",
+        description:
+          "Overlapping avatars that fan apart on hover, lift with a name tooltip, and expand from a +N count to show everyone.",
+        file: "components/motion/avatar-group.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
       },
       {
         slug: "breadcrumb",
@@ -313,7 +359,7 @@ export const registry: CategoryEntry[] = [
       {
         slug: "tabs",
         name: "Tabs",
-        description: "Pill, segment or underline tabs with a spring layoutId indicator.",
+        description: "Pill, segment or underline tabs with a spring layoutId indicator and optional icons.",
         file: "components/motion/tabs.tsx",
       },
       {
@@ -339,7 +385,7 @@ export const registry: CategoryEntry[] = [
       {
         slug: "select",
         name: "Select",
-        description: "Composable select primitives whose panel bouncily unfolds out of the trigger and separates, plus a Morph variant where the trigger grows into the panel via shared layout.",
+        description: "Composable select primitives whose panel unfolds out of the trigger on one spring and pulls away into its own pill, plus a Morph variant where the trigger grows into the panel via shared layout.",
         file: "components/motion/select.tsx",
         badge: "new",
         launchedAt: "2026-06-28",
@@ -347,7 +393,7 @@ export const registry: CategoryEntry[] = [
           {
             slug: "default",
             name: "Select",
-            description: "Composable primitives (Select, SelectTrigger, SelectValue, SelectContent, SelectItem); the panel pinches off the trigger and separates, with staggered items. Position-aware (opens upward when needed).",
+            description: "Composable primitives (Select, SelectTrigger, SelectValue, SelectContent, SelectItem); the panel pinches off the trigger and separates, with a short, shared row reveal. Position-aware (opens upward when needed).",
             installSlug: "select",
             file: "components/motion/select.tsx",
             previewKey: "motion/select",
@@ -413,6 +459,24 @@ export const registry: CategoryEntry[] = [
         file: "components/motion/checkbox.tsx",
         badge: "new",
         launchedAt: "2026-06-23",
+        examples: [
+          {
+            slug: "default",
+            name: "Checkbox",
+            description: "Draw-on checkmark, spring press feedback and indeterminate state.",
+            file: "components/motion/checkbox.tsx",
+            previewKey: "motion/checkbox",
+            previewFile: "components/previews/motion/checkbox.preview.tsx",
+          },
+          {
+            slug: "description",
+            name: "With Description",
+            description: "Optional supporting text under each label, exposed to assistive technology as the description.",
+            file: "components/motion/checkbox.tsx",
+            previewKey: "motion/checkbox-description",
+            previewFile: "components/previews/motion/checkbox-description.preview.tsx",
+          },
+        ],
       },
       {
         slug: "radio",
@@ -422,6 +486,24 @@ export const registry: CategoryEntry[] = [
         file: "components/motion/radio.tsx",
         badge: "new",
         launchedAt: "2026-06-23",
+        examples: [
+          {
+            slug: "default",
+            name: "Radio Group",
+            description: "Gliding indicator dot with spring press feedback.",
+            file: "components/motion/radio.tsx",
+            previewKey: "motion/radio",
+            previewFile: "components/previews/motion/radio.preview.tsx",
+          },
+          {
+            slug: "description",
+            name: "With Description",
+            description: "Optional supporting text under each option label, exposed to assistive technology as the description.",
+            file: "components/motion/radio.tsx",
+            previewKey: "motion/radio-description",
+            previewFile: "components/previews/motion/radio-description.preview.tsx",
+          },
+        ],
       },
       {
         slug: "bottom-sheet",
@@ -535,8 +617,26 @@ export const registry: CategoryEntry[] = [
       {
         slug: "tooltip",
         name: "Tooltip",
-        description: "Hover or focus tooltip with blur enter/exit and spring spawn.",
+        description: "Composable hover, focus and tap tooltip with a subtle scale and fade, collision-aware side and alignment, an optional arrow, a pointer corridor onto hoverable content, one label at a time, keyboard-only focus reveal and optional cursor tracking.",
         file: "components/motion/tooltip.tsx",
+        examples: [
+          {
+            slug: "default",
+            name: "Tooltip",
+            description: "One-line shorthand: pass `content` and wrap the trigger element. Four sides with an arrow.",
+            file: "components/motion/tooltip.tsx",
+            previewKey: "motion/tooltip",
+            previewFile: "components/previews/motion/tooltip.preview.tsx",
+          },
+          {
+            slug: "toolbar",
+            name: "Toolbar",
+            description: "Composable parts under a shared provider. Icon-only buttons take their accessible name from the tooltip, later labels skip the delay, and a disabled control shows none.",
+            file: "components/motion/tooltip.tsx",
+            previewKey: "motion/tooltip-toolbar",
+            previewFile: "components/previews/motion/tooltip-toolbar.preview.tsx",
+          },
+        ],
       },
       {
         slug: "context-menu",
@@ -559,7 +659,7 @@ export const registry: CategoryEntry[] = [
         slug: "popover",
         name: "Popover",
         description:
-          "Gooey popover whose panel oozes out of the trigger through an SVG goo filter — a liquid neck that stretches and pinches — with crisp content fading in on top, plus a Morph variant that clip-morphs open from the trigger corner. Click or hover trigger, controlled or uncontrolled.",
+          "Gooey popover whose panel oozes out of the trigger through an SVG goo filter with a liquid neck that stretches and pinches, then crisp content fades in on top. The Morph variant reveals its full-size panel from the corner nearest the trigger on one synchronized spring clip. Click or hover trigger, controlled or uncontrolled.",
         file: "components/motion/popover.tsx",
         badge: "new",
         launchedAt: "2026-07-07",
@@ -588,7 +688,7 @@ export const registry: CategoryEntry[] = [
             slug: "morph",
             name: "Morph Popover",
             description:
-              "Composable MorphPopover, MorphPopoverTrigger, MorphPopoverContent; the panel is laid out full size but clipped to the corner nearest the trigger, then unclips as one piece — a single-surface morph with a drop-shadow that hugs the shape. Side/align aware, controlled or uncontrolled.",
+              "Composable MorphPopover, MorphPopoverTrigger, MorphPopoverContent. The full-size panel reveals from the corner nearest the trigger on one synchronized spring clip, keeping content and borders unscaled, then retraces the clip on close. Clip-path and its drop-shadow may paint. Side/align aware, controlled or uncontrolled.",
             installSlug: "popover-morph",
             file: "components/motion/popover-morph.tsx",
             previewKey: "motion/popover-morph",
@@ -1090,6 +1190,46 @@ export const registry: CategoryEntry[] = [
       "Animated React charts for activity, returns, price targets, and order books, built with Motion and Tailwind CSS as customizable copy-paste source.",
     components: [
       {
+        slug: "line-chart",
+        name: "Line Chart",
+        description: "Line and area charts that morph with your data, with a snapping crosshair and value tooltips.",
+        file: "components/charts/line-chart.tsx",
+        usageFile: "components/previews/charts/line-chart.usage.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["line chart", "area chart", "react line chart", "time series chart", "trend chart"],
+      },
+      {
+        slug: "bar-chart",
+        name: "Bar Chart",
+        description: "Grouped, stacked and horizontal bars that grow in, rescale and reorder with springs.",
+        file: "components/charts/bar-chart.tsx",
+        usageFile: "components/previews/charts/bar-chart.usage.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["bar chart", "stacked bar chart", "grouped bar chart", "horizontal bar chart", "column chart"],
+      },
+      {
+        slug: "sparkline",
+        name: "Sparkline",
+        description: "A compact inline trend for stat cards and tables, with a change badge and optional readout.",
+        file: "components/charts/sparkline.tsx",
+        usageFile: "components/previews/charts/sparkline.usage.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["sparkline", "sparkline chart", "mini chart", "inline chart", "trend line"],
+      },
+      {
+        slug: "sankey-chart",
+        name: "Sankey Chart",
+        description: "Weighted flows between stages that draw in and morph with your data.",
+        file: "components/charts/sankey-chart.tsx",
+        usageFile: "components/previews/charts/sankey-chart.usage.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["sankey chart", "sankey diagram", "flow chart", "income statement chart", "alluvial chart"],
+      },
+      {
         slug: "treemap",
         name: "Treemap",
         description: "Proportional tiles that morph with your data, with value and share tooltips.",
@@ -1104,6 +1244,26 @@ export const registry: CategoryEntry[] = [
           "portfolio allocation",
           "proportional tiles",
         ],
+      },
+      {
+        slug: "candlestick-chart",
+        name: "Candlestick Chart",
+        description: "Live OHLC candles with volume, a last-price line, and a crosshair readout.",
+        file: "components/charts/candlestick-chart.tsx",
+        usageFile: "components/previews/charts/candlestick-chart.usage.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["candlestick chart", "ohlc chart", "trading chart", "price chart", "crypto chart"],
+      },
+      {
+        slug: "donut-chart",
+        name: "Donut Chart",
+        description: "Rounded share segments with a linked center readout and legend.",
+        file: "components/charts/donut-chart.tsx",
+        usageFile: "components/previews/charts/donut-chart.usage.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["donut chart", "pie chart", "share chart", "allocation chart", "breakdown chart"],
       },
       {
         slug: "volume-profile",
@@ -1940,6 +2100,18 @@ export const registry: CategoryEntry[] = [
         launchedAt: "2026-08-18",
         examples: [
           {
+            slug: "chips",
+            name: "Chip Search",
+            description:
+              "Docked search bar that springs wider on focus and unfolds a recent-searches panel out of its own edge. Terms become removable chips, the bar grows with them, and suggestions filter as you type.",
+            badge: "new",
+            launchedAt: "2026-11-04",
+            installSlug: "morphing-search-chips",
+            file: "components/motion/morphing-search-chips.tsx",
+            previewKey: "blocks/morphing-search-chips",
+            previewFile: "components/previews/blocks/morphing-search-chips.preview.tsx",
+          },
+          {
             slug: "default",
             name: "Default",
             description:
@@ -2159,6 +2331,15 @@ export const registry: CategoryEntry[] = [
           "password strength meter react",
           "tailwind sign up form",
         ],
+      },
+      {
+        slug: "card-dealer",
+        name: "Card Dealer",
+        description: "A card table with a face-down deck, a fanned hand and a discard pile. Cards arc across the table between them and flip in flight, hop over each other when the hand is sorted, and lift on hover. Data-driven by each card's zone, with custom faces and backs, keyboard-playable hand cards and reduced-motion support.",
+        file: "components/motion/card-dealer.tsx",
+        badge: "new",
+        launchedAt: "2026-11-04",
+        keywords: ["card dealer", "card hand", "deal cards animation", "playing cards react", "card fan"],
       },
       {
         slug: "bloom-menu",

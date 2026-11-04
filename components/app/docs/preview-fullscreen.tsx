@@ -1,0 +1,221 @@
+"use client";
+
+import { Maximize2, Minimize2, RotateCcw } from "lucide-react";
+import {
+  createContext,
+  Fragment,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useFocusTrap } from "@/lib/hooks/use-focus-trap";
+import { cn } from "@/lib/utils";
+
+type Expand = {
+  stageId: string;
+  expanded: boolean;
+  setExpanded: (expanded: boolean) => void;
+  toggleRef: React.RefObject<HTMLButtonElement | null>;
+  replayKey: number;
+  replay: () => void;
+};
+
+const ICON_BUTTON_CLASS =
+  "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+
+const ExpandContext = createContext<Expand | null>(null);
+
+function useExpand() {
+  const ctx = useContext(ExpandContext);
+  if (!ctx) throw new Error("Preview expand parts must sit inside PreviewExpand");
+  return ctx;
+}
+
+/**
+ * Lets the preview stage expand to fill the app window (not the system full
+ * screen). Wraps one Preview / Usage / Code block; the toggle sits in the tab
+ * row and the stage inside the Preview panel.
+ */
+export function PreviewExpand({
+  stageId,
+  children,
+}: {
+  stageId: string;
+  children: ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const replay = () => setReplayKey((key) => key + 1);
+  return (
+    <ExpandContext.Provider
+      value={{ stageId, expanded, setExpanded, toggleRef, replayKey, replay }}
+    >
+      {children}
+    </ExpandContext.Provider>
+  );
+}
+
+/** Button at the right of the tab row that expands the preview. */
+export function PreviewExpandToggle({ className }: { className?: string }) {
+  const { stageId, expanded, setExpanded, toggleRef } = useExpand();
+  const open = () => {
+    // Inactive tab panels are hidden; show the Preview tab first so the stage
+    // being expanded is the one on screen.
+    const panel = document
+      .getElementById(stageId)
+      ?.closest<HTMLElement>("[role=tabpanel]");
+    if (!panel?.hidden) {
+      setExpanded(true);
+      return;
+    }
+    document
+      .querySelector<HTMLElement>(`[role=tab][aria-controls="${panel.id}"]`)
+      ?.click();
+    // The panel slides in on a transform, and a transformed ancestor would
+    // trap the fixed stage inside it: expand once the transform settles.
+    const start = performance.now();
+    const whenSettled = () => {
+      const shown = document
+        .getElementById(stageId)
+        ?.closest<HTMLElement>("[role=tabpanel]");
+      const moving = shown && getComputedStyle(shown).transform !== "none";
+      // A timer, not animation frames, so the expand still happens (after
+      // the cap) if frames are paused.
+      if (moving && performance.now() - start < 500) {
+        window.setTimeout(whenSettled, 16);
+      } else {
+        setExpanded(true);
+      }
+    };
+    window.setTimeout(whenSettled, 16);
+  };
+  return (
+    <button
+      ref={toggleRef}
+      type="button"
+      onClick={open}
+      aria-label="Expand preview"
+      aria-expanded={expanded}
+      aria-controls={stageId}
+      title="Expand preview"
+      className={cn(ICON_BUTTON_CLASS, className)}
+    >
+      <Maximize2 aria-hidden="true" className="size-4" />
+    </button>
+  );
+}
+
+/**
+ * Button beside the expand toggle that remounts the demo, so entrance
+ * animations can be watched again. Shows the Preview tab first when another
+ * tab is open.
+ */
+export function PreviewReplayToggle({ className }: { className?: string }) {
+  const { stageId, replay } = useExpand();
+  const onClick = () => {
+    const panel = document
+      .getElementById(stageId)
+      ?.closest<HTMLElement>("[role=tabpanel]");
+    if (panel?.hidden) {
+      document
+        .querySelector<HTMLElement>(`[role=tab][aria-controls="${panel.id}"]`)
+        ?.click();
+    }
+    replay();
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Replay preview"
+      title="Replay preview"
+      className={cn(ICON_BUTTON_CLASS, className)}
+    >
+      <RotateCcw aria-hidden="true" className="size-4" />
+    </button>
+  );
+}
+
+/**
+ * The preview stage. Expanded, it becomes a fixed layer over the whole app
+ * window that paints the page background; the demo stays mounted, so it
+ * keeps its state either way.
+ */
+export function PreviewExpandStage({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  const { stageId, expanded, setExpanded, toggleRef, replayKey, replay } =
+    useExpand();
+  const exitRef = useRef<HTMLButtonElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(expanded, stageRef, { onEscape: () => setExpanded(false) });
+
+  useEffect(() => {
+    if (!expanded) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = "hidden";
+    exitRef.current?.focus({ preventScroll: true });
+    const toggle = toggleRef.current;
+    return () => {
+      root.style.overflow = previous;
+      toggle?.focus({ preventScroll: true });
+    };
+  }, [expanded, toggleRef]);
+
+  const dialogProps = expanded
+    ? ({
+        role: "dialog",
+        "aria-modal": true,
+        "aria-label": "Expanded component preview",
+      } as const)
+    : {};
+
+  return (
+    <div
+      ref={stageRef}
+      {...dialogProps}
+      tabIndex={expanded ? -1 : undefined}
+      id={stageId}
+      data-expanded={expanded || undefined}
+      className={cn(
+        className,
+        expanded &&
+          "fixed inset-0 z-[100] min-h-0 overflow-auto bg-background p-6 py-16",
+      )}
+    >
+      {expanded ? (
+        <div className="absolute top-4 right-4 flex gap-2">
+          <button
+            type="button"
+            onClick={replay}
+            aria-label="Replay preview"
+            title="Replay preview"
+            className={ICON_BUTTON_CLASS}
+          >
+            <RotateCcw aria-hidden="true" className="size-4" />
+          </button>
+          <button
+            ref={exitRef}
+            type="button"
+            onClick={() => setExpanded(false)}
+            aria-label="Exit expanded preview"
+            title="Exit (Esc)"
+            className={ICON_BUTTON_CLASS}
+          >
+            <Minimize2 aria-hidden="true" className="size-4" />
+          </button>
+        </div>
+      ) : null}
+      {/* A new key remounts the demo, replaying its entrance. */}
+      <Fragment key={replayKey}>{children}</Fragment>
+    </div>
+  );
+}

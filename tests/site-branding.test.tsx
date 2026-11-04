@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import type { Window } from "happy-dom";
+import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ThreeColumnLayout } from "@/components/app/chrome/three-column-layout";
 import { buildComponentMarkdown } from "@/lib/component-markdown";
@@ -15,8 +17,21 @@ import {
   GITHUB_LICENSE_URL,
   GITHUB_SKILL_INSTALL,
 } from "@/lib/repository";
+import { SITE_URL } from "@/lib/site";
 
 const ROOT = path.join(import.meta.dir, "..");
+
+function renderLayout(element: ReactElement) {
+  const browser = window as unknown as Window;
+  const previousUrl = browser.location.href;
+  // Next's image diagnostics resolve relative URLs even during this SSR render.
+  browser.happyDOM.setURL(SITE_URL);
+  try {
+    return renderToStaticMarkup(element);
+  } finally {
+    browser.happyDOM.setURL(previousUrl);
+  }
+}
 
 async function sourceFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -53,7 +68,7 @@ describe("site sponsorship cleanup", () => {
 
   test("omitting the right rail leaves no empty column or complementary region", () => {
     for (const rightSidebar of [undefined, null, false]) {
-      const html = renderToStaticMarkup(<ThreeColumnLayout leftSidebar={<nav>Navigation</nav>} rightSidebar={rightSidebar}><main>Content</main></ThreeColumnLayout>);
+      const html = renderLayout(<ThreeColumnLayout leftSidebar={<nav>Navigation</nav>} rightSidebar={rightSidebar}><main>Content</main></ThreeColumnLayout>);
       expect(html).toContain("Navigation");
       expect(html).toContain("Content");
       expect(html).not.toContain("<aside");
@@ -62,7 +77,7 @@ describe("site sponsorship cleanup", () => {
   });
 
   test("an explicitly supplied resource rail remains available without sponsor labels", () => {
-    const html = renderToStaticMarkup(<ThreeColumnLayout leftSidebar={<nav>Navigation</nav>} rightSidebar={<p>Page contents</p>}><main>Content</main></ThreeColumnLayout>);
+    const html = renderLayout(<ThreeColumnLayout leftSidebar={<nav>Navigation</nav>} rightSidebar={<p>Page contents</p>}><main>Content</main></ThreeColumnLayout>);
     expect(html).toContain('aria-label="Additional resources"');
     expect(html).toContain("--right-sidebar-width");
     expect(html).toContain("Page contents");

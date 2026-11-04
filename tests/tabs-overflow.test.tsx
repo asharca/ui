@@ -3,11 +3,14 @@ import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 
 const OriginalObserver = globalThis.ResizeObserver;
-let resize: () => void;
+const observers = new Set<() => void>();
+function resize() {
+  for (const callback of observers) callback();
+}
 class Observer {
-  constructor(callback: () => void) { resize = callback; }
-  observe() {}
-  disconnect() {}
+  constructor(private callback: () => void) {}
+  observe() { observers.add(this.callback); }
+  disconnect() { observers.delete(this.callback); }
   unobserve() {}
 }
 globalThis.ResizeObserver = Observer as unknown as typeof ResizeObserver;

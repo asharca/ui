@@ -65,6 +65,43 @@ describe("BottomSheet", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  test("handles a focused control's Escape once and respects prevented events", () => {
+    const onOpenChange = mock((_: boolean) => {});
+    const { getByRole } = render(
+      <BottomSheet open onOpenChange={onOpenChange} title="Quick actions">
+        <button type="button">Copy link</button>
+        <input aria-label="Search actions" onKeyDown={(event) => event.preventDefault()} />
+      </BottomSheet>,
+    );
+
+    fireEvent.keyDown(getByRole("textbox", { name: "Search actions" }), { key: "Escape" });
+    expect(onOpenChange).not.toHaveBeenCalled();
+    fireEvent.keyDown(getByRole("button", { name: "Copy link" }), { key: "Escape" });
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  test("only the topmost sheet responds to Escape", () => {
+    const closeFirst = mock((_: boolean) => {});
+    const closeSecond = mock((_: boolean) => {});
+    const previousPosition = document.body.style.position;
+    const previousOverflow = document.body.style.overflow;
+    const { unmount } = render(
+      <>
+        <BottomSheet open onOpenChange={closeFirst} title="First sheet" />
+        <BottomSheet open onOpenChange={closeSecond} title="Second sheet" />
+      </>,
+    );
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(closeFirst).not.toHaveBeenCalled();
+    expect(closeSecond).toHaveBeenCalledTimes(1);
+    expect(closeSecond).toHaveBeenCalledWith(false);
+    unmount();
+    expect(document.body.style.position).toBe(previousPosition);
+    expect(document.body.style.overflow).toBe(previousOverflow);
+  });
+
   test("keeps the title outside the drag handle", () => {
     const { getByRole } = render(<TestSheet />);
     const dialog = getByRole("dialog", { name: "Quick actions" });

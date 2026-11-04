@@ -24,6 +24,8 @@ const ENDPOINTS = [
   { label: "shadcn catalog", url: "/registry.json", desc: "Directory-compatible registry catalog." },
   { label: "shadcn item", url: "/r/{slug}.json", desc: "Install item with inline file content and shadcn semantic color classes." },
   { label: "Raw source", url: "/r/{slug}/raw", desc: "Plain text .tsx ready to drop in." },
+  { label: "Native index", url: "/native/r", desc: "JSON catalogue of React Native components." },
+  { label: "Native detail", url: "/native/r/{slug}", desc: "Native install commands and every source file." },
 ];
 const MCP_URL = "https://mcp.beui.dev/mcp";
 const MCP_CLI_SNIPPET = `# Optional official beUI MCP connection
@@ -109,7 +111,7 @@ export default function AIAgentsPage() {
     <div className="mt-4"><CodeBlock code={MCP_CLI_SNIPPET} lang="bash" filename="terminal" /></div>
     <p className="mt-4 text-muted-foreground">Any other client: add it manually to your MCP config.</p>
     <div className="mt-4"><CodeBlock code={MCP_MANUAL_SNIPPET} lang="json" filename="mcp.json" /></div>
-    <p className="mt-4 text-sm text-muted-foreground">Tools: <code className={inlineCode}>list_components</code>, <code className={inlineCode}>search_components</code>, <code className={inlineCode}>get_component</code>, <code className={inlineCode}>get_install_command</code>.</p>
+    <p className="mt-4 text-sm text-muted-foreground">Tools: <code className={inlineCode}>list_components</code>, <code className={inlineCode}>search_components</code>, <code className={inlineCode}>get_component</code>, <code className={inlineCode}>get_install_command</code>. For React Native, <code className={inlineCode}>list_native_components</code> and <code className={inlineCode}>get_native_component</code> return install commands and every source file.</p>
 
     <h2 id="endpoints" className={heading}>Endpoints</h2>
     <ul className="mt-4 divide-y divide-border rounded-2xl border border-border bg-card">

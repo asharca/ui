@@ -1,23 +1,28 @@
 "use client";
 
-import { categoryPath, componentPath } from "@/lib/component-paths";
+import { categoryPath, componentPath, isNativePath, NATIVE_PATH, nativeComponentPath } from "@/lib/component-paths";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLayoutEffect, useRef } from "react";
+import nativeNav from "@/lib/native/nav.json";
 import { registry } from "@/lib/registry";
 import { NewBadge } from "@/components/app/docs/new-badge";
 import { SharedLayoutBg } from "@/components/motion/shared-layout-bg";
-import { isComponentNew } from "@/lib/component-status";
+import { moveNewItemsToTop } from "@/lib/component-status";
 import { cn } from "@/lib/utils";
 
 const INTRO = [
   { slug: "home", name: "Home", href: "/components/motion" },
+  { slug: "react-native", name: "React Native", href: NATIVE_PATH },
+  { slug: "changelog", name: "Changelog", href: "/changelog" },
 ];
 
 const PATTERNS = [
   { slug: "motion-patterns", name: "Motion Guides", href: "/docs/motion-patterns" },
   { slug: "ai-agents", name: "Agent Guide", href: "/docs/ai-agents" },
   { slug: "openui", name: "OpenUI", href: "/docs/openui" },
+  { slug: "native-setup", name: "React Native Setup", href: "/docs/native-setup" },
 ];
 
 const SIDEBAR_CATEGORY_ORDER: Record<string, number> = {
@@ -32,13 +37,132 @@ const SIDEBAR_CATEGORIES = registry.filter((category) => category.slug !== "char
     (SIDEBAR_CATEGORY_ORDER[b.slug] ?? Number.MAX_SAFE_INTEGER),
 );
 
-function moveNewItemsToTop<
-  T extends { badge?: "new"; launchedAt?: string },
->(items: readonly T[], now: number) {
-  return [
-    ...items.filter((item) => isComponentNew(item, now)),
-    ...items.filter((item) => !isComponentNew(item, now)),
-  ];
+
+// Native components in catalog order, grouped as the native showcase groups
+// them, for the sidebar on /react-native pages.
+const NATIVE_GROUPS = nativeNav.reduce<{ name: string; items: typeof nativeNav }[]>(
+  (groups, item) => {
+    const group = groups.find((entry) => entry.name === item.group);
+    if (group) group.items.push(item);
+    else groups.push({ name: item.group, items: [item] });
+    return groups;
+  },
+  [],
+);
+
+const NATIVE_INTRO = [
+  { slug: "native-home", name: "Overview", href: NATIVE_PATH },
+  { slug: "native-setup", name: "Setup", href: "/docs/native-setup" },
+];
+
+const COUNT_CLASS =
+  "inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground/[0.06] px-1 text-[10px] font-medium tabular-nums text-muted-foreground";
+
+const GROUP_LABEL =
+  "mb-1.5 flex items-center gap-2 rounded-md px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";
+
+// Keep a little space above the active link when revealing it in the sidebar.
+const STICKY_CLEARANCE = 16;
+
+/**
+ * Keep the current page's link in view when the list mounts or the route
+ * changes. A fresh load, a reload or the phone sheet opening would otherwise
+ * start the list at the top, far from the reader's place. A visible link is
+ * left alone, so clicking an item never moves the list.
+ */
+function useRevealActiveLink(pathname: string) {
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const nav = ref.current;
+    if (!nav) return;
+    const link = Array.from(nav.querySelectorAll("a")).find(
+      (anchor) => anchor.getAttribute("href") === pathname,
+    );
+    // A link inside a filtered-out group has no boxes to reveal.
+    if (!link || link.getClientRects().length === 0) return;
+    let scroller = nav.parentElement;
+    while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) {
+      scroller = scroller.parentElement;
+    }
+    if (!scroller) return;
+    const view = scroller.getBoundingClientRect();
+    const item = link.getBoundingClientRect();
+    if (item.top >= view.top + STICKY_CLEARANCE && item.bottom <= view.bottom) return;
+    scroller.scrollTop += item.top - view.top - (view.height - item.height) / 2;
+  }, [pathname]);
+  return ref;
+}
+
+/** The React Native pages' list: overview, setup, then components by group. */
+function NativeSidebarNav({
+  pathname,
+  onNavigate,
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const navRef = useRevealActiveLink(pathname);
+  const now = Date.now();
+
+  return (
+    <nav ref={navRef} aria-label="Browse React Native components" className="flex flex-col gap-6">
+      <div>
+        <p className="mb-1.5 block px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          React Native
+        </p>
+        <SharedLayoutBg inset={0} pillClassName="rounded-lg bg-foreground/[0.05]">
+          {NATIVE_INTRO.map((item) => (
+            <Link
+              key={item.slug}
+              href={item.href}
+              prefetch={false}
+              aria-current={pathname === item.href ? "page" : undefined}
+              onClick={onNavigate}
+              className={linkClass(pathname === item.href)}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </SharedLayoutBg>
+      </div>
+      {NATIVE_GROUPS.map((group) => (
+        <div key={group.name}>
+          <p className={GROUP_LABEL}>
+            {group.name}
+            <span className={COUNT_CLASS}>{group.items.length}</span>
+          </p>
+          <SharedLayoutBg inset={0} pillClassName="rounded-lg bg-foreground/[0.05]">
+            {moveNewItemsToTop(
+              group.items.map((item) => ({
+                ...item,
+                badge: "launchedAt" in item ? ("new" as const) : undefined,
+              })),
+              now,
+            ).map((item) => {
+              const href = nativeComponentPath(item.slug);
+              return (
+                <Link
+                  key={item.slug}
+                  href={href}
+                  prefetch={false}
+                  aria-current={pathname === href ? "page" : undefined}
+                  onClick={onNavigate}
+                  className={linkClass(pathname === href)}
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="truncate">{item.title}</span>
+                    {item.badge === "new" ? (
+                      <NewBadge launchedAt={item.launchedAt} />
+                    ) : null}
+                  </span>
+                </Link>
+              );
+            })}
+          </SharedLayoutBg>
+        </div>
+      ))}
+    </nav>
+  );
 }
 
 function linkClass(active: boolean) {
@@ -53,6 +177,14 @@ function linkClass(active: boolean) {
 /** Nav list shared by the desktop sidebar and the mobile bottom sheet. */
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  if (isNativePath(pathname)) {
+    return <NativeSidebarNav pathname={pathname} onNavigate={onNavigate} />;
+  }
+  return <WebSidebarNav pathname={pathname} onNavigate={onNavigate} />;
+}
+
+function WebSidebarNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  const navRef = useRevealActiveLink(pathname);
   const now = Date.now();
   const isCharts = pathname === "/charts" || pathname.startsWith("/charts/");
   const categories = isCharts
@@ -63,7 +195,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     : INTRO;
 
   return (
-    <nav className="flex flex-col gap-8">
+    <nav ref={navRef} aria-label="Browse components" className="flex flex-col gap-8">
       <div>
         <p className="mb-2 block px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Intro
@@ -74,6 +206,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               key={item.slug}
               href={item.href}
               onClick={onNavigate}
+              aria-current={pathname === item.href ? "page" : undefined}
               className={linkClass(pathname === item.href)}
             >
               {item.name}
@@ -92,6 +225,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 key={item.slug}
                 href={item.href}
                 onClick={onNavigate}
+                aria-current={pathname === item.href ? "page" : undefined}
                 className={linkClass(pathname === item.href)}
               >
                 {item.name}
@@ -120,6 +254,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                   key={comp.slug}
                   href={href}
                   onClick={onNavigate}
+                  aria-current={pathname === href ? "page" : undefined}
                   className={linkClass(pathname === href)}
                 >
                   <span className="flex items-center justify-between gap-2">
