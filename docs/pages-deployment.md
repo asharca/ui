@@ -34,11 +34,17 @@ Pages 工作流明确设置为 `https://asharca.github.io/ui`，所以工作区�
 - `/ui/r/index.json`：数据目录；`/ui/r/registry.json`：shadcn 目录。
 - `/ui/r/{slug}.json`：自包含组件安装项，CLI 安装方式不变。
 - `/ui/r/{slug}/detail.json`：组件详情；`/ui/r/{slug}/raw.txt`：主文件源码。
+- `/ui/native/r/index.json`：React Native 目录；`/ui/native/r/{slug}.json`：安装命令、依赖与完整源码。
 - `/ui/components/{category}/{slug}.md`：组件 Markdown；图表使用 `/ui/charts/{slug}.md`。
 - `/ui/docs/{slug}.md`：已声明的 Agent、Motion 与 OpenUI 指南。
 
 静态站点没有运行时重写；JSON 与纯文本详情使用明确扩展名。生成的目录和
 文档链接同步使用静态地址。原本的 Next.js 服务端部署仍支持其原有接口。
+
+原生 Registry 与 Web Registry 一样，在临时站点中移除无扩展名 Route Handler，
+再从真实目录快照生成 JSON；页面 metadata、Agent 指南和 JSON 内的发现链接均
+改为静态地址。这样 `/native/r` 只作为目录，不再同时作为文件导出，避免 Next
+静态导出的 `EISDIR` 冲突。发布产物校验还会逐一读取目录指向的原生详情及其源码。
 
 ## 服务能力
 

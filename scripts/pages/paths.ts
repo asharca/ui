@@ -2,6 +2,8 @@
  * subdirectory at the same path. Give data endpoints explicit safe extensions. */
 export function staticResourcePath(value: string): string {
   if (value === "/r") return "/r/index.json";
+  if (value === "/native/r") return "/native/r/index.json";
+  if (/^\/native\/r\/[^/.]+$/.test(value)) return `${value}.json`;
   if (value === "/api/github-stars") return "/api/github-stars.json";
   if (value.startsWith("/api/og")) return "/api/og.png";
   if (/^\/r\/[^/.]+\/raw$/.test(value)) return `${value}.txt`;

@@ -17,6 +17,10 @@ describe("GitHub Pages publication adapter", () => {
     expect(staticResourcePath("/r/workspace-shell.json")).toBe("/r/workspace-shell.json");
     expect(staticResourcePath("/r/registry.json")).toBe("/r/registry.json");
     expect(staticResourcePath("/r/{slug}")).toBe("/r/{slug}/detail.json");
+    expect(staticResourcePath("/native/r")).toBe("/native/r/index.json");
+    expect(staticResourcePath("/native/r/button")).toBe("/native/r/button.json");
+    expect(staticResourcePath("/native/r/{slug}")).toBe("/native/r/{slug}.json");
+    expect(staticResourcePath("/native/r/button.json")).toBe("/native/r/button.json");
   });
   test("preserves external links, fragments and already prefixed resources", () => {
     for (const value of ["https://beui.dev/r/registry.json", "//example.com/logo.png", "#preview", "/ui/logo.png"]) {
@@ -72,5 +76,17 @@ describe("GitHub Pages publication adapter", () => {
   test("keeps TypeScript generic functions intact instead of parsing them as JSX", () => {
     const output = transformSiteSource('const pick = <T>(value: T) => value;', "test.ts", "https://asharca.github.io/ui", "/ui");
     expect(output).toContain('const pick = <T>(value: T) => value;');
+  });
+  test("native discovery URLs resolve to JSON without changing external endpoints", () => {
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Executable source fixture for deployment transformation.
+    const input = 'const SITE_URL = "https://asharca.github.io/ui"; const slug = "button"; const index = { url: "/native/r", types: { "application/json": "/native/r" } }; const detail = `/native/r/${slug}`; const guide = `${SITE_URL}/native/r`; const external = "https://beui.dev/native/r"; const explicit = "/native/r/button.json"; return { index, detail, guide, external, explicit };';
+    const output = transformSiteSource(input, "test.ts", "https://asharca.github.io/ui", "/ui");
+    const result = new Function(output)();
+    expect(result.index.url).toBe("https://asharca.github.io/ui/native/r/index.json");
+    expect(result.index.types["application/json"]).toBe(result.index.url);
+    expect(result.guide).toBe(result.index.url);
+    expect(result.detail).toBe("https://asharca.github.io/ui/native/r/button.json");
+    expect(result.explicit).toBe(result.detail);
+    expect(result.external).toBe("https://beui.dev/native/r");
   });
 });

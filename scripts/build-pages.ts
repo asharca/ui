@@ -19,7 +19,7 @@ export async function buildPages() {
   await symlink(path.join(root, "node_modules"), path.join(stage, "node_modules"), "dir");
   // These endpoints are materialized below as files with explicit MIME extensions.
   // Proxy, live analytics and request-dependent OG rendering require a server.
-  for (const item of ["app/r", "app/[slug]", "app/docs/[slug]", "app/llms.txt", "app/registry.json", "app/api"]) {
+  for (const item of ["app/r", "app/native/r", "app/[slug]", "app/docs/[slug]", "app/llms.txt", "app/registry.json", "app/api"]) {
     await rm(path.join(stage, item), { recursive: true, force: true });
   }
   const serverConfig = await import(pathToFileURL(path.join(root, "next.config.mjs")).href);

@@ -24,6 +24,18 @@ export async function verifyPages(directory: string, siteUrl: string) {
     const item = JSON.parse(await readFile(path.join(root, `r/${slug}.json`), "utf8"));
     if (item.name !== slug || !item.files?.length || item.files.some((entry: { content?: string }) => !entry.content)) throw new Error(`Incomplete install JSON: ${slug}`);
   }
+  const nativeIndex = JSON.parse(await readFile(path.join(root, "native/r/index.json"), "utf8"));
+  if (nativeIndex.endpoints.index !== `${siteUrl}/native/r/index.json` || nativeIndex.endpoints.detail !== `${siteUrl}/native/r/{slug}.json`) {
+    throw new Error("Native registry endpoints do not use static JSON URLs.");
+  }
+  for (const component of nativeIndex.components) {
+    const url = `${siteUrl}/native/r/${component.slug}.json`;
+    if (component.detail_url !== url) throw new Error(`Wrong native detail URL: ${component.slug}`);
+    const entry = JSON.parse(await readFile(path.join(root, `native/r/${component.slug}.json`), "utf8"));
+    if (entry.slug !== component.slug || entry.detail_url !== url || !entry.files?.length || entry.files.some((file: { content?: string }) => !file.content)) {
+      throw new Error(`Incomplete native JSON: ${component.slug}`);
+    }
+  }
   if (llms.includes("localhost")) throw new Error("Localhost leaked into the deployed llms.txt.");
   const home = await readFile(path.join(root, "index.html"), "utf8");
   if (!home.includes(`${basePath}/_next/`)) throw new Error("Next asset base path is missing.");

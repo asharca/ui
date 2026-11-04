@@ -35,6 +35,21 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
       if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "URL" && node.arguments?.[0] && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text === "/workspace") {
         return ts.factory.updateNewExpression(node, node.expression, node.typeArguments, [ts.factory.createStringLiteral(prefix("/workspace/")), ...node.arguments.slice(1)]);
       }
+      if (ts.isStringLiteral(node) && node.text.startsWith("/native/r")) {
+        return ts.factory.createStringLiteral(`${siteUrl}${staticResourcePath(node.text)}`);
+      }
+      if (ts.isTemplateExpression(node) && node.head.text === "/native/r/" && node.templateSpans.length === 1) {
+        const span = node.templateSpans[0];
+        return ts.factory.updateTemplateExpression(node, ts.factory.createTemplateHead(`${siteUrl}/native/r/`), [
+          ts.factory.updateTemplateSpan(span, span.expression, ts.factory.createTemplateTail(span.literal.text || ".json")),
+        ]);
+      }
+      if (ts.isTemplateExpression(node) && node.templateSpans.length === 1 && node.templateSpans[0].literal.text === "/native/r") {
+        const span = node.templateSpans[0];
+        return ts.factory.updateTemplateExpression(node, node.head, [
+          ts.factory.updateTemplateSpan(span, span.expression, ts.factory.createTemplateTail(staticResourcePath(span.literal.text))),
+        ]);
+      }
       if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) && node.text.startsWith("/api/og")) {
         return ts.factory.createStringLiteral(`${siteUrl}/api/og.png`);
       }

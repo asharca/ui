@@ -9,6 +9,7 @@ import { GET as llms } from "@/app/llms.txt/route";
 import { staticResourcePath } from "./paths";
 import { getComponentProps } from "@/lib/props-extractor";
 import { getGithubStarCount } from "@/lib/github";
+import { buildNativeEntry, buildNativeIndex } from "@/lib/native-registry";
 
 export async function writePagesData(directory: string, siteUrl: string) {
   const root = path.resolve(directory);
@@ -27,6 +28,16 @@ export async function writePagesData(directory: string, siteUrl: string) {
   index.endpoints.raw = `${siteUrl}/r/{slug}/raw.txt`;
   index.components = index.components.map((entry) => ({ ...entry, detail_url: resource(entry.detail_url), raw_url: resource(entry.raw_url) }));
   await write("r/index.json", index);
+  const nativeIndex = buildNativeIndex();
+  nativeIndex.endpoints.index = resource(nativeIndex.endpoints.index);
+  nativeIndex.endpoints.detail = resource(nativeIndex.endpoints.detail);
+  nativeIndex.components = nativeIndex.components.map((entry) => ({ ...entry, detail_url: resource(entry.detail_url) }));
+  await write("native/r/index.json", nativeIndex);
+  for (const component of nativeIndex.components) {
+    const entry = buildNativeEntry(component.slug);
+    if (!entry) throw new Error(`Missing native registry detail: ${component.slug}`);
+    await write(`native/r/${component.slug}.json`, { ...entry, detail_url: resource(entry.detail_url) });
+  }
   const registry = await buildShadcnRegistry();
   await write("r/registry.json", registry);
   await write("registry.json", registry);
