@@ -35,6 +35,9 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
       if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "URL" && node.arguments?.[0] && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text === "/workspace") {
         return ts.factory.updateNewExpression(node, node.expression, node.typeArguments, [ts.factory.createStringLiteral(prefix("/workspace/")), ...node.arguments.slice(1)]);
       }
+      if (ts.isStringLiteral(node) && node.text === "/changelog/rss.xml") {
+        return ts.factory.createStringLiteral(`${siteUrl}/changelog/rss.xml`);
+      }
       if (ts.isStringLiteral(node) && node.text.startsWith("/native/r")) {
         return ts.factory.createStringLiteral(`${siteUrl}${staticResourcePath(node.text)}`);
       }

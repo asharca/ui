@@ -89,4 +89,13 @@ describe("GitHub Pages publication adapter", () => {
     expect(result.explicit).toBe(result.detail);
     expect(result.external).toBe("https://beui.dev/native/r");
   });
+  test("scopes the shared RSS URL for native anchors and metadata", () => {
+    for (const siteUrl of ["https://asharca.github.io/ui", "https://ui.example.com"]) {
+      const input = 'const CHANGELOG_FEED_PATH = "/changelog/rss.xml"; return { anchor: CHANGELOG_FEED_PATH, metadata: { "application/rss+xml": CHANGELOG_FEED_PATH } };';
+      const output = transformSiteSource(input, "/stage/lib/changelog/index.ts", siteUrl, pagesConfiguration(siteUrl).basePath);
+      const result = new Function(output)();
+      expect(result.anchor).toBe(`${siteUrl}/changelog/rss.xml`);
+      expect(result.metadata["application/rss+xml"]).toBe(result.anchor);
+    }
+  });
 });

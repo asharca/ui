@@ -38,7 +38,7 @@ export async function buildPages() {
   await transformDirectory(path.join(stage, "app"));
   await transformDirectory(path.join(stage, "components/app"));
   await transformDirectory(path.join(stage, "components/previews"));
-  for (const rel of ["lib/seo.ts", "components/motion/not-found/shared.tsx"]) {
+  for (const rel of ["lib/seo.ts", "lib/changelog/index.ts", "components/motion/not-found/shared.tsx"]) {
     const file = path.join(stage, rel);
     await writeFile(file, transformSiteSource(await readFile(file, "utf8"), file, siteUrl, basePath));
   }

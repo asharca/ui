@@ -37,6 +37,7 @@ Pages 工作流明确设置为 `https://asharca.github.io/ui`，所以工作区�
 - `/ui/native/r/index.json`：React Native 目录；`/ui/native/r/{slug}.json`：安装命令、依赖与完整源码。
 - `/ui/components/{category}/{slug}.md`：组件 Markdown；图表使用 `/ui/charts/{slug}.md`。
 - `/ui/docs/{slug}.md`：已声明的 Agent、Motion 与 OpenUI 指南。
+- `/ui/changelog/rss.xml`：更新订阅；临时站点中的共享 RSS 地址使用带部署前缀的绝对 URL，供原生链接与 metadata 共用。
 
 静态站点没有运行时重写；JSON 与纯文本详情使用明确扩展名。生成的目录和
 文档链接同步使用静态地址。原本的 Next.js 服务端部署仍支持其原有接口。
