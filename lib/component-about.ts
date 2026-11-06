@@ -24,16 +24,17 @@ export type ComponentAbout = {
 
 export const componentAbout: Partial<Record<string, ComponentAbout>> = {
   "date-time-picker": {
-    overview: "Date Time Picker combines a calendar with hour, minute and AM/PM wheels inside a morphing popover. It edits local wall-clock values in YYYY-MM-DDTHH:mm format, with a Now shortcut and an explicit Confirm action. Dismissing the popover discards the draft rather than saving an unfinished choice.",
+    overview: "Date Time Picker combines a calendar with hour, minute and AM/PM wheels inside an instantly opening popover, without button scaling or calendar transitions. Its six-week calendar keeps the panel height stable across months and the direct year chooser. It edits local wall-clock values in YYYY-MM-DDTHH:mm format, with a Now shortcut and an explicit Confirm action. Dismissing the popover discards the draft rather than saving an unfinished choice.",
     useWhen: [
       "A scheduling form needs one compact control for a local date and time.",
       "A workflow should let users review a draft before confirming a timestamp.",
       "A form needs a named hidden input that carries the confirmed value.",
     ],
-    accessibility: "The trigger is a labelled button, opening focuses the active calendar day, and the calendar and time wheels support keyboard navigation. Reduced motion removes decorative movement. Pass label to describe the field and classNames to adjust its individual parts.",
+    accessibility: "The trigger is a labelled button, opening focuses the active calendar day, and the calendar and time wheels support keyboard navigation. The year chooser supports arrow keys, Home and End; Escape returns to its trigger without closing the popover. Reduced motion replaces the animated time wheels with native selects. Pass label to describe the field and classNames to adjust its individual parts.",
     faq: [
       { question: "What format does Date Time Picker return?", answer: "The confirmed value is a local YYYY-MM-DDTHH:mm string. No timezone conversion is applied; the host owns any conversion needed by its API." },
       { question: "When does onValueChange fire?", answer: "Only when Confirm is pressed. Opening starts a draft from the current value or local time, and dismissing discards that draft." },
+      { question: "Can I choose a year directly?", answer: "Yes. Click the year in the calendar header to open twelve year choices, then use the arrows to browse earlier or later years. Choosing a year preserves the current month and clamps the focused day for leap years. The panel keeps the same height, and the value is saved only after selecting a date and pressing Confirm." },
       { question: "Can I use it in a native form?", answer: "Yes. Pass name to render a hidden input containing the confirmed value. The disabled prop disables the trigger and hidden input." },
     ],
   },
@@ -1328,7 +1329,7 @@ export const componentAbout: Partial<Record<string, ComponentAbout>> = {
 
   popover: {
     overview:
-      "Popover is an animated React popover with two variants built on Framer Motion. The Gooey Popover oozes out of its trigger through an SVG goo filter, so a liquid neck stretches between the button and the panel before the crisp content fades in on top. The Morph Popover reveals a full-size panel from the corner nearest the trigger on one spring clip, keeping content and borders unscaled, then retraces the clip on close. Both render through a body portal, so they escape overflow clipping and stacking contexts.",
+      "Popover is an animated React popover with two variants built on Framer Motion. The Gooey Popover oozes out of its trigger through an SVG goo filter, so a liquid neck stretches between the button and the panel before the crisp content fades in on top. The Morph Popover reveals a full-size panel from the corner nearest the trigger on one spring clip, keeping content and borders unscaled, then retraces the clip on close. Pass animated={false} to MorphPopoverContent for instant opening and dismissal instead. Both render through a body portal, so they escape overflow clipping and stacking contexts.",
     useWhen: [
       "A toolbar or profile button needs a small panel for settings, sharing options or account details.",
       "A pricing or feature card wants a hover or click detail panel that feels more playful than a plain dropdown.",
