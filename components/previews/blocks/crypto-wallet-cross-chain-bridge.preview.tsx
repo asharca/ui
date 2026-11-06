@@ -1,0 +1,12 @@
+"use client";
+
+import { useState } from "react";
+import { CrossChainBridge, type BridgeProgress, type WalletAsset } from "@/components/motion/crypto-wallet-compositions";
+import { Button } from "@/components/motion/button";
+import { commerceWalletAssets } from "./crypto-wallet-swap-send-and-buy.preview";
+const sampleAssets: WalletAsset[] = [commerceWalletAssets[0], commerceWalletAssets[1], { ...commerceWalletAssets[1], id: "usd-rollup", chain: "Rollup", balance: 1800 }, ...commerceWalletAssets.slice(2)];
+
+export function CrossChainBridgePreview() {
+  const [assets, setAssets] = useState(sampleAssets); const [transfer, setTransfer] = useState<BridgeProgress | undefined>();
+  return <div className="w-full"><CrossChainBridge assets={assets} walletAddress="demo:my-wallet" contacts={[{ id: "self", name: "My rollup address", chain: "Rollup", address: "demo:my-wallet" }]} getRoutes={async request => { const from = assets.find(a => a.id === request.fromId)!; const to = assets.find(a => a.id === request.toId)!; const receive = request.amount * from.price / to.price; return [{ id: "direct", provider: "Direct demo route", receive: receive * .998, fee: "0.2%", minutes: .3, expiresAt: new Date(Date.now() + 60000).toISOString() }, { id: "economy", provider: "Economy demo route", receive: receive * .999, fee: "0.1%", minutes: 3, expiresAt: new Date(Date.now() + 60000).toISOString() }]; }} onBridge={async (request, route) => { setAssets(rows => rows.map(a => a.id === request.fromId ? { ...a, balance: a.balance - request.amount } : a)); setTransfer({ id: route.id, stages: [{ label: "Source authorization", status: "complete" }, { label: "Bridge transfer", status: "active" }, { label: "Destination settlement", status: "pending" }] }); }} transfer={transfer} /><details className="mt-4 text-xs text-muted-foreground"><summary className="cursor-pointer">Local bridge simulation controls</summary><p className="my-3">No on-chain transaction. Advance settlement explicitly.</p><div className="flex gap-2"><Button variant="outline" className="rounded-full" size="sm" disabled={!transfer} onClick={() => setTransfer(current => current ? { ...current, stages: current.stages.map(stage => ({ ...stage, status: "complete" })) } : current)}>Complete local transfer</Button><Button variant="outline" className="rounded-full" size="sm" onClick={() => setTransfer(undefined)}>Start again</Button></div></details></div>;
+}

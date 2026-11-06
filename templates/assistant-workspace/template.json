@@ -1,0 +1,28 @@
+{
+  "name": "Fieldwork · AI Workspace",
+  "publicReference": "pair-ai-workspace",
+  "requiredRootComponents": [
+    "workspace-shell",
+    "animated-sidebar",
+    "button",
+    "command-palette",
+    "morphing-modal",
+    "prompt-input",
+    "message"
+  ],
+  "sourceRepository": "asharca/ui",
+  "serviceMode": "browser-local-demonstration",
+  "routes": [
+    "/",
+    "/chat/",
+    "/chat/?session=<local-session-id>",
+    "/chat/?project=<local-project-id>",
+    "/projects/",
+    "/projects/?project=<local-project-id>",
+    "/archive/",
+    "/knowledge/",
+    "/integrations/",
+    "/settings/",
+    "/help/"
+  ]
+}

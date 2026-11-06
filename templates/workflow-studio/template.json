@@ -1,0 +1,20 @@
+{
+  "name": "Workflow Studio",
+  "publicReference": "weave-workflow-builder",
+  "requiredRootComponents": [
+    "button",
+    "input"
+  ],
+  "sourceRepository": "asharca/ui",
+  "serviceMode": "browser-local-demonstration",
+  "routes": [
+    "/",
+    "/editor/?id=flow-welcome",
+    "/agents/",
+    "/chat/",
+    "/knowledge/",
+    "/connections/",
+    "/runs/",
+    "/settings/"
+  ]
+}

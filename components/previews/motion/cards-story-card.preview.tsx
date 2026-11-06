@@ -1,0 +1,5 @@
+"use client";
+import { EditorialStoryCard } from "@/components/motion/purposeful-cards";
+export function StoryCardPreview() {
+  return <div className="flex w-full flex-col items-center gap-5 px-4 py-10 sm:px-8 sm:py-16"><EditorialStoryCard title="Discovering quiet" category="Field notes" date="SEP 04" dateTime="2026-09-04" excerpt="Beyond the city, green ridgelines stretch into the horizon under a veil of morning mist." location="Blue Ridge · Virginia, USA" href="#field-journal-story" media={<img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&fm=webp&q=85&w=1200" alt="Turquoise alpine lake beneath steep mountain peaks" className="size-full object-cover" loading="lazy" />} /><article id="field-journal-story" className="hidden w-full max-w-md rounded-2xl border border-border p-5 target:block"><h3 className="font-medium">Discovering quiet</h3><p className="mt-3 text-sm leading-relaxed text-muted-foreground">A slow walk above the tree line, and the small details that made us stop. A field journal from a quiet morning in the mountains.</p></article></div>;
+}

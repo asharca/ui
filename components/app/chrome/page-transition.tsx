@@ -13,12 +13,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
   // transition instead of the viewport.
   const hasViewportFixedContent =
     pathname.startsWith("/components/") || pathname.startsWith("/docs/") || pathname.startsWith("/charts") || pathname.startsWith("/playground");
-  const shouldTranslate = !reduce && !hasViewportFixedContent;
   const ref = useRef<HTMLDivElement>(null);
   // Skip enter animation on first load so LCP element is visible immediately.
   // After mount, navigations animate normally.
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
+  const shouldTranslate = mounted && !reduce && !hasViewportFixedContent;
 
   return (
     <motion.div

@@ -70,6 +70,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       children,
       onPointerDown,
+      tabIndex = 0,
       ...rest
     },
     ref,
@@ -104,6 +105,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.button
         ref={ref}
         type="button"
+        tabIndex={tabIndex}
         whileTap={reduce ? undefined : { scale: pressScale }}
         whileHover={reduce || !canHover ? undefined : { scale: 1.02 }}
         transition={SPRING_PRESS}
@@ -119,9 +121,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...rest}
       >
-        {ripple && !reduce ? (
+        {ripple ? (
           <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
-            <AnimatePresence>
+            {!reduce && <AnimatePresence>
               {ripples.map((r) => (
                 <motion.span
                   key={r.id}
@@ -143,7 +145,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                   }
                 />
               ))}
-            </AnimatePresence>
+            </AnimatePresence>}
           </span>
         ) : null}
         {children}
@@ -160,6 +162,7 @@ export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
       pressScale = 0.93,
       className,
       children,
+      tabIndex = 0,
       ...rest
     },
     ref,
@@ -170,6 +173,7 @@ export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
     return (
       <motion.a
         ref={ref}
+        tabIndex={tabIndex}
         whileTap={reduce ? undefined : { scale: pressScale }}
         whileHover={reduce || !canHover ? undefined : { scale: 1.02 }}
         transition={SPRING_PRESS}

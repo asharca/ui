@@ -6,7 +6,13 @@ import { staticResourcePath, withBasePath } from "./paths";
 export function transformSiteSource(source: string, filename: string, siteUrl: string, basePath: string) {
   const kind = /\.[jt]sx$/.test(filename) ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, kind);
-  const prefix = (value: string) => withBasePath(staticResourcePath(value), basePath);
+  const demoDestinations: Record<string, string> = {
+    "/docs": "/docs/ai-agents",
+    "/guides": "/docs/motion-patterns",
+    "/components/ai": "/components/agents",
+    "/components/all": "/components/motion",
+  };
+  const prefix = (value: string) => withBasePath(staticResourcePath(demoDestinations[value] ?? value), basePath);
   const transformed = ts.transform(file, [(context) => {
     const visit: ts.Visitor = (node) => {
       if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {
@@ -80,9 +86,9 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
       }
       // Endpoint descriptors, demo action defaults and static manifest fields.
       if (ts.isStringLiteral(node) && ts.isPropertyAssignment(node.parent)) {
-        const name = node.parent.name.getText(file);
+        const name = ts.isStringLiteral(node.parent.name) ? node.parent.name.text : node.parent.name.getText(file);
         if (name === "url" && node.text.startsWith("/r")) return ts.factory.createStringLiteral(staticResourcePath(node.text));
-        if (name === "src" || name === "start_url" || name === "manifest" || name === "homeHref" || name === "browseHref") return ts.factory.createStringLiteral(prefix(node.text));
+        if (name === "href" || name === "src" || name === "start_url" || name === "manifest" || name === "homeHref" || name === "browseHref") return ts.factory.createStringLiteral(prefix(node.text));
         if (name === "url" && filename.replace(/\\/g, "/").includes("/components/previews/")) return ts.factory.createStringLiteral(prefix(node.text));
       }
       return ts.visitEachChild(node, visit, context);

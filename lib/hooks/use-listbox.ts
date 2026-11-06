@@ -62,10 +62,34 @@ export function useListbox({
       !list.current?.contains(document.activeElement)
     )
       return;
+    const panel = list.current;
     const option = Array.from(
-      list.current?.querySelectorAll<HTMLElement>("[data-listbox-id]") ?? [],
+      panel?.querySelectorAll<HTMLElement>("[data-listbox-id]") ?? [],
     ).find((element) => element.dataset.listboxId === activeId);
-    option?.focus({ preventScroll: false });
+    if (!panel || !option) return;
+    const previousFocus = document.activeElement;
+    option.focus({ preventScroll: false });
+    if (document.activeElement === option) return;
+
+    // Reduced-motion CSS can transition inherited visibility after the panel
+    // becomes visible. Focus that was ignored must follow that transition,
+    // without stealing focus if the reader has moved elsewhere meanwhile.
+    const stop = () => {
+      panel.removeEventListener("transitionend", retry);
+      panel.removeEventListener("transitioncancel", retry);
+    };
+    const retry = (event: TransitionEvent) => {
+      if (event.propertyName !== "visibility") return;
+      if (document.activeElement !== previousFocus) {
+        stop();
+        return;
+      }
+      option.focus({ preventScroll: false });
+      if (document.activeElement === option) stop();
+    };
+    panel.addEventListener("transitionend", retry);
+    panel.addEventListener("transitioncancel", retry);
+    return stop;
   }, [open, activeId, list]);
 
   const onKeyDown = (event: KeyboardEvent) => {

@@ -2,7 +2,9 @@
 
 项目仓库：[asharca/ui](https://github.com/asharca/ui)。项目链接、Star 统计和 Skill 安装均使用此仓库；上游来源与 MIT 署名另行保留。
 
-以 [beUI](https://github.com/starc007/ui-components) 的完整 Next.js / Bun 源码为基础，仅增加 Asharca 风格的 **Workspace Shell、Workspace Tab Bar 及其侧栏组合**。上游 MIT 许可和组件实现保留，不再叠加旧版 Vite/Registry 或复制 Agent 组件的架构。
+以 [beUI](https://github.com/starc007/ui-components) 的完整 Next.js / Bun 源码为基础，提供 Asharca 风格的 **Workspace Shell、Workspace Tab Bar 及其侧栏组合**，以及依据公开产品规范独立实现的 Web 组件、业务页面与完整应用。上游 MIT 许可和组件署名保留；不获取付费源码或叠加旧版 Vite/Registry 架构。
+
+第三方依赖不自动适用本仓库的 MIT 许可。现有 `@paper-design/shaders-react` 使用 [PolyForm Shield 1.0.0](https://polyformproject.org/licenses/shield/1.0.0)，包含竞业限制及分发告知义务；发布组件库或商业分发前须核对用途是否获许可。公开预览可见不等于其源码、算法或素材可再分发。
 
 ## 本地调试
 
@@ -16,6 +18,15 @@ bun run dev
 打开 **http://localhost:3000/workspace**。
 
 组件文档：`/components/blocks/workspace-shell`、`/components/blocks/workspace-tab-bar`。
+
+需要预先编译整个主站、避免首次访问时开发编译，可运行：
+
+```bash
+bun run build
+bun run start --port 3100
+```
+
+打开 **http://localhost:3100/components/motion**。修改源码后需重新构建并重启生产服务。构建使用 4 个 worker、每个 worker 同时预渲染一个页面，给含完整源码与 Props 文档的多变体页面最多 300 秒；同页重复源码复用高亮结果。四个 `templates/` 独立应用仍需单独运行，不合并到主站端口。
 
 日期时间选择器：`/components/motion/date-time-picker`，源码为 `components/motion/date-time-picker.tsx`。`DateTimePicker` 接受 `value` / `defaultValue` / `onValueChange`，值为本地墙上时间 `YYYY-MM-DDTHH:mm`，不转换时区；`name` 可提交表单值。日历和时间先编辑草稿，点击 Confirm 才提交，Escape 或点击外部丢弃草稿，Now 仅将草稿设为本地当前时间。方向键移动日期，Page Up / Down 切换月份（Shift 切换年份）；减少动态效果时使用原生时间下拉框。
 
@@ -34,6 +45,26 @@ bun test
 站点：[asharca.github.io/ui](https://asharca.github.io/ui/)。工作区：[Workspace](https://asharca.github.io/ui/workspace/)。静态发布与服务能力区别见 [Pages 部署说明](docs/pages-deployment.md)。
 
 布局、组件属性、独立窗口、Registry 安装与部署说明见 [docs/workspace.md](docs/workspace.md)。原始 beUI 项目说明见 [README.beui.md](README.beui.md)。
+
+## Web 目录与独立应用
+
+完整范围见 [Web 公开目录实现清单](docs/web-pro-catalog-plan.md)：132 个家族、358 项变体或模板。其中 128 个家族、354 项变体进入现有组件文档、Preview、可复制 Usage 和 Registry；4 个多页面应用从 `/templates` 浏览源码与运行说明。
+
+视觉与交互以 Pro 公开演示为对照目标，保留本仓库品牌并使用合法素材；功能覆盖数量不代表已通过 1:1 验收。逐项验收边界与差异见上述实现清单。
+
+| 独立工程 | 主要工作流 |
+| --- | --- |
+| [`templates/workflow-studio`](templates/workflow-studio) | 工作流画布、步骤执行、Agent、知识库与运行记录 |
+| [`templates/forecast-community`](templates/forecast-community) | 市场发现、模拟买卖、奖励、排名、持仓与草稿 |
+| [`templates/asset-workspace`](templates/asset-workspace) | 资产、钱包、模拟换币/质押、关注与助手 |
+| [`templates/assistant-workspace`](templates/assistant-workspace) | 多会话、项目、知识与附件、归档和集成 |
+
+在源码根目录安装依赖后，可单独启动任意工程，例如 `bun run --cwd templates/workflow-studio dev`。各目录也可独立复制、安装和运行，包含自己的配置、主题、依赖源码、MIT 许可与 README；`bun run check:templates` 校验四个工程，且已纳入 `bun run check`。
+
+组件业务操作通过宿主回调接入；完整应用明确标注浏览器本地演示。真实认证、模型、支付、链上交易与远端执行仍需接入自己的服务。DOM 交互验证不等于浏览器视觉、真实设备或生产构建验收。
+
+文件工作区的 `WorkspaceFile.captions` 可提供真实 WebVTT 轨道：`{ src, srcLang, label, default? }[]`，用于音频或视频；字幕 URL 及跨域可访问性由宿主负责。没有字幕数据时仍保留媒体播放，不生成空字幕或虚构转写。
+
 
 ## 源码与历史
 

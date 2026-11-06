@@ -1,3 +1,4 @@
+import ts from "typescript";
 import { allComponents, findCategory, registry } from "@/lib/registry";
 import { componentDates } from "@/lib/component-dates";
 import { pageUrlFor, withSignature } from "@/lib/signature";
@@ -58,6 +59,7 @@ export type ShadcnRegistry = {
 export type RegistryTarget = {
   slug: string;
   name: string;
+  author?: string;
   description: string;
   file: string;
   extraFiles?: string[];
@@ -66,8 +68,6 @@ export type RegistryTarget = {
   previewFile?: string;
 };
 
-const STATIC_IMPORT_RE = /\b(?:import|export)\s+(?:type\s+)?(?:[^'";]*?\s+from\s*)?["']([^"']+)["']/g;
-const DYNAMIC_IMPORT_RE = /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
 const SHADCN_DEP_SKIP = new Set(["next", "react", "react-dom"]);
 
 function parseDeps(source: string) {
@@ -75,15 +75,17 @@ function parseDeps(source: string) {
   const internal = new Set<string>();
   const specs = new Set<string>();
 
-  for (const re of [STATIC_IMPORT_RE, DYNAMIC_IMPORT_RE]) {
-    re.lastIndex = 0;
-    while (true) {
-      const match = re.exec(source);
-      if (!match) break;
-      const spec = match[1];
-      if (spec) specs.add(spec);
+  const file = ts.createSourceFile("registry-source.tsx", source, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
+  const visit = (node: ts.Node) => {
+    if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      specs.add(node.moduleSpecifier.text);
+    } else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      const argument = node.arguments[0];
+      if (argument && (ts.isStringLiteral(argument) || ts.isNoSubstitutionTemplateLiteral(argument))) specs.add(argument.text);
     }
-  }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
 
   for (const spec of specs) {
     if (!spec) continue;
@@ -144,6 +146,7 @@ export function allRegistryTargets(): RegistryTarget[] {
       slug: component.slug,
       name: component.name,
       description: component.description,
+      author: component.author,
       file: component.file,
       extraFiles: component.extraFiles,
       categorySlug: component.category.slug,
@@ -155,6 +158,7 @@ export function allRegistryTargets(): RegistryTarget[] {
       .map((example) => ({
         slug: example.installSlug as string,
         name: `${component.name} ${example.name}`,
+        author: example.author ?? component.author,
         description: example.description ?? component.description,
         file: example.file,
         categorySlug: component.category.slug,
@@ -173,6 +177,7 @@ export function allShadcnTargets(): RegistryTarget[] {
       .map((example) => ({
         slug: example.installSlug as string,
         name: `${component.name} ${example.name}`,
+        author: example.author ?? component.author,
         description: example.description ?? component.description,
         file: example.file,
         categorySlug: component.category.slug,
@@ -186,6 +191,7 @@ export function allShadcnTargets(): RegistryTarget[] {
       slug: component.slug,
       name: component.name,
       description: component.description,
+      author: component.author,
       file: component.file,
       extraFiles: component.extraFiles,
       categorySlug: component.category.slug,
@@ -208,7 +214,7 @@ type CollectedSourceGraph = {
   internal: string[];
 };
 
-async function collectSourceGraph(initialFiles: string[]): Promise<CollectedSourceGraph> {
+export async function collectSourceGraph(initialFiles: string[]): Promise<CollectedSourceGraph> {
   const files: SourceFile[] = [];
   const queued = [...initialFiles];
   const seen = new Set<string>();
@@ -325,7 +331,7 @@ export async function buildShadcnItem(
     type: comp.categorySlug === "blocks" ? "registry:block" : "registry:component",
     title: comp.name,
     description: comp.description,
-    author: comp.file.startsWith("components/workspace/") ? "asharca" : "Saurabh <saurabh10102@gmail.com>",
+    author: comp.author ?? (comp.file.startsWith("components/workspace/") ? "asharca" : "Saurabh <saurabh10102@gmail.com>"),
     dependencies,
     registryDependencies: [],
     files: uniqueByPath(

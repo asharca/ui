@@ -46,6 +46,7 @@ export function SiteHeader() {
   const isCharts = pathname.startsWith("/charts");
   const isNative = isNativePath(pathname);
   const isPlayground = pathname.startsWith("/playground");
+  const isTemplates = pathname.startsWith("/templates");
   const formattedStarCount =
     typeof githubStarCount === "number"
       ? formatStarCount(githubStarCount)
@@ -134,6 +135,16 @@ export function SiteHeader() {
               )}
             >
               React Native
+            </Link>
+            <Link
+              href="/templates"
+              aria-current={isTemplates ? "page" : undefined}
+              className={cn(
+                "rounded-md px-1.5 py-1.5 text-sm transition-colors lg:px-3",
+                isTemplates ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Templates
             </Link>
             <Link
               href="/playground"

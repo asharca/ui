@@ -1,0 +1,13 @@
+"use client";
+
+import { useState } from "react";
+import { BarChart3, Bot, Home, KeyRound, Layers, Plug, Settings, Users, Workflow } from "lucide-react";
+import { WorkspaceSidebarLayout } from "@/components/motion/workspace-navigation";
+import type { WorkspaceSidebarGroup } from "@/components/workspace/workspace-sidebar";
+
+export function SidebarWorkspacePreview() {
+  const [active,setActive] = useState("overview");
+  const [workspace,setWorkspace] = useState("beui");
+  const groups: WorkspaceSidebarGroup[] = [{ id: "workspace", title: "Workspace", items: [{ id: "overview",label: "Overview",icon: <Home/> },{ id: "agents",label: "Agents",icon: <Bot/>,badge: "6",children: [{ id: "all",label: "All agents" },{ id: "playground",label: "Playground" },{ id: "evaluations",label: "Evaluations" }] },{ id: "workflows",label: "Workflows",icon: <Workflow/> },{ id: "knowledge",label: "Knowledge",icon: <Layers/> },{ id: "integrations",label: "Integrations",icon: <Plug/> },{ id: "analytics",label: "Analytics",icon: <BarChart3/> },{ id: "members",label: "Members",icon: <Users/> },{ id: "api",label: "API keys",icon: <KeyRound/> },{ id: "settings",label: "Settings",icon: <Settings/> }] }];
+  return <WorkspaceSidebarLayout groups={groups} activeId={active} onSelect={setActive} workspaces={[{ id: "beui",name: "beUI workspace" },{ id: "personal",name: "Personal workspace" }]} workspaceId={workspace} onWorkspaceChange={setWorkspace} user={{ name: "Maya Chen",email: "maya@example.com" }}><div className="flex h-full w-full flex-col"><p className="mb-2 text-xs font-medium text-muted-foreground">Live workspace</p><h2 className="max-w-md text-xl font-medium leading-7 tracking-tight">{active === "overview" ? "Good morning, Maya." : groups.flatMap(group => group.items.flatMap(item => [item,...(item.children ?? [])])).find(item => item.id === active)?.label}</h2><p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">Your workspace stays in place while the navigation folds into a focused icon rail.</p><div className="mt-auto grid gap-3 sm:grid-cols-3"><article className="rounded-xl border border-border p-4"><p className="text-xs text-muted-foreground">Runs</p><p className="mt-4 text-xl font-semibold tracking-tight">1,284</p></article><article className="rounded-xl border border-border p-4"><p className="text-xs text-muted-foreground">Success rate</p><p className="mt-4 text-xl font-semibold tracking-tight">98.4%</p></article><article className="rounded-xl border border-border p-4"><p className="text-xs text-muted-foreground">Time saved</p><p className="mt-4 text-xl font-semibold tracking-tight">42h</p></article></div></div></WorkspaceSidebarLayout>;
+}

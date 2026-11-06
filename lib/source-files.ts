@@ -35,7 +35,8 @@ export async function resolveSourceImport(spec: string, fromFile?: string): Prom
 
 function candidatePaths(rel: string) {
   const parsed = path.parse(rel);
-  if (parsed.ext) return [rel];
+  // Names such as `agent-plan.preview` still need a source extension.
+  if (SOURCE_EXTENSIONS.some((extension) => extension === parsed.ext)) return [rel];
 
   return [
     ...SOURCE_EXTENSIONS.map((ext) => `${rel}${ext}`),

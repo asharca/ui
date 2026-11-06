@@ -1,0 +1,30 @@
+{
+  "name": "Forecast Community",
+  "publicReference": "hunch-social-prediction",
+  "requiredRootComponents": [
+    "button",
+    "morphing-modal",
+    "prediction-market",
+    "line-chart",
+    "table"
+  ],
+  "sourceRepository": "asharca/ui",
+  "serviceMode": "browser-local-demonstration",
+  "routes": [
+    "/",
+    "/markets/lunar-water/",
+    "/markets/clean-grid/",
+    "/markets/open-model/",
+    "/markets/city-cycling/",
+    "/markets/film-festival/",
+    "/markets/community-run/",
+    "/rewards/",
+    "/leaderboard/",
+    "/portfolio/",
+    "/drafts/",
+    "/profile/me/",
+    "/profile/river/",
+    "/profile/noor/",
+    "/profile/alex/"
+  ]
+}

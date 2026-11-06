@@ -1,4 +1,4 @@
-export type XYCurve = "monotone" | "linear" | "step";
+export type XYCurve = "monotone" | "linear" | "step" | "flat";
 export type XYPathPoint = { x: number; y: number } | null;
 
 const f = (value: number) => Math.round(value * 100) / 100;
@@ -45,7 +45,7 @@ function segment(run: { x: number; y: number }[], curve: XYCurve) {
   let d = `M${f(first.x)},${f(first.y)}`;
   // A lone sample draws as a dot with a round line cap.
   if (!rest.length) return `${d}h0`;
-  if (curve === "linear" || run.length === 2) {
+  if (curve === "linear" || (run.length === 2 && curve !== "flat")) {
     for (const p of rest) d += `L${f(p.x)},${f(p.y)}`;
     return d;
   }
@@ -55,6 +55,16 @@ function segment(run: { x: number; y: number }[], curve: XYCurve) {
       d += `H${f(mid)}V${f(run[i].y)}`;
     }
     return `${d}H${f(run[run.length - 1].x)}`;
+  }
+  // Zero endpoint slopes keep each sample level without overshooting either value.
+  if (curve === "flat") {
+    for (let i = 1; i < run.length; i++) {
+      const a = run[i - 1];
+      const b = run[i];
+      const dx = (b.x - a.x) / 3;
+      d += `C${f(a.x + dx)},${f(a.y)},${f(b.x - dx)},${f(b.y)},${f(b.x)},${f(b.y)}`;
+    }
+    return d;
   }
   const t = tangents(run);
   for (let i = 1; i < run.length; i++) {

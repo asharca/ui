@@ -4,6 +4,7 @@ import {
   ArrowLeftToLine,
   ArrowRightToLine,
   ChevronUp,
+  ChevronsUpDown,
   GripVertical,
   MoreHorizontal,
   Trash2,
@@ -332,7 +333,7 @@ export function TableHeader<T>({
                             : { duration: 0.18, ease: EASE_OUT }
                         }
                       >
-                        <ChevronUp className="h-3.5 w-3.5" />
+                        {active ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronsUpDown className="h-3.5 w-3.5" />}
                       </motion.span>
                     </button>
                   ) : onColumnRename ? (

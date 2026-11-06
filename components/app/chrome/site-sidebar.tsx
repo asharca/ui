@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 const INTRO = [
   { slug: "home", name: "Home", href: "/components/motion" },
   { slug: "react-native", name: "React Native", href: NATIVE_PATH },
+  { slug: "templates", name: "Templates", href: "/templates" },
   { slug: "changelog", name: "Changelog", href: "/changelog" },
 ];
 

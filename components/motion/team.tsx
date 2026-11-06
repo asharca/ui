@@ -1,0 +1,60 @@
+"use client";
+
+import { Globe, MapPin } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarGroup } from "@/components/motion/avatar-group";
+import { Button, ButtonLink } from "@/components/motion/button";
+import { Marquee } from "@/components/motion/marquee";
+import { SPRING_LAYOUT } from "@/lib/ease";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/motion/tabs";
+import { useHoverCapable } from "@/lib/hooks/use-hover-capable";
+import { cn } from "@/lib/utils";
+
+export type TeamVariant = "expanding-panels" | "spotlight" | "team-grid" | "team-marquee";
+export interface TeamMember { id: string; name: string; role: string; department: string; bio: string; image?: string; location?: string; timeZone?: string; links?: { label: string; href: string }[] }
+export interface TeamProps {
+  variant?: TeamVariant;
+  title: string;
+  description?: string;
+  members: TeamMember[];
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (id: string) => void;
+  hiring?: { title: string; description: string; href: string };
+  className?: string;
+}
+
+export function Team({ variant = "expanding-panels", title, description, members, value, defaultValue, onValueChange, hiring, className }: TeamProps) {
+  const reduce = useReducedMotion();
+  const canHover = useHoverCapable();
+  const [internal, setInternal] = useState(defaultValue ?? members[0]?.id);
+  const [paused, setPaused] = useState(false);
+  const [department, setDepartment] = useState("All");
+  const departments = ["All", ...new Set(members.map(member => member.department))];
+  const visibleMembers = department === "All" ? members : members.filter(member => member.department === department);
+  const marqueeSplit = variant === "team-marquee" ? Math.floor(members.length / 2) : 0;
+  const [now, setNow] = useState<Date>();
+  const chosen = members.find((member) => member.id === (value ?? internal)) ?? members[0];
+  const select = (id: string) => { if (value === undefined) setInternal(id); onValueChange?.(id); };
+  useEffect(() => { setNow(new Date()); const timer = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(timer); }, []);
+  const links = (member: TeamMember) => <div className="flex flex-wrap gap-1">{member.links?.map((link) => <a key={link.href} href={link.href} className={cn("inline-flex min-h-8 items-center justify-center gap-1 rounded-full text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring", variant === "spotlight" || variant === "expanding-panels" ? "px-2 text-xs" : "size-8", (variant === "expanding-panels" || variant === "team-grid") && "border border-white/15 bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 hover:text-white")}><span className={variant === "spotlight" || variant === "expanding-panels" ? undefined : "sr-only"}>{link.label}<span className="sr-only"> — {member.name}</span></span>{variant === "team-grid" ? <Globe aria-hidden="true" className="size-3.5" /> : <span aria-hidden="true">↗</span>}</a>)}</div>;
+  const local = (member: TeamMember) => <p className="text-xs text-muted-foreground">{member.location}{member.timeZone && now ? ` · ${new Intl.DateTimeFormat(undefined, { timeZone: member.timeZone, hour: "2-digit", minute: "2-digit" }).format(now)}` : ""}</p>;
+  const portrait = (member: TeamMember, className?: string) => member.image ? <img src={member.image} alt={member.name} className={cn("size-full object-cover object-[50%_25%]", className)} /> : <div className={cn("grid size-full min-h-40 place-items-center bg-muted text-4xl font-medium text-muted-foreground", className)} role="img" aria-label={member.name}>{member.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("")}</div>;
+  const profile = chosen && <motion.div key={chosen.id} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING_LAYOUT} className="space-y-3 text-center sm:text-left"><h3 className="text-xl font-medium">{chosen.name}</h3><p className="text-sm text-primary">{chosen.role}</p><p className="max-w-xl text-sm leading-6 text-muted-foreground">{chosen.bio}</p>{local(chosen)}{links(chosen)}</motion.div>;
+  return <section data-team={variant} className={cn("w-full overflow-hidden bg-background px-4 py-20 text-foreground sm:px-8", className)}><div className={cn("mx-auto w-full", variant === "spotlight" ? "max-w-4xl" : "max-w-6xl")}>
+    <header className={cn("space-y-5", variant === "team-grid" ? "relative pr-0 lg:pr-72" : "mx-auto max-w-xl text-center")}><span className="inline-flex rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">Team</span><h2 className={cn("whitespace-pre-line text-balance text-4xl font-medium leading-[1.1] tracking-tight", variant === "team-marquee" && "leading-10 tracking-normal")}>{title}</h2>{description && <p className="max-w-2xl text-pretty text-sm leading-6 text-muted-foreground">{description}</p>}{variant === "team-grid" && <div className="flex items-center gap-3 lg:absolute lg:right-0 lg:bottom-0"><AvatarGroup members={members.slice(0,5).map(member => ({id:member.id,name:member.name,src:member.image}))} /><p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">{members.length} people</span> · {new Set(members.map(member => member.location).filter(Boolean)).size} locations</p></div>}</header>
+    {members.length === 0 && <p className="mt-12">No team members to display.</p>}
+    {variant === "expanding-panels" && <div className="mt-12 flex h-[38rem] flex-col gap-2.5 md:h-[28rem] md:flex-row">{members.map((member) => {
+      const active = chosen?.id === member.id;
+      return <motion.article layout={!reduce} animate={{flexGrow:active?3.4:1}} style={{flexBasis:0}} transition={reduce ? {duration:0} : SPRING_LAYOUT} key={member.id} onPointerEnter={() => canHover && select(member.id)} className={cn("relative min-h-0 min-w-0 overflow-hidden rounded-3xl border bg-muted",active?"border-foreground/15":"border-border")}>
+        <div className={cn("absolute inset-0 transition-[filter,transform] duration-700 motion-reduce:transition-none", !active && "scale-105 grayscale-[.85] brightness-90")}>{portrait(member)}</div><div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+        <button type="button" aria-expanded={active} aria-label={`Show ${member.name}`} onFocus={() => select(member.id)} onClick={() => select(member.id)} className="absolute inset-0 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-white">{active && <><p className="mb-4 max-w-64 text-sm leading-6 text-white/85">{member.bio}</p><div className="pointer-events-auto relative z-10 mb-4 [&_a]:text-white/80">{links(member)}</div></>}<p className="text-base font-medium">{member.name}</p><p className="mt-1 text-xs text-white/70">{member.role}</p></div>
+      </motion.article>;
+    })}</div>}
+    {variant === "spotlight" && chosen && <div className="mt-12 overflow-hidden rounded-3xl border border-border/60"><div className="grid items-center gap-6 p-6 sm:grid-cols-[auto_1fr] sm:gap-8 sm:p-8"><div className="mx-auto size-40 overflow-hidden rounded-3xl bg-muted sm:mx-0">{portrait(chosen)}</div><div aria-live="polite">{profile}</div></div><fieldset aria-label="Choose featured teammate" className="flex gap-2 overflow-x-auto border-t border-border/60 bg-background/40 p-3">{members.map((member) => <button type="button" key={member.id} aria-label={`Meet ${member.name}`} aria-pressed={chosen.id === member.id} onClick={() => select(member.id)} className={cn("shrink-0 rounded-full p-0.5 outline-none focus-visible:ring-2 focus-visible:ring-ring", chosen.id === member.id ? "ring-2 ring-primary" : "opacity-60 hover:opacity-100")}><Avatar name={member.name} src={member.image} size="lg" /></button>)}</fieldset></div>}
+    {variant === "team-grid" && <Tabs value={department} onValueChange={setDepartment}><TabsList className="mt-10 max-w-full overflow-x-auto" aria-label="Team departments">{departments.map(value=><TabsTrigger key={value} value={value}>{value}<span className="ml-1.5 text-xs text-muted-foreground">{value === "All" ? members.length : members.filter(member=>member.department===value).length}</span></TabsTrigger>)}</TabsList><TabsContent value={department}><div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{visibleMembers.map((member) => <motion.article layout={!reduce} key={member.id} transition={SPRING_LAYOUT} className="group flex h-full flex-col rounded-3xl border border-border bg-background p-2.5"><div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted sm:aspect-[4/5]">{portrait(member, "grayscale-[.55] brightness-95 transition-[filter] duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-focus-within:grayscale-0 group-focus-within:brightness-100 motion-reduce:transition-none")}<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-3 pt-12 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 motion-reduce:transition-none"><div className="flex items-end justify-between gap-2"><p className="text-pretty text-xs leading-5 text-white/90">{member.bio}</p><div className="shrink-0 [&_a]:text-white/90">{links(member)}</div></div></div></div><div className="flex flex-1 flex-col px-1.5 pt-3 pb-1"><h3 className="text-xl font-medium">{member.name}</h3><p className="mt-0.5 text-sm text-muted-foreground">{member.role}</p><div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground"><span className="flex min-w-0 items-center gap-1.5"><MapPin aria-hidden="true" className="size-3.5 shrink-0" /><span className="truncate">{member.location}</span></span>{member.timeZone && <time suppressHydrationWarning className="font-mono">{now ? new Intl.DateTimeFormat(undefined, {timeZone:member.timeZone,hour:"2-digit",minute:"2-digit"}).format(now) : "—"}</time>}</div></div></motion.article>)}{hiring && <article className="flex min-h-72 flex-col items-start justify-between rounded-3xl border border-dashed border-border p-6"><span aria-hidden="true" className="grid size-9 place-items-center rounded-full bg-muted text-xl">+</span><div><h3 className="text-lg font-medium">{hiring.title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{hiring.description}</p><ButtonLink href={hiring.href} variant="outline" className="mt-5">Explore opportunities</ButtonLink></div></article>}</div></TabsContent></Tabs>}
+    {variant === "team-marquee" && <><div className={cn("relative mt-14 space-y-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)] [&:focus-within_.animate-marquee]:[animation-play-state:paused]", paused && "[&_.animate-marquee]:[animation-play-state:paused]")}>{[0, 1].map((row) => <Marquee key={row} direction={row ? "right" : "left"} speed={35} pauseOnHover>{members.map((member, index) => (row === 0 ? index < marqueeSplit : index >= marqueeSplit) && <article key={member.id} className="flex w-80 shrink-0 flex-col rounded-2xl border border-border bg-background p-4"><div className="flex items-center gap-3"><Avatar name={member.name} src={member.image} size="lg" /><div><h3 className="text-sm font-medium">{member.name}</h3><p className="mt-1 text-xs text-muted-foreground">{member.role}</p></div></div><p className="my-3 line-clamp-2 text-sm leading-6 text-muted-foreground">{member.bio}</p>{links(member)}</article>)}</Marquee>)}</div><div className="relative text-center"><Button variant="ghost" size="sm" className="sr-only focus:not-sr-only focus:absolute focus:bottom-2 focus:left-1/2 focus:z-10" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Resume movement" : "Pause movement"}</Button></div></>}
+  </div></section>;
+}

@@ -35,6 +35,8 @@ export interface BarChartPlotProps {
   height?: number;
   /** Width of the category label gutter for horizontal bars, in px. */
   labelWidth?: number;
+  /** Zero-based rendered category ranks to label; defaults to automatic spacing. */
+  categoryTickIndices?: readonly number[];
   showGrid?: boolean;
   className?: string;
 }
@@ -42,6 +44,7 @@ export interface BarChartPlotProps {
 export function BarChartPlot({
   height: heightProp,
   labelWidth = 96,
+  categoryTickIndices,
   showGrid = true,
   className,
 }: BarChartPlotProps) {
@@ -116,6 +119,10 @@ export function BarChartPlot({
   const spring: Transition = reduce ? { duration: 0 } : SPRING_LAYOUT;
   const activeRank = activeIndex >= 0 ? order.indexOf(activeIndex) : -1;
   const stride = labelStride(n, bandLength, vertical ? 56 : 18);
+  const labelSpan = slot * stride;
+  const showCategoryTick = (rank: number) => categoryTickIndices === undefined
+    ? rank % stride === 0
+    : categoryTickIndices.includes(rank);
 
   return (
     <div className={cn("min-w-0 select-none", className)}>
@@ -279,7 +286,7 @@ export function BarChartPlot({
                   aria-hidden="true"
                   className={cn(
                     "pointer-events-none absolute top-0 left-0 truncate pr-3 text-right text-xs text-muted-foreground",
-                    rank % stride !== 0 && "invisible",
+                    !showCategoryTick(rank) && "invisible",
                   )}
                   style={{ width: labelWidth, lineHeight: `${slot}px` }}
                   initial={false}
@@ -338,12 +345,14 @@ export function BarChartPlot({
                   key={categories[categoryIndex]}
                   className={cn(
                     "absolute top-0 left-0 truncate px-0.5 text-center text-[11px] text-muted-foreground",
-                    rank % stride !== 0 && "invisible",
+                    !showCategoryTick(rank) && "invisible",
+                    categoryTickIndices !== undefined && n > 1 && rank === 0 && "text-left",
+                    categoryTickIndices !== undefined && n > 1 && rank === n - 1 && "text-right",
                   )}
                   // Shown labels borrow the slots of the hidden ones around them.
-                  style={{ width: slot * stride }}
+                  style={{ width: labelSpan }}
                   initial={false}
-                  animate={{ x: bandStart + (rank + 0.5) * slot - (slot * stride) / 2 }}
+                  animate={{ x: categoryTickIndices === undefined ? bandStart + (rank + 0.5) * slot - labelSpan / 2 : Math.max(bandStart, Math.min(bandStart + bandLength - labelSpan, bandStart + (rank + 0.5) * slot - labelSpan / 2)) }}
                   transition={spring}
                 >
                   {categories[categoryIndex]}

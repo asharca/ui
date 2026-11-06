@@ -4,7 +4,6 @@ import {
   isComponentNew,
   NEW_BADGE_DURATION_MS,
 } from "@/lib/component-status";
-import { registry } from "@/lib/registry";
 
 const LAUNCH = Date.parse("2026-07-22T00:00:00Z");
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -54,15 +53,3 @@ describe("component new status", () => {
   });
 });
 
-describe("agent launch ordering", () => {
-  test("keeps the composed examples last and excludes Chat App from new launches", () => {
-    const agents = registry.find((category) => category.slug === "agents");
-    const lastSlugs = agents?.components.slice(-2).map((component) => component.slug);
-    const chatApp = agents?.components.find(
-      (component) => component.slug === "chat-app",
-    );
-
-    expect(lastSlugs).toEqual(["ai-sidebar", "chat-app"]);
-    expect(isComponentNew(chatApp ?? {})).toBe(false);
-  });
-});

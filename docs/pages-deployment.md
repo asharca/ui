@@ -28,6 +28,10 @@
 上游站点提供自有组件。正式地址通过构建环境 `NEXT_PUBLIC_SITE_URL` 设置，
 Pages 工作流明确设置为 `https://asharca.github.io/ui`，所以工作区文档不会指向 localhost。
 
+公开目录扩展后，临时站点对整个 `components/` 的原生链接与资源数据执行部署前缀适配，包括带引号的 `href`／`src` 对象键。演示中的 `/docs`、`/guides`、`/components/ai`、`/components/all` 分别指向已存在的 Agent 指南、Motion 指南、Agents 分类和 Motion 分类；不创建无内容的占位页。Registry 文件在适配前从原始源码生成，不包含 `/ui` 专属改写。
+
+静态构建使用两个 worker，每个 worker 一次预渲染一个页面；多变体页面的完整源码高亮在同一次渲染内复用，单页构建上限为 300 秒。产物必须通过所有 HTML 本地链接与资源检查才能上传。
+
 ## 地址
 
 - `/ui/llms.txt`：组件与文档索引。

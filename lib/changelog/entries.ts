@@ -8,9 +8,109 @@ import type { ChangelogEntry } from "@/lib/changelog/types";
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: "2026-11-02",
-    title: "Public upstream updates in the Asharca edition",
-    summary: "The public beUI site updates are now available alongside the existing Asharca workspace components.",
+    title: "Independent web catalog, application templates and public upstream updates",
+    summary: "Public beUI updates and independently implemented web components, business pages and application workflows join the Asharca workspace without licensed source or brand assets.",
     items: [
+      {
+        type: "fixed",
+        text: "Select panels restore visibility before opening focus and recover ignored focus after inherited visibility transitions, without reclaiming focus after the reader leaves. Keyboard selection returns focus to the trigger.",
+        component: "select",
+      },
+      {
+        type: "fixed",
+        text: "File-flow preview controls no longer overlap stage controls, and decorative moving packets no longer intercept converter clicks. Error and recovery states remain explicitly local illustrations.",
+        component: "illustration-file-flow",
+      },
+      {
+        type: "fixed",
+        text: "Conversion backgrounds retain their frozen WebGL appearance under reduced motion when supported; newsletter mesh parameters and FAQ halftone geometry follow their observed compositions without changing static CTA defaults.",
+        component: "newsletter",
+      },
+      {
+        type: "improved",
+        text: "Center morph modals support optional panel-first focus, coordinated surface and clip radii, and shadow-free composition while retaining existing defaults, keyboard containment and exit interaction gating.",
+        component: "center-morph-modal",
+      },
+      {
+        type: "improved",
+        text: "Sparklines support flat-tangent curves, controlled or initial inspected samples and explicit plot insets without scaling the area baseline or fabricating sample values.",
+        component: "sparkline",
+      },
+      {
+        type: "improved",
+        text: "Inline sliders add an opt-in plain track with host-step keyboard and pointer input; the original ten-stop inline presentation remains unchanged.",
+        component: "range-slider",
+      },
+      {
+        type: "fixed",
+        text: "Approval queues use keyboard-navigable filter tabs, stable empty results and responsive review rows. Review dialogs preserve rejected notes and host-owned outcomes, restore opener focus and reset local preview state explicitly.",
+        component: "approval-queue",
+      },
+      {
+        type: "fixed",
+        text: "Morph popovers wait for descendant visibility before caller-owned autofocus and restore search focus when reopening during an exit. Keyboard dismissal retains trigger focus.",
+        component: "popover",
+      },
+      {
+        type: "fixed",
+        text: "Upload dropzones use a native button without nested controls, preserving Enter/Space file selection and host-driven pause/resume. Named application filters use native fieldsets, and market search restores focus through the shared modal lifecycle.",
+        component: "file-upload",
+      },
+      {
+        type: "fixed",
+        text: "Trading errors stay with the market that initiated the request; cancellation reports the host-confirmed outcome. Agent test composers grow with multiline input and return to their compact height when cleared.",
+        component: "trading-pages",
+      },
+      {
+        type: "fixed",
+        text: "Team capacity sums each member's nonnegative remaining hours, budget previews retain their mobile content width, and comparison switches expose their current checked state to assistive technology.",
+        component: "dashboards",
+      },
+      {
+        type: "fixed",
+        text: "Buttons and site press links retain stable keyboard attributes during reduced-motion hydration; the initial page transition no longer differs between server and client motion preferences.",
+        component: "button",
+      },
+      {
+        type: "new",
+        text: "Explore 128 web component families and 354 variants across primitives, agent interfaces, business workflows, marketing pages and original illustrations. Each variant includes a preview, copyable usage and an installable source bundle; existing install slugs remain available.",
+        href: "/components/blocks",
+      },
+      {
+        type: "new",
+        text: "Workflow Studio, Forecast Community, Asset Workspace and Assistant Workspace ship as four independent Next.js applications with multi-page workflows, local persistence, dependency source and explicit host-service integration boundaries.",
+        href: "/templates",
+      },
+      {
+        type: "improved",
+        text: "Marketing, business and illustration previews gain distinct composition layouts, responsive typography, richer initial demo data and matching interaction surfaces. Visual comparison remains separate from functional and registry checks; replacement artwork is identified rather than described as pixel-identical.",
+        href: "/components/blocks",
+      },
+      {
+        type: "improved",
+        text: "Hero composers now forward real file selections and web-search intent; voice recording and wallet requests expose explicit host adapters, pending states and rejection feedback without inventing microphone, search or financial results.",
+        component: "hero-sections",
+      },
+      {
+        type: "improved",
+        text: "Personal Website adds linked Writing articles with thumbnails and author-attributed preview destinations. Developer and AI Workspace landing pages gain original motion-aware WebGL atmospheres rather than reusing a generic background.",
+        component: "personal-website",
+      },
+      {
+        type: "improved",
+        text: "Document, payment and security illustrations add explicitly supplied presentation playback, kept separate from real host outcomes. Pricing decks distinguish annual totals from monthly-equivalent annual prices, and pricing ledgers support included seats plus additional-seat charges.",
+        component: "pricing",
+      },
+      {
+        type: "improved",
+        text: "Agent composers preserve rejected drafts and attachments, artifact viewers handle empty revision snapshots, and context and voice meters expose native semantics. Permission, payment, execution and media actions retain real host callbacks rather than reporting fabricated success.",
+        component: "ai-artifacts",
+      },
+      {
+        type: "fixed",
+        text: "Preview imports with dotted names such as runner.preview now resolve their TypeScript source correctly, restoring component documentation and registry bundles that include sibling preview compositions.",
+        component: "agent-plan",
+      },
       {
         type: "new",
         text: "Browse the React Native catalog, watch light and dark recordings, and copy native source and setup instructions.",

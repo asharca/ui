@@ -12,6 +12,7 @@ import {
 import { StrictMode, type ReactElement } from "react";
 import { LiquidityHeatmap } from "@/components/charts/liquidity-heatmap";
 import { BumpChart } from "@/components/charts/bump-chart";
+import { AnimatedDropdown, type AnimatedDropdownItem } from "@/components/motion/animated-dropdown";
 import {
   AnimatedSidebar,
   AnimatedSidebarContent,
@@ -39,6 +40,8 @@ import { BreadcrumbEllipsis } from "@/components/motion/breadcrumb";
 import { DateRangePickerDropdown } from "@/components/motion/date-range-picker";
 import { DateTimePicker } from "@/components/motion/date-time-picker";
 import { MorphingLightbox } from "@/components/motion/morphing-lightbox";
+import { MorphicCardModal } from "@/components/motion/morphic-card-modal";
+import { MorphicTooltip, MorphicTooltipTrigger } from "@/components/motion/morphic-tooltip";
 
 const originalMatchMedia = window.matchMedia;
 
@@ -329,6 +332,56 @@ const IMAGE_ITEM = {
   status: "complete" as const,
 };
 
+const DROPDOWN_ITEMS: AnimatedDropdownItem[] = [{ id: "model", kind: "submenu", label: "Model", textValue: "Model", items: [
+  { id: "first", kind: "option", value: "first", label: "First model", textValue: "First model" },
+  { id: "second", kind: "option", value: "second", label: "Second model", textValue: "Second model" },
+] }];
+
+test("nested dropdown reopens during exit and keeps pointer selection inside its session", async () => {
+  const selected: string[] = [];
+  const { getByRole } = render(<AnimatedDropdown trigger="Choose model" ariaLabel="Choose model" items={DROPDOWN_ITEMS} defaultOpen onValueChange={value => selected.push(value)} />);
+  const trigger = getByRole("button", { name: "Choose model" });
+  const parent = getByRole("menuitem", { name: "Model" });
+  fireEvent.keyDown(parent, { key: "ArrowRight" });
+  await waitFor(() => expect(document.activeElement).toBe(getByRole("menuitemradio", { name: "First model" })));
+  fireEvent.keyDown(document.activeElement!, { key: "Escape" });
+  expect(document.activeElement).toBe(parent);
+  expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  fireEvent.keyDown(parent, { key: "ArrowRight" });
+  await waitFor(() => expect(document.activeElement).toBe(getByRole("menuitemradio", { name: "First model" })));
+  const second = getByRole("menuitemradio", { name: "Second model" });
+  fireEvent.pointerDown(second);
+  expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  fireEvent.click(second);
+  expect(selected).toEqual(["second"]);
+  expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(trigger);
+});
+
+test("pointer-opened dropdown keeps parent focus and closes the old flyout when moving to a sibling", async () => {
+  const items: AnimatedDropdownItem[] = [...DROPDOWN_ITEMS, {
+    id: "speed", kind: "submenu", label: "Speed", textValue: "Speed",
+    items: [{ id: "auto", kind: "option", value: "auto", label: "Auto", textValue: "Auto" }],
+  }];
+  const { getByRole, queryByRole } = render(<AnimatedDropdown trigger="Choose model" ariaLabel="Choose model" items={items} defaultOpen />);
+  const parent = getByRole("menuitem", { name: "Model" });
+  await act(async () => parent.focus());
+  fireEvent.click(parent, { detail: 1 });
+  await waitFor(() => expect(getByRole("menuitemradio", { name: "First model" })).toBeTruthy());
+  expect(document.activeElement).toBe(parent);
+  fireEvent.keyDown(parent, { key: "ArrowDown" });
+  const sibling = getByRole("menuitem", { name: "Speed" });
+  expect(document.activeElement).toBe(sibling);
+  expect(parent.getAttribute("aria-expanded")).toBe("false");
+  expect(queryByRole("menuitemradio", { name: "First model" })).toBeNull();
+  fireEvent.keyDown(sibling, { key: "ArrowRight" });
+  await waitFor(() => expect(document.activeElement).toBe(getByRole("menuitemradio", { name: "Auto" })));
+  fireEvent.keyDown(document.activeElement!, { key: "Escape" });
+  expect(document.activeElement).toBe(sibling);
+  fireEvent.keyDown(sibling, { key: "Escape" });
+  expect(document.activeElement).toBe(getByRole("button", { name: "Choose model" }));
+});
+
 // Every overlay in the library that puts a `position: fixed` layer over the
 // page, in the state that layer exists in. Render thunks (not bare JSX) keep
 // these out of an iterable literal; the optional third entry drives a case that
@@ -337,6 +390,34 @@ const IMAGE_ITEM = {
 const cases: Array<
   [name: string, render: () => ReactElement, open?: (view: RenderResult) => unknown]
 > = [
+  ["AnimatedDropdown nested flyout", () => <AnimatedDropdown trigger="Choose model" ariaLabel="Choose model" items={DROPDOWN_ITEMS} defaultOpen />, async ({ getByRole }) => {
+    fireEvent.click(getByRole("menuitem", { name: "Model" }));
+    await waitFor(() => expect(document.activeElement).toBe(getByRole("menuitemradio", { name: "First model" })));
+  }],
+  [
+    "MorphicCardModal closed",
+    () => <MorphicCardModal card={<span>Account card</span>} title="Account"><button type="button">Account action</button></MorphicCardModal>,
+  ],
+  [
+    "MorphicCardModal open",
+    () => <MorphicCardModal card={<span>Account card</span>} title="Account"><button type="button">Account action</button></MorphicCardModal>,
+    async ({ getByRole }) => {
+      fireEvent.click(getByRole("button", { name: "Open Account" }));
+      await waitFor(() => expect(getByRole("dialog", { name: "Account" })).toBeTruthy());
+    },
+  ],
+  [
+    "MorphicTooltip closed",
+    () => <MorphicTooltip><MorphicTooltipTrigger tooltip="Shared hint">Inspect</MorphicTooltipTrigger></MorphicTooltip>,
+  ],
+  [
+    "MorphicTooltip open",
+    () => <MorphicTooltip><MorphicTooltipTrigger tooltip="Shared hint">Inspect</MorphicTooltipTrigger></MorphicTooltip>,
+    async ({ getByRole }) => {
+      fireEvent.focus(getByRole("button", { name: "Inspect" }));
+      await waitFor(() => expect(getByRole("tooltip")).toBeTruthy());
+    },
+  ],
   ["DateTimePicker closed", () => <DateTimePicker defaultValue="2026-10-15T09:30" />],
   [
     "DateTimePicker open",

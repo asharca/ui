@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { codeToHtml } from "@/lib/docs-highlighter";
 import {
   transformerNotationHighlight,
@@ -38,6 +39,19 @@ const LANG_LABELS: Record<string, string> = {
   bash: "Shell",
 };
 
+// Variant pages often repeat the same complete source in every example.
+// Share the finished markup, including its generated token CSS, per render.
+const highlightCode = cache(async (code: string, shikiLang: string) => {
+  const styleToClass = transformerStyleToClass({ classPrefix: "k" });
+  const highlighted = await codeToHtml(code, {
+    lang: shikiLang,
+    themes: { light: "github-light-high-contrast", dark: "github-dark-high-contrast" },
+    defaultColor: false,
+    transformers: [transformerNotationHighlight(), transformerNotationDiff(), transformerNotationFocus(), styleToClass],
+  });
+  return `<style>${styleToClass.getCSS()}</style>${highlighted}`;
+});
+
 export async function CodeBlock({
   code,
   lang = "tsx",
@@ -52,22 +66,7 @@ export async function CodeBlock({
   // every span. Pages that bundle many files (the Manual install tab) otherwise
   // ship megabytes of repeated style attributes, twice: in the HTML and again
   // in the RSC payload. Class names hash the colors, so blocks agree.
-  const styleToClass = transformerStyleToClass({ classPrefix: "k" });
-  const highlighted = await codeToHtml(code, {
-    lang: shikiLang,
-    themes: {
-      light: "github-light-high-contrast",
-      dark: "github-dark-high-contrast",
-    },
-    defaultColor: false,
-    transformers: [
-      transformerNotationHighlight(),
-      transformerNotationDiff(),
-      transformerNotationFocus(),
-      styleToClass,
-    ],
-  });
-  const html = `<style>${styleToClass.getCSS()}</style>${highlighted}`;
+  const html = await highlightCode(code, shikiLang);
 
   const fileDir = filename ? filename.split("/").slice(0, -1).join("/") : null;
   const fileName = filename ? filename.split("/").pop() : null;

@@ -142,3 +142,31 @@ test("loading line chart is busy, announces its label and offers no stale data",
   expect(getByRole("slider", { name: "Revenue: inspect values" })).toBeTruthy();
   expect(getByRole("table", { name: "Revenue data" })).toBeTruthy();
 });
+
+test("sparkline keeps controlled inspection authoritative until the host accepts a change", () => {
+  const changes: (number | null)[] = [];
+  const props = { data: [12, 24, 48], label: "Capacity", interactive: true, onActiveIndexChange: (index: number | null) => changes.push(index) };
+  const { getByRole, rerender } = render(<Sparkline {...props} activeIndex={0} />);
+  const slider = getByRole("slider", { name: "Capacity: inspect samples" });
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 1: 12");
+  fireEvent.change(slider, { target: { value: "1" } });
+  expect(changes).toEqual([1]);
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 1: 12");
+  rerender(<Sparkline {...props} activeIndex={1} />);
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 2: 24");
+  rerender(<Sparkline {...props} activeIndex={null} />);
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 3: 48");
+});
+
+test("sparkline clears a removed initial inspection instead of reviving it when data returns", () => {
+  const props = { label: "Capacity", interactive: true, defaultActiveIndex: 1 };
+  const { getByRole, rerender } = render(<Sparkline {...props} data={[10, 20, 30, 40]} />);
+  const slider = getByRole("slider", { name: "Capacity: inspect samples" });
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 2: 20");
+  fireEvent.change(slider, { target: { value: "2" } });
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 3: 30");
+  rerender(<Sparkline {...props} data={[10]} />);
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 1: 10");
+  rerender(<Sparkline {...props} data={[10, 20, 30, 40]} />);
+  expect(slider.getAttribute("aria-valuetext")).toBe("Sample 4: 40");
+});

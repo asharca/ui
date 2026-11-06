@@ -98,4 +98,12 @@ describe("GitHub Pages publication adapter", () => {
       expect(result.metadata["application/rss+xml"]).toBe(result.anchor);
     }
   });
+  test("scopes quoted link and image data and resolves demo destinations", () => {
+    const links = ["/docs", "/guides", "/components/ai", "/components/all", "#details", "https://example.com"];
+    const input = `return { "brand": { "href": "/" }, "image": { "src": "/landing/coastal-sketch.webp" }, "links": ${JSON.stringify(links.map(href => ({ href })))} };`;
+    const output = new Function(transformSiteSource(input, "demo.ts", "https://asharca.github.io/ui", "/ui"))();
+    expect(output.brand.href).toBe("/ui/");
+    expect(output.image.src).toBe("/ui/landing/coastal-sketch.webp");
+    expect(output.links.map((link: { href: string }) => link.href)).toEqual(["/ui/docs/ai-agents", "/ui/docs/motion-patterns", "/ui/components/agents", "/ui/components/motion", "#details", "https://example.com"]);
+  });
 });
