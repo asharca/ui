@@ -146,7 +146,7 @@ export const registry: CategoryEntry[] = withWebCatalog([
       {
         slug: "date-time-picker",
         name: "Date Time Picker",
-        description: "A compact calendar and time-wheel picker with a softly unfolding popover, AM/PM selection, local timezone readout, Now shortcut and explicit confirmation. Defaults to a 36px trigger, 32px day cells and a 480px desktop panel. Supports keyboard navigation, controlled or uncontrolled local date-time values, forms and reduced motion. Customize individual parts with classNames: trigger, content, calendar, day, selectedDay, time and confirmButton.",
+        description: "A compact calendar and time-wheel picker with instant opening, no button scaling, direct year selection, AM/PM selection, local timezone readout, Now shortcut and explicit confirmation. A fixed six-week calendar keeps the panel height stable when changing months or choosing a year. Defaults to a 36px trigger, 32px day cells and a 480px desktop panel. Supports keyboard navigation, controlled or uncontrolled local date-time values, forms and reduced motion. Customize individual parts with classNames: trigger, content, calendar, day, selectedDay, time and confirmButton.",
         file: "components/motion/date-time-picker.tsx",
         badge: "new",
         launchedAt: "2026-10-15",
@@ -693,7 +693,7 @@ export const registry: CategoryEntry[] = withWebCatalog([
             slug: "morph",
             name: "Morph Popover",
             description:
-              "Composable MorphPopover, MorphPopoverTrigger, MorphPopoverContent. The full-size panel reveals from the corner nearest the trigger on one synchronized spring clip, keeping content and borders unscaled, then retraces the clip on close. Clip-path and its drop-shadow may paint. Side/align aware, controlled or uncontrolled.",
+              "Composable MorphPopover, MorphPopoverTrigger, MorphPopoverContent. The full-size panel reveals from the corner nearest the trigger on one synchronized spring clip, keeping content and borders unscaled, then retraces the clip on close. Clip-path and its drop-shadow may paint. Set animated={false} on MorphPopoverContent for instant opening and dismissal. Side/align aware, controlled or uncontrolled.",
             installSlug: "popover-morph",
             file: "components/motion/popover-morph.tsx",
             previewKey: "motion/popover-morph",
