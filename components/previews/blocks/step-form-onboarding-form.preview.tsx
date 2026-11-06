@@ -1,0 +1,20 @@
+"use client";
+
+import { useState } from "react";
+import { StepForm, type DecisionFormStep } from "@/components/motion/business-decisions/step-form";
+import type { QuestionAnswers } from "@/components/motion/business-decisions/questionnaire";
+import { Checkbox } from "@/components/motion/checkbox";
+import { Button } from "@/components/motion/button";
+
+const steps: DecisionFormStep[] = [
+  { id: "profile", eyebrow: "Profile", title: "Tell us about you", description: "Start with the basics. You can change these details later.", fields: [{ id: "firstName", label: "First name", placeholder: "Alex", type: "text", required: true }, { id: "lastName", label: "Last name", placeholder: "Morgan", type: "text", required: true }, { id: "email", fullWidth: true, label: "Work email", placeholder: "alex@company.com", type: "email", required: true }] },
+  { id: "workspace", eyebrow: "Workspace", title: "Set up your workspace", description: "A few details help us prepare the right starting point.", fields: [{ id: "company", fullWidth: true, label: "Company or team", placeholder: "Acme Studio", type: "text", required: true }, { id: "role", label: "Your role", placeholder: "Select a role", type: "single", presentation: "select", required: true, options: [{ value: "founder", label: "Founder" }, { value: "design", label: "Design" }, { value: "engineering", label: "Engineering" }, { value: "product", label: "Product" }] }, { id: "size", label: "Team size", placeholder: "Select a size", type: "single", presentation: "select", required: true, options: [{ value: "solo", label: "Just me" }, { value: "small", label: "2–10 people" }, { value: "medium", label: "11–50 people" }, { value: "large", label: "51+ people" }] }] },
+  { id: "goals", columns: 1, eyebrow: "Goals", title: "What should we optimize for?", description: "Give the workspace a little context before you arrive.", fields: [{ id: "website", label: "Company website", placeholder: "company.com", type: "text" }, { id: "goal", label: "Primary goal", placeholder: "Choose your main goal", type: "single", presentation: "select", required: true, options: [{ value: "launch", label: "Launch something new" }, { value: "improve", label: "Improve an existing product" }, { value: "explore", label: "Explore and prototype" }] }, { id: "notes", label: "Anything else we should know?", type: "textarea", placeholder: "A short note about what you are building" }] },
+];
+export function StepFormOnboardingFormPreview() {
+  const [answers, setAnswers] = useState<QuestionAnswers>({});
+  const [submitted, setSubmitted] = useState<QuestionAnswers | null>(null);
+  const [fail, setFail] = useState(false);
+  const [progressStyle, setProgressStyle] = useState<"steps" | "compact">("steps");
+  return <div className="relative flex min-h-[43rem] min-w-0 w-full flex-col items-center justify-center py-4"><fieldset className="flex min-w-0 flex-wrap gap-2"><legend className="sr-only">Progress style</legend>{(["steps", "compact"] as const).map(style => <Button key={style} size="sm" variant={progressStyle === style ? "outline" : "ghost"} className="h-9 text-xs" aria-pressed={progressStyle === style} onClick={() => setProgressStyle(style)}>{style === "steps" ? "Numbered steps" : "Compact progress"}</Button>)}</fieldset><div className="w-full px-4 py-12 sm:px-6"><StepForm variant="onboarding" title="Set up your account" submitLabel="Create workspace" progressStyle={progressStyle} steps={steps} answers={answers} onAnswersChange={setAnswers} onSubmit={async values => { if (fail) throw new Error("Demo rejection"); setSubmitted(values); }} /></div><details className="absolute left-4 top-full z-10 text-xs text-muted-foreground"><summary>Demo controls</summary><Checkbox label="Simulate submission failure" checked={fail} onCheckedChange={setFail} />{submitted && <output aria-label="Submitted brief" className="block overflow-auto whitespace-pre rounded-xl bg-muted p-4 font-mono text-xs">{JSON.stringify(submitted, null, 2)}</output>}</details></div>;
+}

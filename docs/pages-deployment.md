@@ -28,17 +28,28 @@
 上游站点提供自有组件。正式地址通过构建环境 `NEXT_PUBLIC_SITE_URL` 设置，
 Pages 工作流明确设置为 `https://asharca.github.io/ui`，所以工作区文档不会指向 localhost。
 
+公开目录扩展后，临时站点对整个 `components/` 的原生链接与资源数据执行部署前缀适配，包括带引号的 `href`／`src` 对象键。演示中的 `/docs`、`/guides`、`/components/ai`、`/components/all` 分别指向已存在的 Agent 指南、Motion 指南、Agents 分类和 Motion 分类；不创建无内容的占位页。Registry 文件在适配前从原始源码生成，不包含 `/ui` 专属改写。
+
+静态构建使用两个 worker，每个 worker 一次预渲染一个页面；多变体页面的完整源码高亮在同一次渲染内复用，单页构建上限为 300 秒。产物必须通过所有 HTML 本地链接与资源检查才能上传。
+
 ## 地址
 
 - `/ui/llms.txt`：组件与文档索引。
 - `/ui/r/index.json`：数据目录；`/ui/r/registry.json`：shadcn 目录。
 - `/ui/r/{slug}.json`：自包含组件安装项，CLI 安装方式不变。
 - `/ui/r/{slug}/detail.json`：组件详情；`/ui/r/{slug}/raw.txt`：主文件源码。
+- `/ui/native/r/index.json`：React Native 目录；`/ui/native/r/{slug}.json`：安装命令、依赖与完整源码。
 - `/ui/components/{category}/{slug}.md`：组件 Markdown；图表使用 `/ui/charts/{slug}.md`。
 - `/ui/docs/{slug}.md`：已声明的 Agent、Motion 与 OpenUI 指南。
+- `/ui/changelog/rss.xml`：更新订阅；临时站点中的共享 RSS 地址使用带部署前缀的绝对 URL，供原生链接与 metadata 共用。
 
 静态站点没有运行时重写；JSON 与纯文本详情使用明确扩展名。生成的目录和
 文档链接同步使用静态地址。原本的 Next.js 服务端部署仍支持其原有接口。
+
+原生 Registry 与 Web Registry 一样，在临时站点中移除无扩展名 Route Handler，
+再从真实目录快照生成 JSON；页面 metadata、Agent 指南和 JSON 内的发现链接均
+改为静态地址。这样 `/native/r` 只作为目录，不再同时作为文件导出，避免 Next
+静态导出的 `EISDIR` 冲突。发布产物校验还会逐一读取目录指向的原生详情及其源码。
 
 ## 服务能力
 

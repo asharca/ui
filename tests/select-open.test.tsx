@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { useState } from "react";
 import {
@@ -98,5 +98,41 @@ describe("Select open state", () => {
     fireEvent.click(end);
     expect(end.getAttribute("aria-expanded")).toBe("true");
     expect(start.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  test("opening focus recovers when inherited visibility finishes transitioning", () => {
+    const { getByRole, getByText } = render(<Field />);
+    const trigger = getByRole("button");
+    const option = getByText("09:00");
+    trigger.focus();
+    const focus = spyOn(option, "focus").mockImplementationOnce(() => {});
+    try {
+      fireEvent.click(trigger);
+      expect(document.activeElement).toBe(trigger);
+      // Happy DOM drops TransitionEvent.propertyName; preserve the browser payload.
+      fireEvent(option, Object.assign(new Event("transitionend", { bubbles: true }), { propertyName: "visibility" }));
+      expect(document.activeElement).toBe(option);
+      fireEvent.keyDown(option, { key: "End" });
+      expect(document.activeElement).toBe(getByRole("option", { name: "17:00" }));
+    } finally {
+      focus.mockRestore();
+    }
+  });
+
+  test("deferred opening focus does not reclaim focus after the reader leaves", () => {
+    const { getByRole, getByText } = render(<><Field /><button type="button">Outside</button></>);
+    const trigger = getByRole("button", { name: "Time" });
+    const outside = getByRole("button", { name: "Outside" });
+    const option = getByText("09:00");
+    trigger.focus();
+    const focus = spyOn(option, "focus").mockImplementationOnce(() => {});
+    try {
+      fireEvent.click(trigger);
+      outside.focus();
+      fireEvent(option, Object.assign(new Event("transitionend", { bubbles: true }), { propertyName: "visibility" }));
+      expect(document.activeElement).toBe(outside);
+    } finally {
+      focus.mockRestore();
+    }
   });
 });

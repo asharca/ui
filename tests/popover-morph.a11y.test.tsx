@@ -124,3 +124,24 @@ test("MorphPopover does not carry a declined keyboard open over to a later open"
   await waitFor(() => expect(getByRole("dialog", { name: "Share" })).toBeTruthy());
   expect(document.activeElement).toBe(opener);
 });
+
+test("custom autofocus focuses search on pointer open and restores the trigger on Escape", async () => {
+  const { getByRole } = render(<StrictMode><MorphPopover>
+    <MorphPopoverTrigger><button type="button">Choose model</button></MorphPopoverTrigger>
+    <MorphPopoverContent onOpenAutoFocus={(content) => content.querySelector("input")?.focus()}>
+      <input aria-label="Search models" />
+    </MorphPopoverContent>
+  </MorphPopover></StrictMode>);
+  const trigger = getByRole("button", { name: "Choose model" });
+  act(() => trigger.focus());
+  fireEvent.click(trigger, { detail: 1 });
+  await waitFor(() => expect(document.activeElement).toBe(getByRole("textbox", { name: "Search models" })));
+  fireEvent.keyDown(document.activeElement ?? window, { key: "Escape" });
+  expect(document.activeElement).toBe(trigger);
+  // Reopen before the exit has unmounted the old portal session.
+  pressEnter(trigger);
+  await waitFor(() => expect(document.activeElement).toBe(getByRole("textbox", { name: "Search models" })));
+  fireEvent.keyDown(document.activeElement ?? window, { key: "Escape" });
+  expect(document.activeElement).toBe(trigger);
+  expect(trigger.getAttribute("aria-expanded")).toBe("false");
+});

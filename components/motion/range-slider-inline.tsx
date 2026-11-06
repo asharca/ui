@@ -60,6 +60,8 @@ export interface InlineSliderProps extends SliderOptions {
   format?: (value: number) => string;
   /** Show markers for the ten evenly spaced snap stops, except where they overlap inline text. */
   showTicks?: boolean;
+  /** Plain tracks place labels/readouts outside and use the supplied numeric step. */
+  appearance?: "inline" | "plain";
   className?: string;
 }
 
@@ -69,15 +71,17 @@ export function InlineSlider({
   label,
   format = String,
   showTicks = true,
+  appearance = "inline",
   className,
   ...options
 }: InlineSliderProps) {
   const reduce = useReducedMotion();
+  const plain = appearance === "plain";
   const step = options.step && options.step > 0 ? options.step : 1;
   const precision = step.toFixed(6).replace(/0+$/, "").split(".")[1]?.length ?? 0;
   const { current, min, max, commit, trackProps, sliderProps } = useSlider({
     ...options,
-    step: 10 ** -precision,
+    step: plain ? step : 10 ** -precision,
     "aria-label": options["aria-label"] ?? label,
     formatValueText: options.formatValueText ?? format,
   });
@@ -102,14 +106,14 @@ export function InlineSlider({
     const track = trackProps.ref.current;
     const labelElement = labelRef.current;
     const readout = readoutRef.current;
-    if (!track || !labelElement || !readout) return;
+    if (!track || (!plain && (!labelElement || !readout))) return;
     const measure = () => {
       const width = track.getBoundingClientRect().width;
       if (!width) return;
       const next = {
         width,
-        labelWidth: labelElement.getBoundingClientRect().width,
-        readoutWidth: readout.getBoundingClientRect().width,
+        labelWidth: labelElement?.getBoundingClientRect().width ?? 0,
+        readoutWidth: readout?.getBoundingClientRect().width ?? 0,
       };
       setGeometry((previous) =>
         previous.width === next.width && previous.labelWidth === next.labelWidth &&
@@ -119,16 +123,17 @@ export function InlineSlider({
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(track);
-    observer.observe(labelElement);
-    observer.observe(readout);
+    if (labelElement) observer.observe(labelElement);
+    if (readout) observer.observe(readout);
     return () => observer.disconnect();
-  }, [trackProps.ref]);
+  }, [trackProps.ref, plain]);
 
   // Each stop owns both a value and a physical position. As in RangeSlider,
   // the stops span the entire track at even intervals; text only affects
   // whether a marker is painted, never whether its stop remains interactive.
   const endX = Math.max(HANDLE_START, geometry.width - HANDLE_END_INSET);
   const stops = useMemo(() => {
+    if (plain) return [{ value: min, x: HANDLE_START }, { value: max, x: endX }];
     const values = [...new Set(Array.from({ length: STOP_COUNT }, (_, index) =>
       snapSliderValue(min + (index / (STOP_COUNT - 1)) * (max - min), min, max, step),
     ))];
@@ -138,7 +143,7 @@ export function InlineSlider({
         ? HANDLE_START
         : HANDLE_START + (index / (values.length - 1)) * (endX - HANDLE_START),
     }));
-  }, [min, max, step, endX]);
+  }, [min, max, step, endX, plain]);
   const restingX = mapBetweenStops(stops, current, "value", "x");
   // One motion value owns the thumb for the entire gesture. Pointer movement
   // writes pixels directly; only release/click/keyboard changes use a spring.
@@ -192,7 +197,7 @@ export function InlineSlider({
   };
   const overlapsText = (x: number, bounds: { start: number; end: number }) =>
     x + 2 >= bounds.start && x - 2 <= bounds.end;
-  const ticks = showTicks
+  const ticks = !plain && showTicks
     ? stops
       .map((stop) => stop.x)
       .filter((x) => !overlapsText(x, labelBounds) && !overlapsText(x, readoutBounds))
@@ -225,9 +230,15 @@ export function InlineSlider({
       const x = event.type === "pointerup"
         ? event.clientX - active.left - active.offset
         : active.x;
-      const stop = nearestStop(stops, x);
-      commit(stop.value);
-      settleTo(options.value === undefined ? stop.x : restingX);
+      if (plain) {
+        const value = snapSliderValue(mapBetweenStops(stops, x, "x", "value"), min, max, step);
+        commit(value);
+        settleTo(options.value === undefined ? mapBetweenStops(stops, value, "value", "x") : restingX);
+      } else {
+        const stop = nearestStop(stops, x);
+        commit(stop.value);
+        settleTo(options.value === undefined ? stop.x : restingX);
+      }
     } else {
       settleTo(restingX);
     }
@@ -272,6 +283,7 @@ export function InlineSlider({
       onLostPointerCapture={endGesture}
       className={cn(
         "relative h-10 w-full touch-none select-none overflow-hidden rounded-lg bg-muted",
+        plain && "group/plain-slider",
         TOUCH_GESTURE_CLASS,
         options.disabled
           ? "pointer-events-none opacity-50"
@@ -288,7 +300,7 @@ export function InlineSlider({
           style={{ x: fillX }}
         />
       </div>
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 text-foreground">
+      {!plain && <div aria-hidden="true" className="pointer-events-none absolute inset-0 text-foreground">
         <span
           ref={labelRef}
           className="absolute left-5 top-1/2 max-w-[40%] -translate-y-1/2 truncate text-sm font-medium leading-5"
@@ -308,22 +320,28 @@ export function InlineSlider({
             style={{ left }}
           />
         ))}
-      </div>
+      </div>}
       <motion.div
         aria-hidden="true"
-        animate={reduce ? undefined : { scaleY: dragging ? 1.35 : 1 }}
+        animate={reduce || plain ? undefined : { scaleY: dragging ? 1.35 : 1 }}
         transition={SPRING_BOUNCY}
-        className="pointer-events-none absolute left-0 top-2 h-6 w-1 text-foreground"
+        className={cn("pointer-events-none absolute left-0 h-6 w-1 text-foreground", plain ? "top-1/2 -translate-y-1/2 rounded-full ring-inset ring-foreground/30 group-has-[:focus-visible]/plain-slider:ring-4" : "top-2")}
         style={{ x: handleX }}
       >
-        <motion.span className="absolute top-0 size-1 rounded-full bg-current" style={{ y: reduce ? 0 : capTop }} />
-        <motion.span className="absolute inset-y-0 w-1 rounded-full bg-current" style={{ opacity: stemOpacity }} />
-        <motion.span className="absolute bottom-0 size-1 rounded-full bg-current" style={{ y: reduce ? 0 : capBottom }} />
+        {plain ? <span className="absolute inset-0 rounded-full bg-current" /> : <>
+          <motion.span className="absolute top-0 size-1 rounded-full bg-current" style={{ y: reduce ? 0 : capTop }} />
+          <motion.span className="absolute inset-y-0 w-1 rounded-full bg-current" style={{ opacity: stemOpacity }} />
+          <motion.span className="absolute bottom-0 size-1 rounded-full bg-current" style={{ y: reduce ? 0 : capBottom }} />
+        </>}
       </motion.div>
       <button
         type="button"
         {...sliderProps}
         onKeyDown={(event) => {
+          if (plain) {
+            sliderProps.onKeyDown(event);
+            return;
+          }
           if (options.disabled) return;
           const next = {
             ArrowRight: stops.find((stop) => stop.value > current)?.value ?? max,

@@ -151,6 +151,12 @@ export interface CenterMorphModalContentProps {
   /** Render the close control inside the panel's top-right corner. Default true. */
   showCloseButton?: boolean;
   closeButtonLabel?: string;
+  /** Focus the panel itself or its first control when opening. Defaults to the first control. */
+  initialFocus?: "first-control" | "panel";
+  /** Surface and unfolding-clip corner radius in px. Defaults to 30. */
+  radius?: number;
+  /** Paint the panel's drop shadow. Defaults to true. */
+  shadow?: boolean;
   className?: string;
   backdropClassName?: string;
 }
@@ -163,10 +169,6 @@ const FOCUSABLE_SELECTOR = [
   "textarea:not([disabled])",
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
-
-// A zero-area endpoint avoids flashing a visible center tile on mount/unmount.
-const CENTER_FOLDED_CLIP = "inset(50% 50% 50% 50% round 30px)";
-const CENTER_OPEN_CLIP = "inset(0% 0% 0% 0% round 30px)";
 
 // Complex clip-path strings can snap when a spring resolves its final distance.
 // Keep the radius constant so the whole duration reads as surface unfolding,
@@ -191,6 +193,9 @@ export function CenterMorphModalContent({
   dismissible = true,
   showCloseButton = true,
   closeButtonLabel = "Close modal",
+  initialFocus = "first-control",
+  radius = 30,
+  shadow = true,
   className,
   backdropClassName,
 }: CenterMorphModalContentProps) {
@@ -199,6 +204,11 @@ export function CenterMorphModalContent({
   const [mounted, setMounted] = useState(false);
   const [backgroundScrollLocked, setBackgroundScrollLocked] = useState(context.open);
   const panelRef = useRef<HTMLDivElement>(null);
+  // A zero-area endpoint avoids flashing a visible center tile on mount/unmount.
+  const [foldedClip, openClip] = useMemo(() => [
+    `inset(50% 50% 50% 50% round ${radius}px)`,
+    `inset(0% 0% 0% 0% round ${radius}px)`,
+  ] as const, [radius]);
 
   useEffect(() => setMounted(true), []);
 
@@ -217,15 +227,15 @@ export function CenterMorphModalContent({
 
     setBackgroundScrollLocked(true);
     const focusFrame = requestAnimationFrame(() => {
-      const [firstFocusable] = getFocusableElements(panelRef.current);
-      (firstFocusable ?? panelRef.current)?.focus({ preventScroll: true });
+      const target = initialFocus === "panel" ? panelRef.current : getFocusableElements(panelRef.current)[0] ?? panelRef.current;
+      target?.focus({ preventScroll: true });
     });
 
     return () => {
       cancelAnimationFrame(focusFrame);
       document.getElementById(context.triggerId)?.focus({ preventScroll: true });
     };
-  }, [mounted, context.open, context.triggerId]);
+  }, [mounted, context.open, context.triggerId, initialFocus]);
 
   useEffect(() => {
     if (!context.open) return;
@@ -247,10 +257,10 @@ export function CenterMorphModalContent({
 
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === panelRef.current)) {
         event.preventDefault();
         first.focus();
       }
@@ -302,7 +312,7 @@ export function CenterMorphModalContent({
                 inert={!isPresent}
                 className="pointer-events-none fixed inset-4 z-[100] flex items-center justify-center overflow-y-auto"
               >
-                <div className="flex w-full flex-col items-center py-8 drop-shadow-2xl">
+                <div className={cn("flex w-full flex-col items-center py-8", shadow && "drop-shadow-2xl")}>
                   <motion.div
                     ref={panelRef}
                     id={context.contentId}
@@ -313,22 +323,22 @@ export function CenterMorphModalContent({
                     tabIndex={-1}
                     initial={
                       reduce
-                        ? { "--modal-opacity": 0, "--modal-clip": CENTER_OPEN_CLIP }
-                        : { "--modal-opacity": 1, "--modal-clip": CENTER_FOLDED_CLIP }
+                        ? { "--modal-opacity": 0, "--modal-clip": openClip }
+                        : { "--modal-opacity": 1, "--modal-clip": foldedClip }
                     }
                     animate={{
                       "--modal-opacity": 1,
-                      "--modal-clip": CENTER_OPEN_CLIP,
+                      "--modal-clip": openClip,
                     }}
                     exit={
                       reduce
                         ? {
                             "--modal-opacity": 0,
-                            "--modal-clip": CENTER_OPEN_CLIP,
+                            "--modal-clip": openClip,
                           }
                         : {
                             "--modal-opacity": 1,
-                            "--modal-clip": CENTER_FOLDED_CLIP,
+                            "--modal-clip": foldedClip,
                           }
                     }
                     {...gate}
@@ -341,6 +351,7 @@ export function CenterMorphModalContent({
                       "pointer-events-auto relative w-full max-w-[26rem] origin-center overflow-hidden rounded-[30px] border border-border bg-background [opacity:var(--modal-opacity)] [clip-path:var(--modal-clip)]",
                       className,
                     )}
+                    style={{ ...gate.style, borderRadius: radius }}
                   >
                     {children}
 

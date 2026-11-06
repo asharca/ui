@@ -93,6 +93,11 @@ const LEGACY_COMPONENT_REDIRECTS = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
+  // Each prerender worker owns a full TypeScript program for Props documentation.
+  experimental: { cpus: 4, staticGenerationMaxConcurrency: 1 },
+  // Multi-variant docs include highlighted source and extracted APIs for every example.
+  staticPageGenerationTimeout: 300,
   allowedDevOrigins: ["127.0.0.1", "192.168.11.2"],
   turbopack: { resolveAlias: cloudflareAliases },
   webpack(config) {

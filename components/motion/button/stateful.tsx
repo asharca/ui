@@ -102,9 +102,22 @@ function TextSlot({
   // inline-block letters and clip the final glyph during the width animation.
   useLayoutEffect(() => {
     const nextWidth = measureRef.current?.offsetWidth;
-    if (!nextWidth) return;
+    if (nextWidth === undefined) return;
     setWidth((current) => (current === nextWidth ? current : nextWidth));
   });
+
+  useLayoutEffect(() => {
+    const element = measureRef.current;
+    if (!element) return;
+    const measure = () => {
+      const nextWidth = element.offsetWidth;
+      setWidth((current) => (current === nextWidth ? current : nextWidth));
+    };
+    // Responsive labels and loaded fonts can resize without a React render.
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <motion.span

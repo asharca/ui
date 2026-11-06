@@ -45,6 +45,8 @@ type MorphContextValue = {
   triggerRef: React.MutableRefObject<HTMLElement | null>;
   registerTrigger: (node: HTMLElement | null) => void;
   contentRef: React.MutableRefObject<HTMLDivElement | null>;
+  /** Open descendants count their portals as inside the owning popover. */
+  nestedScopes: Set<(target: Node) => boolean>;
   /** Arms or disarms moving focus into the panel as it next appears. */
   armFocusOnOpen: (armed: boolean) => void;
   /** Reads and disarms the flag set by `armFocusOnOpen`. */
@@ -82,6 +84,8 @@ export function MorphPopover({
   onOpenChange,
   className,
 }: MorphPopoverProps) {
+  const parentScopes = useContext(MorphContext)?.nestedScopes;
+  const [nestedScopes] = useState(() => new Set<(target: Node) => boolean>());
   const baseId = useId();
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [trigger, setTrigger] = useState<HTMLElement | null>(null);
@@ -137,6 +141,11 @@ export function MorphPopover({
     () => ({ current: trigger ?? root }),
     [root, trigger],
   );
+  const contains = useCallback((target: Node) => {
+    if (root?.contains(target) || contentRef.current?.contains(target)) return true;
+    for (const scope of nestedScopes) if (scope(target)) return true;
+    return false;
+  }, [root, nestedScopes]);
 
   // The panel is a `role="dialog"` and goes inert the moment it closes, so
   // focus cannot be left sitting inside it: a dismissal hands it back to the
@@ -149,31 +158,32 @@ export function MorphPopover({
     setOpen(false);
     const focused = document.activeElement;
     const inPanel =
-      focused instanceof HTMLElement && contentRef.current?.contains(focused);
+      focused instanceof HTMLElement && contains(focused);
     if (!inPanel) return;
     const restore = trigger ?? (root && root.tabIndex >= 0 ? root : null);
     restore?.focus();
-  }, [root, setOpen, trigger]);
+  }, [root, setOpen, trigger, contains]);
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
-    const onPointer = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (
-        root &&
-        !root.contains(target) &&
-        !contentRef.current?.contains(target)
-      )
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && nestedScopes.size === 0) {
+        event.preventDefault();
         close();
+      }
     };
+    const onPointer = (event: PointerEvent) => {
+      if (root && !contains(event.target as Node)) close();
+    };
+    parentScopes?.add(contains);
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onPointer);
     return () => {
+      parentScopes?.delete(contains);
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", onPointer);
     };
-  }, [open, root, close]);
+  }, [open, root, close, contains, nestedScopes, parentScopes]);
 
   const ctx = useMemo<MorphContextValue>(
     () => ({
@@ -185,10 +195,11 @@ export function MorphPopover({
       triggerRef: anchorRef,
       registerTrigger: setTrigger,
       contentRef,
+      nestedScopes,
       armFocusOnOpen,
       takeFocusOnOpen,
     }),
-    [open, setOpen, toggle, baseId, anchorRef, armFocusOnOpen, takeFocusOnOpen],
+    [open, setOpen, toggle, baseId, anchorRef, armFocusOnOpen, takeFocusOnOpen, nestedScopes],
   );
 
   return (
@@ -290,6 +301,8 @@ export interface MorphPopoverContentProps {
   align?: Align;
   /** Gap between trigger and panel, in px. Default 8. */
   sideOffset?: number;
+  /** Viewport clearance in px. Defaults to 8; an explicit value also caps panel width. */
+  collisionPadding?: number;
   /** Panel corner radius, in px. Default 16. */
   radius?: number;
   /** Draw the surface shadow. Default true. */
@@ -299,8 +312,8 @@ export interface MorphPopoverContentProps {
    * hands focus to the caller: the panel then moves no focus on its own.
    */
   onOpenAutoFocus?: (content: HTMLDivElement) => void;
-  /** Override the panel landmark. Menus pass "menu" instead of the dialog default. */
-  role?: "dialog" | "menu";
+  /** Override the dialog landmark, including groups that contain their own menu. */
+  role?: "dialog" | "menu" | "group";
   /**
    * Element to focus when the trigger opens the panel by keyboard. Defaults
    * to the first focusable element in the panel, or the panel itself. A
@@ -330,6 +343,7 @@ function MorphPopoverSurface({
   side = "bottom",
   align = "end",
   sideOffset = 8,
+  collisionPadding,
   radius = 16,
   shadow = true,
   onOpenAutoFocus,
@@ -352,7 +366,7 @@ function MorphPopoverSurface({
       : layout.trigger.left
     : 0;
   // Larger compositions, such as calendars, use the roomier side if needed.
-  const gutter = 8;
+  const gutter = collisionPadding ?? 8;
   const below = layout
     ? Math.max(0, window.innerHeight - layout.trigger.top - layout.trigger.height - sideOffset - gutter)
     : 0;
@@ -382,11 +396,6 @@ function MorphPopoverSurface({
   const fade = useMotionValue(reduce ? 0 : 1);
   const ready = layout !== null;
   const focusedOnOpen = useRef(false);
-  useEffect(() => {
-    if (!ready || !isPresent || focusedOnOpen.current || !ctx.contentRef.current) return;
-    focusedOnOpen.current = true;
-    onOpenAutoFocus?.(ctx.contentRef.current);
-  }, [ready, isPresent, ctx.contentRef, onOpenAutoFocus]);
   // `safeToRemove` is a new function on every render: AnimatePresence
   // rebuilds its context each time its parent renders. Read it through a ref
   // so a render during the exit (a consumer's state change, a list streaming
@@ -431,15 +440,19 @@ function MorphPopoverSurface({
   // reads the caller's props through refs: a new ref or callback passed
   // mid-open must not tear down a pending retry.
   const initialFocusRef = useRef(initialFocus);
-  const callerFocusesRef = useRef(onOpenAutoFocus !== undefined);
+  const onOpenAutoFocusRef = useRef(onOpenAutoFocus);
   useLayoutEffect(() => {
     initialFocusRef.current = initialFocus;
-    callerFocusesRef.current = onOpenAutoFocus !== undefined;
+    onOpenAutoFocusRef.current = onOpenAutoFocus;
+    // A new open can interrupt exit before the portal unmounts.
+    if (!isPresent) focusedOnOpen.current = false;
   });
   const { contentRef, takeFocusOnOpen } = ctx;
   useLayoutEffect(() => {
     if (!ready || !isPresent) return;
-    if (!takeFocusOnOpen() || callerFocusesRef.current) return;
+    const keyboardFocus = takeFocusOnOpen();
+    const callerFocuses = onOpenAutoFocusRef.current !== undefined;
+    if (!keyboardFocus && !callerFocuses) return;
     const panel = contentRef.current;
     const wrapper = panel?.parentElement;
     if (!panel || !wrapper) return;
@@ -450,6 +463,19 @@ function MorphPopoverSurface({
     // disabled button that carries a tabindex, anything under display: none.
     // Keep the first candidate that takes focus, else hold it on the panel.
     const focusFirst = () => {
+      if (getComputedStyle(panel).visibility !== "visible") return false;
+      if (callerFocuses) {
+        // Inherited visibility can transition on descendants after the panel
+        // itself is visible. Invoke the caller once its targets can take focus.
+        if (panel.getAnimations?.({ subtree: true }).some((animation) =>
+          "transitionProperty" in animation && animation.transitionProperty === "visibility" && animation.playState === "running"
+        )) return false;
+        if (!focusedOnOpen.current) {
+          focusedOnOpen.current = true;
+          onOpenAutoFocusRef.current?.(panel);
+        }
+        return true;
+      }
       const candidates = [
         initialFocusRef.current?.current,
         ...panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
@@ -510,6 +536,7 @@ function MorphPopoverSurface({
           clipPath: reduce ? undefined : clipPath,
           borderRadius: radius,
           maxHeight: layout ? availableHeight : undefined,
+          maxWidth: collisionPadding === undefined ? undefined : `calc(100vw - ${collisionPadding * 2}px)`,
           overflowX: "hidden",
           overflowY: "auto",
         }}

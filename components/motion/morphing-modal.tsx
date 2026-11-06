@@ -32,6 +32,8 @@ export interface MorphingModalProps {
    */
   ariaLabel?: string;
   className?: string;
+  /** Override the backdrop paint/filter without changing the dialog panel. */
+  backdropClassName?: string;
 }
 
 export function MorphingModal({
@@ -41,6 +43,7 @@ export function MorphingModal({
   placement = "bottom",
   ariaLabel,
   className,
+  backdropClassName,
 }: MorphingModalProps) {
   const open = viewId !== null;
   const [portalReady, setPortalReady] = useState(false);
@@ -128,7 +131,10 @@ export function MorphingModal({
               transition={{ duration: 0.2, ease: EASE_OUT }}
               {...gate}
               onClick={onClose}
-              className="pointer-events-auto fixed inset-0 z-[80] bg-background/5 [backdrop-filter:blur(14px)_saturate(140%)] [-webkit-backdrop-filter:blur(14px)_saturate(140%)] [opacity:var(--modal-opacity)]"
+              className={cn(
+                "pointer-events-auto fixed inset-0 z-[80] bg-background/5 [backdrop-filter:blur(14px)_saturate(140%)] [-webkit-backdrop-filter:blur(14px)_saturate(140%)] [opacity:var(--modal-opacity)]",
+                backdropClassName,
+              )}
             />
           )}
         </PresenceGate>

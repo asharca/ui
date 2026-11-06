@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { XYInspector } from "./xy/inspector";
 import { areaPath, linePath, type XYCurve } from "./xy/path";
 import { useAnimatedPoints, type XYPointTarget } from "./xy/use-points";
+import { useControllable } from "./xy/use-inspection";
 import { useElementWidth } from "./xy/use-width";
 
 export interface SparklineProps extends Omit<ComponentProps<"div">, "children"> {
@@ -29,6 +30,8 @@ export interface SparklineProps extends Omit<ComponentProps<"div">, "children"> 
   color?: string;
   /** Height in px. Width follows the container. */
   height?: number;
+  /** Plot insets in px; each edge defaults to 3. The area still fills to the bottom of the SVG. */
+  padding?: { top?: number; right?: number; bottom?: number; left?: number };
   strokeWidth?: number;
   /** Show the change from the first to the last sample as a badge. */
   showDelta?: boolean;
@@ -36,6 +39,11 @@ export interface SparklineProps extends Omit<ComponentProps<"div">, "children"> 
   invertDelta?: boolean;
   /** Hover, drag or arrow keys to read individual samples. Adds one tab stop. */
   interactive?: boolean;
+  /** Controlled inspected sample index; null follows the last available sample. */
+  activeIndex?: number | null;
+  /** Initial inspected sample; opting in retains the chosen sample after inspection closes. */
+  defaultActiveIndex?: number | null;
+  onActiveIndexChange?: (index: number | null) => void;
   formatValue?: (value: number) => string;
 }
 
@@ -50,10 +58,14 @@ export function Sparkline({
   curve = "monotone",
   color = "currentColor",
   height = 32,
+  padding,
   strokeWidth = 1.5,
   showDelta = false,
   invertDelta = false,
   interactive = false,
+  activeIndex,
+  defaultActiveIndex,
+  onActiveIndexChange,
   formatValue = (value) => number.format(value),
   className,
   ...props
@@ -63,7 +75,7 @@ export function Sparkline({
   const gradientId = useId();
   const tooltipId = useId();
   const { ref, width } = useElementWidth<HTMLDivElement>();
-  const [active, setActive] = useState<number | null>(null);
+  const [requestedActive, setActive, setInternalActive] = useControllable(activeIndex, defaultActiveIndex ?? null, onActiveIndexChange);
   const [open, setOpen] = useState(false);
   // Under a finger the readout dot tracks the touch directly instead of gliding.
   const [touching, setTouching] = useState(false);
@@ -77,9 +89,17 @@ export function Sparkline({
   const hi = present.length ? Math.max(...present) : 1;
   const range = hi - lo || 1;
   const n = values.length;
-  const x = (i: number) => PAD + (n === 1 ? (width - PAD * 2) / 2 : (i / (n - 1)) * (width - PAD * 2));
+  const active = requestedActive !== null && Number.isInteger(requestedActive) && requestedActive >= 0 && requestedActive < n ? requestedActive : null;
+  if (activeIndex === undefined && requestedActive !== null && active === null) setInternalActive(null);
+  const left = padding?.left ?? PAD;
+  const right = padding?.right ?? PAD;
+  const top = padding?.top ?? PAD;
+  const bottom = padding?.bottom ?? PAD;
+  const plotWidth = Math.max(0, width - left - right);
+  const plotHeight = Math.max(0, height - top - bottom);
+  const x = (i: number) => left + (n === 1 ? plotWidth / 2 : (i / (n - 1)) * plotWidth);
   const y = (value: number) =>
-    hi === lo ? height / 2 : PAD + ((hi - value) / range) * (height - PAD * 2);
+    top + (hi === lo ? plotHeight / 2 : ((hi - value) / range) * plotHeight);
 
   const targets: XYPointTarget[] = [];
   if (width > 0) {
@@ -115,7 +135,8 @@ export function Sparkline({
   const trend = delta === null || Math.abs(delta) < 0.05 ? "flat" : delta > 0 ? "up" : "down";
   const tone = trend === "flat" ? "flat" : (trend === "up") !== invertDelta ? "good" : "bad";
   const inspecting = interactive && open && active !== null && values[active] !== null;
-  const dotIndex = inspecting ? (active as number) : lastIndex;
+  const retainedIndex = activeIndex !== undefined || defaultActiveIndex !== undefined ? active : null;
+  const dotIndex = inspecting ? (active as number) : retainedIndex ?? lastIndex;
   const dotValue = dotIndex >= 0 ? values[dotIndex] : null;
   const name = (i: number) => labels?.[i] ?? `Sample ${i + 1}`;
   const summary = [
@@ -191,6 +212,7 @@ export function Sparkline({
               tooltipId={tooltipId}
               canHover={canHover}
               className="inset-0 size-full"
+              style={padding ? { left, right, width: "auto" } : undefined}
             />
           </div>
         ) : null}

@@ -1,0 +1,45 @@
+"use client";
+
+import { AnimatePresence, motion, useMotionValue, useSpring } from "motion/react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import { EASE_OUT, SPRING_MOUSE } from "@/lib/ease";
+import { ShaderBackground } from "@/components/motion/shader-background";
+import { useMarketingPlayback } from "@/components/motion/marketing-features-playback";
+
+export interface PhoneTourScreen {
+  id: string; title: string; description: string; tabLabel?: string;
+  image: { src: string; alt: string; caption?: string };
+  content: ReactNode;
+  activity?: ReactNode;
+}
+export interface PhoneTourProps {
+  title: string; description?: string; screens: PhoneTourScreen[];
+  downloads?: { label: string; href: string }[];
+  value?: number; defaultValue?: number; onValueChange?: (index: number) => void;
+  autoplay?: boolean; interval?: number; className?: string;
+}
+export function PhoneTour({ title, description, screens, downloads, value, defaultValue, onValueChange, autoplay = true, interval, className }: PhoneTourProps) {
+  const state = useMarketingPlayback({ count: screens.length, value, defaultValue, onValueChange, autoplay, interval });
+  const panel = useId();
+  const previous = useRef(state.active);
+  const direction = state.active >= previous.current ? 1 : -1;
+  useEffect(() => { previous.current = state.active; }, [state.active]);
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const rotateY = useSpring(pointerX, SPRING_MOUSE);
+  const rotateX = useSpring(pointerY, SPRING_MOUSE);
+  if (!screens.length) return null;
+  const screen = screens[state.active];
+  const split = Math.ceil(screens.length / 2);
+  const feature = (item: PhoneTourScreen, index: number) => <button key={item.id} type="button" aria-pressed={state.active === index} aria-controls={panel} onClick={() => state.select(index)} className={cn("relative w-full cursor-pointer rounded-2xl border p-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring", state.active === index ? "border-border bg-background shadow-sm" : "border-transparent")}><span className="flex items-center gap-3"><span aria-hidden className={cn("grid size-9 shrink-0 place-items-center rounded-full bg-muted text-lg", state.active !== index && "text-muted-foreground")}>{["▦", "♧", "▱", "⌁"][index % 4]}</span><span className="text-xl font-medium leading-6 tracking-tight">{item.title}</span></span><span className="mt-4 block text-sm leading-6 text-muted-foreground">{item.description}</span><span aria-hidden className="mt-5 block h-px bg-border"><motion.span initial={false} animate={{ scaleX: state.active === index ? 1 : 0 }} transition={{ duration: state.reduced ? 0 : 0.3, ease: EASE_OUT }} className="block h-px w-1/3 origin-left bg-foreground"/></span></button>;
+  return <section ref={state.ref} {...state.bindings} className={cn("w-full overflow-hidden bg-background px-4 py-16 text-foreground sm:px-8 sm:py-24", className)}><div className="mx-auto max-w-7xl"><header className="mx-auto max-w-xl text-center"><p className="mb-4 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Mobile app</p><h2 className="text-balance text-4xl font-medium leading-10 tracking-tight">{title}</h2>{description && <p className="mt-4 text-pretty text-sm leading-7 text-muted-foreground sm:text-base">{description}</p>}{downloads && <div className="mt-8 flex flex-wrap justify-center gap-3">{downloads.map((download, index) => <a key={download.href} href={download.href} className={cn("inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring", index === 0 ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background")}><span aria-hidden>{index === 0 ? "♧" : "↗"}</span>{download.label}</a>)}</div>}</header>
+    <div className="mt-12 grid items-center gap-8 lg:mt-16 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-10"><div className="hidden space-y-3 lg:block">{screens.slice(0, split).map((item, index) => feature(item, index))}</div><div className="min-w-0"><fieldset className="m-0 mb-5 flex min-w-0 rounded-full border-0 bg-muted p-1 lg:hidden" aria-label="Choose phone screen">{screens.map((item, index) => <button key={item.id} type="button" aria-pressed={state.active === index} aria-controls={panel} onClick={() => state.select(index)} className={cn("min-h-11 min-w-0 flex-1 rounded-full px-2 text-xs focus-visible:outline-2", state.active === index ? "bg-background shadow-sm" : "text-muted-foreground")}>{item.tabLabel ?? item.title}</button>)}</fieldset><p aria-live="polite" className="mb-8 text-center text-sm leading-6 text-muted-foreground lg:hidden">{screen.description}</p><div className="relative isolate mx-auto grid w-full max-w-md place-items-center overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-sky-200/50 via-amber-100/70 to-emerald-200/40 px-6 py-10 sm:px-12 lg:w-[28rem]"><div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-50">{!state.reduced && <ShaderBackground variant="mesh-gradient" colors={["#b7d4e0", "#e9d6b8", "#d3dcc8", "#c1d6d0"]} speed={state.running ? 0.16 : 0}/>}</div><div className="relative w-full max-w-72" style={{ perspective: 1000 }} onPointerMove={event => {
+          if (!state.canHover || state.reduced) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          pointerX.set(((event.clientX - rect.left) / rect.width - 0.5) * 10);
+          pointerY.set(-((event.clientY - rect.top) / rect.height - 0.5) * 8);
+        }} onPointerLeave={() => { pointerX.set(0); pointerY.set(0); }}><motion.div style={{ rotateX: state.reduced ? 0 : rotateX, rotateY: state.reduced ? 0 : rotateY }} className="relative rounded-[2rem] border border-neutral-200 bg-white p-2 text-neutral-950 shadow-[inset_0_0_0_1px_rgb(0_0_0/0.03)]"><div aria-hidden className="relative mb-4 flex h-6 items-center justify-between px-3 text-[10px] font-medium"><span>9:41</span><span className="absolute left-1/2 h-5 w-20 -translate-x-1/2 rounded-full bg-black"/><span className="text-neutral-500">5G</span></div><div id={panel} className="relative h-[28.5rem] overflow-hidden rounded-[1.5rem] border border-neutral-200 bg-white"><AnimatePresence initial={false} custom={direction}><motion.div key={screen.id} custom={direction} variants={{ enter: (travel: number) => ({ x: state.reduced ? 0 : travel * 90, opacity: 0 }), visible: { x: 0, opacity: 1 }, exit: (travel: number) => ({ x: state.reduced ? 0 : travel * -90, opacity: 0 }) }} initial="enter" animate="visible" exit="exit" transition={{ duration: state.reduced ? 0 : 0.4, ease: EASE_OUT }} className="absolute inset-0 overflow-y-auto pb-4"><div className="relative mx-4 overflow-hidden rounded-2xl"><img src={screen.image.src} alt={screen.image.alt} className="h-32 w-full object-cover"/><div className="absolute inset-x-2 bottom-2 rounded-full bg-white/85 px-3 py-1.5 text-[10px] font-medium backdrop-blur-sm">{screen.image.caption ?? screen.title}</div></div><div className="px-4 py-2 text-sm [--background:white] [--muted:#f5f5f5] [--foreground:#171717] [--muted-foreground:#737373] [--border:#ebebeb]">{screen.content}</div></motion.div></AnimatePresence></div><div aria-hidden className="mx-auto mt-3 h-1 w-20 rounded-full bg-black/20"/></motion.div>{screen.activity && <motion.aside key={`${screen.id}-activity`} initial={{ opacity: 0, y: state.reduced ? 0 : 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: state.reduced ? 0 : 0.4, ease: EASE_OUT }} className="absolute -bottom-5 left-1/2 z-10 w-max max-w-full -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-2 text-xs shadow-sm backdrop-blur-xl">{screen.activity}</motion.aside>}</div></div></div><div className="hidden space-y-3 lg:block">{screens.slice(split).map((item, index) => feature(item, index + split))}</div></div>
+    <div className="sr-only focus-within:not-sr-only"><fieldset className="m-0 mt-5 flex min-w-0 flex-wrap items-center justify-center gap-2 border-0 p-0" aria-label="Phone tour controls"><button type="button" onClick={() => state.select(state.active - 1)} className="min-h-11 cursor-pointer rounded-full px-3 text-xs text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring">Previous screen</button><span className="font-mono text-xs text-muted-foreground">{state.active + 1} / {screens.length}</span><button type="button" onClick={() => state.select(state.active + 1)} className="min-h-11 cursor-pointer rounded-full px-3 text-xs text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring">Next screen</button>{autoplay && <button type="button" aria-pressed={state.paused} onClick={() => state.setPaused(!state.paused)} className="min-h-11 cursor-pointer rounded-full px-3 text-xs text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring">{state.paused ? "Play tour" : "Pause tour"}</button>}</fieldset></div>
+  </div></section>;
+}

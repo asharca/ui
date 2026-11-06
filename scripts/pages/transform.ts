@@ -6,7 +6,13 @@ import { staticResourcePath, withBasePath } from "./paths";
 export function transformSiteSource(source: string, filename: string, siteUrl: string, basePath: string) {
   const kind = /\.[jt]sx$/.test(filename) ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, kind);
-  const prefix = (value: string) => withBasePath(staticResourcePath(value), basePath);
+  const demoDestinations: Record<string, string> = {
+    "/docs": "/docs/ai-agents",
+    "/guides": "/docs/motion-patterns",
+    "/components/ai": "/components/agents",
+    "/components/all": "/components/motion",
+  };
+  const prefix = (value: string) => withBasePath(staticResourcePath(demoDestinations[value] ?? value), basePath);
   const transformed = ts.transform(file, [(context) => {
     const visit: ts.Visitor = (node) => {
       if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {
@@ -35,6 +41,24 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
       if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "URL" && node.arguments?.[0] && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text === "/workspace") {
         return ts.factory.updateNewExpression(node, node.expression, node.typeArguments, [ts.factory.createStringLiteral(prefix("/workspace/")), ...node.arguments.slice(1)]);
       }
+      if (ts.isStringLiteral(node) && node.text === "/changelog/rss.xml") {
+        return ts.factory.createStringLiteral(`${siteUrl}/changelog/rss.xml`);
+      }
+      if (ts.isStringLiteral(node) && node.text.startsWith("/native/r")) {
+        return ts.factory.createStringLiteral(`${siteUrl}${staticResourcePath(node.text)}`);
+      }
+      if (ts.isTemplateExpression(node) && node.head.text === "/native/r/" && node.templateSpans.length === 1) {
+        const span = node.templateSpans[0];
+        return ts.factory.updateTemplateExpression(node, ts.factory.createTemplateHead(`${siteUrl}/native/r/`), [
+          ts.factory.updateTemplateSpan(span, span.expression, ts.factory.createTemplateTail(span.literal.text || ".json")),
+        ]);
+      }
+      if (ts.isTemplateExpression(node) && node.templateSpans.length === 1 && node.templateSpans[0].literal.text === "/native/r") {
+        const span = node.templateSpans[0];
+        return ts.factory.updateTemplateExpression(node, node.head, [
+          ts.factory.updateTemplateSpan(span, span.expression, ts.factory.createTemplateTail(staticResourcePath(span.literal.text))),
+        ]);
+      }
       if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) && node.text.startsWith("/api/og")) {
         return ts.factory.createStringLiteral(`${siteUrl}/api/og.png`);
       }
@@ -62,9 +86,10 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
       }
       // Endpoint descriptors, demo action defaults and static manifest fields.
       if (ts.isStringLiteral(node) && ts.isPropertyAssignment(node.parent)) {
-        const name = node.parent.name.getText(file);
+        const name = ts.isStringLiteral(node.parent.name) ? node.parent.name.text : node.parent.name.getText(file);
         if (name === "url" && node.text.startsWith("/r")) return ts.factory.createStringLiteral(staticResourcePath(node.text));
-        if (name === "src" || name === "start_url" || name === "manifest" || name === "homeHref" || name === "browseHref") return ts.factory.createStringLiteral(prefix(node.text));
+        const appNavigation = /\/components\/app\/|\/app\//.test(filename.replace(/\\/g, "/"));
+        if (name === "href" && !appNavigation || name === "src" || name === "start_url" || name === "manifest" || name === "brandHref" || name === "homeHref" || name === "browseHref") return ts.factory.createStringLiteral(prefix(node.text));
         if (name === "url" && filename.replace(/\\/g, "/").includes("/components/previews/")) return ts.factory.createStringLiteral(prefix(node.text));
       }
       return ts.visitEachChild(node, visit, context);

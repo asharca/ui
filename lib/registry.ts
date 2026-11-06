@@ -1,8 +1,11 @@
 import { type AgentGuide, agentGuides } from "@/lib/agent-guides";
+import { withWebCatalog } from "@/lib/web-catalog";
 
 export type ComponentExample = {
   slug: string;
   name: string;
+  /** Source author when a variant has independently implemented files. */
+  author?: string;
   description?: string;
   badge?: "new";
   /** ISO date this variant shipped. */
@@ -24,6 +27,8 @@ export type ComponentEntry = {
   name: string;
   description: string;
   file: string;
+  /** Source author when this entry is independently implemented downstream. */
+  author?: string;
   /** Optional contributor credit shown on the website only. */
   credit?: {
     name: string;
@@ -54,7 +59,7 @@ export type CategoryEntry = {
   components: ComponentEntry[];
 };
 
-export const registry: CategoryEntry[] = [
+export const registry: CategoryEntry[] = withWebCatalog([
   {
     slug: "motion",
     name: "Components",
@@ -2432,7 +2437,7 @@ export const registry: CategoryEntry[] = [
       },
     ],
   },
-];
+]);
 
 export function findCategory(slug: string) {
   return registry.find((c) => c.slug === slug);

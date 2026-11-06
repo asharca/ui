@@ -1,3 +1,5 @@
+import { webCatalogFamilies } from "@/lib/web-catalog-data";
+
 /**
  * Search titles and meta descriptions for every component page, keyed by
  * registry slug. Titles lead with the phrase people search for and stay short
@@ -613,3 +615,16 @@ export const componentSeo: Record<string, ComponentSeo> = {
       "Five animated 404 pages for React and Next.js: glitch, magnetic digits, cursor spotlight, card stack and terminal. Free source, install with shadcn.",
   },
 };
+
+function fitSearchCopy(value: string, max: number) {
+  const text = value.replaceAll("\u2014", ",").replace(/\s+/g, " ").trim();
+  return text.length <= max ? text : `${text.slice(0, max - 3).replace(/\s+\S*$/, "")}...`;
+}
+
+for (const { existingEntrySlug, entry } of webCatalogFamilies) {
+  if (existingEntrySlug || componentSeo[entry.slug]) continue;
+  componentSeo[entry.slug] = {
+    title: fitSearchCopy(`React ${entry.name}`, SEO_TITLE_MAX),
+    description: fitSearchCopy(entry.description, SEO_DESCRIPTION_MAX),
+  };
+}

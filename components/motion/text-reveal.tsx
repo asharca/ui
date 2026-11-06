@@ -12,6 +12,8 @@ export interface TextRevealProps {
   as?: ElementType;
   className?: string;
   split?: SplitMode;
+  /** Fixed-width space boxes; omit to preserve native whitespace metrics. */
+  spaceWidth?: string;
   stagger?: number;
   delay?: number;
   blur?: number;
@@ -41,11 +43,26 @@ function toWordGroups(line: string): WordGroup[] {
   });
 }
 
+function spacedUnit(unit: string, spaceWidth: string | undefined): ReactNode {
+  if (spaceWidth === undefined) return unit;
+  let offset = 0;
+  return unit.split(/( +)/).map((part) => {
+    const start = offset;
+    offset += part.length;
+    return part.startsWith(" ") ? (
+      <span key={start} className="inline-block overflow-hidden whitespace-pre" style={{ width: part.length === 1 ? spaceWidth : `calc(${spaceWidth} * ${part.length})` }}>
+        {part}
+      </span>
+    ) : part;
+  });
+}
+
 export function TextReveal({
   text,
   as: Comp = "span",
   className,
   split = "word",
+  spaceWidth,
   stagger = 0.09,
   delay = 0,
   blur = 12,
@@ -106,7 +123,7 @@ export function TextReveal({
               // width, running every word together.
               className="inline-block whitespace-pre will-change-transform"
             >
-              {unit}
+              {spacedUnit(unit, spaceWidth)}
             </motion.span>
           );
         };

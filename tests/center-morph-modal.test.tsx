@@ -89,6 +89,35 @@ describe("CenterMorphModal", () => {
     expect(changes).toEqual([2]);
   });
 
+  test("panel autofocus contains forward and reverse tabbing and restores its trigger", async () => {
+    const { getByRole } = render(
+      <CenterMorphModal>
+        <CenterMorphModalTrigger><button type="button">Open review</button></CenterMorphModalTrigger>
+        <CenterMorphModalContent ariaLabel="Review" initialFocus="panel" showCloseButton={false}>
+          <input aria-label="Note" />
+          <button type="button">Save review</button>
+        </CenterMorphModalContent>
+      </CenterMorphModal>,
+    );
+    const trigger = getByRole("button", { name: "Open review" });
+    fireEvent.click(trigger);
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+    const panel = getByRole("dialog", { name: "Review" });
+    const first = getByRole("textbox", { name: "Note" });
+    const last = getByRole("button", { name: "Save review" });
+    expect(document.activeElement).toBe(panel);
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(last);
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(first);
+    panel.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(first);
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(document.activeElement).toBe(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
   test("keeps scrolling locked through interrupted and completed exits", async () => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "scroll";

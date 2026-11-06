@@ -19,12 +19,12 @@ export async function buildPages() {
   await symlink(path.join(root, "node_modules"), path.join(stage, "node_modules"), "dir");
   // These endpoints are materialized below as files with explicit MIME extensions.
   // Proxy, live analytics and request-dependent OG rendering require a server.
-  for (const item of ["app/r", "app/[slug]", "app/docs/[slug]", "app/llms.txt", "app/registry.json", "app/api"]) {
+  for (const item of ["app/r", "app/native/r", "app/[slug]", "app/docs/[slug]", "app/llms.txt", "app/registry.json", "app/api"]) {
     await rm(path.join(stage, item), { recursive: true, force: true });
   }
   const serverConfig = await import(pathToFileURL(path.join(root, "next.config.mjs")).href);
   const redirects = await serverConfig.default.redirects?.() ?? [];
-  await writeFile(path.join(stage, "next.config.mjs"), `export default { output: 'export', basePath: ${JSON.stringify(basePath)}, trailingSlash: true, reactStrictMode: true, images: { unoptimized: true, remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }] }, experimental: { cpus: 2 } };\n`);
+  await writeFile(path.join(stage, "next.config.mjs"), `export default { output: 'export', basePath: ${JSON.stringify(basePath)}, trailingSlash: true, reactStrictMode: true, images: { unoptimized: true, remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }] }, experimental: { cpus: 2, staticGenerationMaxConcurrency: 1 }, staticPageGenerationTimeout: 300 };\n`);
   await writeFile(path.join(stage, "app/components/page.tsx"), `import CategoryPage from './[category]/page';\nexport default function Page() { return <CategoryPage params={Promise.resolve({ category: 'motion' })} />; }\n`);
   await writeFile(path.join(stage, "app/workspace/page.tsx"), `import { Suspense } from 'react';\nimport WorkspacePageClient from './workspace-page-client';\nexport const metadata = { title: 'Asharca Workspace', robots: { index: false, follow: false } };\nexport default function Page() { return <Suspense fallback={<p>Loading workspace…</p>}><WorkspacePageClient /></Suspense>; }\n`);
   await writeFile(path.join(stage, "app/workspace/workspace-page-client.tsx"), `'use client';\nimport { useSearchParams } from 'next/navigation';\nimport { WorkspaceDemo } from '@/components/previews/blocks/workspace-shell.preview';\nexport default function WorkspacePageClient() { const params = useSearchParams(); return <WorkspaceDemo fullPage detachedKey={params.get('window') ?? undefined} />; }\n`);
@@ -36,9 +36,8 @@ export async function buildPages() {
     }
   }
   await transformDirectory(path.join(stage, "app"));
-  await transformDirectory(path.join(stage, "components/app"));
-  await transformDirectory(path.join(stage, "components/previews"));
-  for (const rel of ["lib/seo.ts", "components/motion/not-found/shared.tsx"]) {
+  await transformDirectory(path.join(stage, "components"));
+  for (const rel of ["lib/seo.ts", "lib/changelog/index.ts"]) {
     const file = path.join(stage, rel);
     await writeFile(file, transformSiteSource(await readFile(file, "utf8"), file, siteUrl, basePath));
   }

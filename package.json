@@ -2,6 +2,7 @@
   "name": "ui-components",
   "version": "0.2.0",
   "private": true,
+  "workspaces": ["templates/*"],
   "author": {
     "name": "Saurabh",
     "email": "saurabh10102@gmail.com",
@@ -32,8 +33,9 @@
     "lint": "biome lint .",
     "typecheck": "tsc --noEmit",
     "check:registry": "bun scripts/check-registry.ts",
+    "check:templates": "bun run --filter './templates/*' typecheck",
     "test": "bun test",
-    "check": "bun run typecheck && bun run lint && bun run check:registry",
+    "check": "bun run typecheck && bun run lint && bun run check:registry && bun run check:templates",
     "test:workspace:browser": "playwright test"
   },
   "dependencies": {
@@ -56,7 +58,8 @@
     "react-use-measure": "^2.1.7",
     "shiki": "^4.2.0",
     "tailwind-merge": "^3.6.0",
-    "tracwell": "0.4.0"
+    "tracwell": "0.4.0",
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
@@ -70,11 +73,11 @@
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
+    "happy-dom": "^20.10.6",
     "jest-axe": "^10.0.0",
     "postcss": "^8.5.1",
     "react-docgen-typescript": "^2.4.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.3",
     "wrangler": "^4.125.0"
   }
 }

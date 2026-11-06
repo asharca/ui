@@ -443,7 +443,7 @@ export function SelectContent({ className, children }: SelectContentProps) {
         else onKeyDown(event);
       }}
       style={{
-        visibility: present ? undefined : "hidden",
+        visibility: present ? "visible" : "hidden",
         maxHeight: present ? undefined : 0,
         borderWidth: present ? undefined : 0,
         y,

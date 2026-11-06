@@ -16,11 +16,12 @@ export interface PressLinkProps extends ComponentProps<typeof MotionLink> {
  * Link CTA with the same spring press as the library Button — interruptible,
  * settles with life. The CSS `.press` utility reads flat next to it.
  */
-export function PressLink({ pressScale = 0.97, ...props }: PressLinkProps) {
+export function PressLink({ pressScale = 0.97, tabIndex = 0, ...props }: PressLinkProps) {
   const reduce = useReducedMotion();
   const canHover = useHoverCapable();
   return (
     <MotionLink
+      tabIndex={tabIndex}
       whileTap={reduce ? undefined : { scale: pressScale }}
       whileHover={reduce || !canHover ? undefined : { scale: 1.02 }}
       transition={SPRING_PRESS}

@@ -1,6 +1,7 @@
 import { buildIndex } from "@/lib/registry-server";
 import { buildNativeIndex } from "@/lib/native-registry";
 import { SITE_URL } from "@/lib/site";
+import { standaloneTemplates, standaloneTemplateSource } from "@/lib/standalone-templates";
 
 export const dynamic = "force-static";
 
@@ -31,6 +32,14 @@ export async function GET() {
   for (const c of idx.components) {
     lines.push(`- [${c.name}](${c.markdown_url}): ${c.description}`);
   }
+  lines.push("");
+  lines.push("## Standalone application templates");
+  lines.push("");
+  lines.push(`- Project catalog: ${SITE_URL}/templates`);
+  for (const template of standaloneTemplates) {
+    lines.push(`- [${template.name}](${SITE_URL}/templates/${template.slug}): ${template.description} Source: ${standaloneTemplateSource(template.directory)}`);
+  }
+  lines.push("These are independent projects, not single-component Registry items. Browser-local demonstrations do not provide hosted AI, authentication or financial services.");
   lines.push("");
   const nativeIndex = buildNativeIndex();
   lines.push("## React Native (beUI Native)");

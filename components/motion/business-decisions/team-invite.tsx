@@ -1,0 +1,94 @@
+"use client";
+
+import { useId, useLayoutEffect, useRef, useState } from "react";
+import { Check, Copy, Link2, RotateCcw, RotateCw, Send, UserPlus, X } from "lucide-react";
+import { Switch } from "@/components/motion/switch";
+import { Button } from "@/components/motion/button";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
+import { DecisionDialog, DecisionFeedback, useDecisionAction } from "./decision-support";
+import { AnimatedDropdown } from "@/components/motion/animated-dropdown";
+
+export interface TeamInvitePerson { id: string; email: string; name?: string; avatarUrl?: string; role: string; isOwner?: boolean; /** Explicit host presence; never inferred from lastActive. */ isOnline?: boolean; lastActive?: string; status: "pending" | "joined" }
+export interface TeamInviteProps {
+  people: TeamInvitePerson[]; roles: { value: string; label: string; description?: string }[]; seatLimit: number; defaultInviteRole?: string;
+  onInvite: (emails: string[], role: string, note: string) => void | Promise<void>;
+  onResend: (id: string) => void | Promise<void>; onRevoke: (id: string) => void | Promise<void>;
+  /** Supplied people stay authoritative; resolving alone never changes the displayed role. */
+  onPersonRoleChange?: (id: string, role: string) => void | Promise<void>;
+  inviteLink?: { url: string; enabled: boolean; expiresLabel?: string; role?: string };
+  onInviteLinkChange?: (action: "enable" | "disable" | "reset") => void | Promise<void>;
+  onInviteLinkRoleChange?: (role: string) => void | Promise<void>;
+  onCopyLink?: (url: string) => void | Promise<void>; className?: string;
+}
+function personInitials(person: TeamInvitePerson) {
+  const parts = (person.name ?? person.email.split("@")[0]).split(/[\s._-]+/).filter(Boolean);
+  return (parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : parts[0]?.slice(0, 2) ?? "").toUpperCase();
+}
+function TeamRoleDropdown({ roles, value, onChange, disabled, ariaLabel, fullWidth = false }: { roles: TeamInviteProps["roles"]; value: string; onChange: (value: string) => void; disabled?: boolean; ariaLabel: string; fullWidth?: boolean }) {
+  const root = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(256);
+  useLayoutEffect(() => {
+    const element = root.current;
+    if (!fullWidth || !element) return;
+    const measure = () => setWidth(element.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [fullWidth]);
+  return <div ref={root} className={cn("inline-flex", fullWidth && "w-full")}><AnimatedDropdown ariaLabel={ariaLabel} trigger={roles.find(item => item.value === value)?.label ?? value} value={value} onValueChange={onChange} disabled={disabled} align="end" shadow={false} radius={16} collisionPadding={12} contentClassName="border-border-strong/50 backdrop-blur-xl" initialFocus="selected" menuWidth={fullWidth ? width : 256} className={fullWidth ? "w-full" : undefined} triggerClassName={cn("h-10 min-w-28 justify-between rounded-full px-3 text-left text-sm text-foreground [&>svg]:size-4", fullWidth && "w-full")} itemClassName="min-h-11 gap-3 rounded-xl px-3 py-2 [&>span[aria-hidden].relative]:hidden [&>svg]:hidden" items={roles.map(item => ({ id: item.value, kind: "option" as const, value: item.value, textValue: item.label, label: <span className="flex min-w-0 items-center gap-3"><span className="min-w-0 flex-1"><span className="block truncate text-sm">{item.label}</span>{item.description && <span className="block truncate text-xs text-muted-foreground">{item.description}</span>}</span><Check aria-hidden className={cn("size-4 shrink-0", value !== item.value && "opacity-0")} /></span> }))} /></div>;
+}
+export function TeamInvite({ people, roles, seatLimit, defaultInviteRole, onInvite, onResend, onRevoke, onPersonRoleChange, inviteLink, onInviteLinkChange, onCopyLink, onInviteLinkRoleChange, className }: TeamInviteProps) {
+  const emailId = useId();
+  const [draft, setDraft] = useState("");
+  const [emails, setEmails] = useState<string[]>([]);
+  const [role, setRole] = useState(defaultInviteRole ?? roles[0]?.value ?? "");
+  const [note, setNote] = useState("");
+  const [tab, setTab] = useState<"pending" | "joined">("joined");
+  const [open, setOpen] = useState(false);
+  const [validation, setValidation] = useState("");
+  const [notice, setNotice] = useState("");
+  const scrollRegion = useRef<HTMLElement>(null);
+  const [scrollable, setScrollable] = useState(false);
+  useLayoutEffect(() => {
+    const element = scrollRegion.current;
+    if (!element) return;
+    const update = () => setScrollable(element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    if (element.firstElementChild) observer.observe(element.firstElementChild);
+    return () => observer.disconnect();
+  }, []);
+  const action = useDecisionAction();
+  const joined = people.filter(person => person.status === "joined").length;
+  const pending = people.length - joined;
+  const addDraft = () => {
+    const next = draft.split(/[\s,;]+/).map(email => email.trim().toLowerCase()).filter(Boolean);
+    const existing = new Set(people.map(person => person.email.toLowerCase()));
+    const all = [...emails, ...next];
+    if (all.some(email => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) { setValidation("Enter valid email addresses separated by commas."); return null; }
+    if (all.some(email => existing.has(email)) || new Set(all).size !== all.length) { setValidation("Remove duplicate addresses and people who are already invited or members."); return null; }
+    setEmails(all); setDraft(""); setValidation(""); return all;
+  };
+  async function send() {
+    const all = addDraft();
+    if (!all) return;
+    if (!all.length) { setValidation("Add at least one email address."); return; }
+    if (!roles.some(item => item.value === role)) { setValidation("Choose an available role."); return; }
+    if (people.length + all.length > seatLimit) { setValidation("Not enough seats. Remove addresses or increase your seat allowance."); return; }
+    if (await action.run(() => onInvite(all, role, note.trim()))) { setEmails([]); setNote(""); setNotice("Invitations sent."); setTab("pending"); setOpen(false); }
+  }
+  async function manage(callback: () => void | Promise<void>, success: string) { setNotice(""); if (await action.run(callback)) setNotice(success); }
+  const seats = (count = people.length) => <div className="w-full shrink-0 sm:w-56"><div className="mb-2 flex justify-between gap-3 text-sm text-muted-foreground"><span><span className="text-foreground">{count}</span> of {seatLimit} seats used</span><span className="text-xs">{Math.max(0, seatLimit - count)} seats left</span></div><meter aria-label={count > people.length ? "Workspace seats used or reserved" : "Workspace seats used"} aria-valuetext={`${people.length} occupied seats, ${Math.max(0, count - people.length)} reserved for unsent invitations`} min={0} max={Math.max(1, seatLimit)} value={count} className="sr-only" /><div aria-hidden className="flex gap-1">{Array.from({ length: Math.max(0, seatLimit) }, (_, index) => index + 1).map(seat => <span key={seat} className={cn("h-2 flex-1 rounded-full", seat <= people.length ? "bg-foreground" : seat <= count ? "bg-teal-500" : "bg-muted")} />)}</div></div>;
+  return <section aria-label="Invite teammates" className={cn("mx-auto w-full max-w-5xl overflow-clip rounded-3xl border border-border bg-background text-foreground", className)}>
+    <header className="flex flex-col gap-5 border-b border-border p-5 sm:p-6 md:flex-row md:items-end md:justify-between"><div className="max-w-md"><h2 className="text-xl font-medium">Team</h2><p className="mt-1 text-sm text-muted-foreground">Manage who can access your workspace and invite new people.</p></div><div className="flex w-full flex-col items-stretch gap-4 md:w-auto sm:flex-row sm:items-end">{seats()}<Button size="sm" className="h-9 shrink-0 gap-2 px-5 text-sm" onClick={() => { action.clearError(); setValidation(""); setOpen(true); }}><UserPlus aria-hidden className="size-4" />Invite teammates</Button></div></header>
+    <section ref={scrollRegion} aria-label="Team members and invitation settings" tabIndex={scrollable ? 0 : undefined} className={cn("grid overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring", inviteLink && "lg:grid-cols-[minmax(0,1fr)_22rem]")}><div className="min-w-0 lg:border-r lg:border-border"><Tabs value={tab} onValueChange={value => setTab(value as "joined" | "pending")} className="px-5 pt-5 sm:px-6"><TabsList aria-label="People filters" className="w-max bg-muted">{(["joined", "pending"] as const).map(value => <TabsTrigger key={value} value={value} indicatorClassName="bg-background" className="[&_[data-tabs-label]]:text-foreground">{value === "joined" ? "Members" : "Pending"}<span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-border px-1 text-xs font-normal text-muted-foreground">{value === "joined" ? joined : pending}</span></TabsTrigger>)}</TabsList></Tabs>
+    <ul className="divide-y divide-border py-2">{people.filter(person => person.status === tab).map(person => <li key={person.id} className={cn("flex gap-3 px-4 py-3", person.status === "pending" ? "flex-col sm:flex-row sm:items-center" : "items-center")}><div className="flex min-w-0 flex-1 items-center gap-3"><span className="relative inline-flex size-9 shrink-0">{person.avatarUrl ? <img src={person.avatarUrl} alt="" width={36} height={36} loading="lazy" decoding="async" className="size-full rounded-full border border-border object-cover" /> : <span aria-hidden="true" className="grid size-full place-items-center rounded-full border border-border bg-muted font-mono text-xs font-medium text-muted-foreground">{personInitials(person)}</span>}{person.isOnline && <span aria-hidden="true" className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-emerald-500" />}</span><div className="min-w-0 flex-1"><p className="flex items-center gap-2 truncate text-sm font-medium"><span className="truncate">{person.name ?? person.email}</span>{person.isOwner && <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-xs font-normal text-muted-foreground">Owner</span>}</p><p className="truncate text-xs text-muted-foreground">{person.status === "pending" ? person.lastActive ?? "Invitation pending" : person.email}</p></div></div>{person.status === "pending" ? <div className="flex items-center gap-1.5 pl-12 sm:pl-0"><TeamRoleDropdown roles={roles} ariaLabel={`Role for ${person.email}`} value={person.role} onChange={next => { if (onPersonRoleChange) void manage(() => onPersonRoleChange(person.id, next), "Invitation role updated."); }} disabled={action.busy || !onPersonRoleChange} /><Button size="sm" variant="ghost" className="h-10 gap-1.5 px-3 text-sm text-muted-foreground" aria-label={`Resend ${person.email}`} disabled={action.busy} onClick={() => { void manage(() => onResend(person.id), "Invitation resent."); }}><RotateCw className="size-3.5" />Resend</Button><Button size="icon" variant="ghost" className="size-10 text-muted-foreground hover:text-foreground" aria-label={`Revoke ${person.email}`} disabled={action.busy} onClick={() => { void manage(() => onRevoke(person.id), "Invitation revoked."); }}><X className="size-4" /></Button></div> : <div className="flex shrink-0 flex-col items-end gap-1 text-right"><span className="text-sm font-medium capitalize">{person.role}</span>{person.lastActive && <span className={cn("text-xs", person.isOnline ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground")}>{person.lastActive}</span>}</div>}</li>)}</ul>
+    {!people.some(person => person.status === tab) && <p className="px-6 pb-8 text-sm text-muted-foreground">{tab === "pending" ? "No pending invitations." : "No members yet."}</p>}</div>
+    {inviteLink && <div className="border-t border-border p-5 sm:p-6 lg:border-t-0"><aside className="flex flex-col gap-4 rounded-2xl border border-border p-5"><header className="flex items-start gap-3"><span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground"><Link2 className="size-4" /></span><div className="min-w-0"><h3 className="text-base font-medium">Invite link</h3><p className="text-sm text-muted-foreground">Anyone with this link can join the workspace.</p></div></header><div className="flex h-10 items-center gap-2 rounded-full border border-border pl-4 pr-0.5"><code className={cn("min-w-0 flex-1 truncate font-mono text-xs", inviteLink.enabled ? "text-foreground" : "text-muted-foreground")}>{inviteLink.enabled ? inviteLink.url.replace(/^https?:\/\//, "") : "Invite link is disabled."}</code>{onCopyLink && <Button size="icon" variant="ghost" className="size-9 shrink-0" aria-label="Copy invite link" disabled={!inviteLink.enabled || action.busy} onClick={() => { void manage(() => onCopyLink(inviteLink.url), "Link copied."); }}><Copy className="size-3.5" /></Button>}</div><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 text-sm text-muted-foreground"><span>Joins as</span>{onInviteLinkRoleChange ? <TeamRoleDropdown roles={roles} ariaLabel="Invite-link role" value={inviteLink.role ?? roles[0]?.value ?? ""} disabled={action.busy || !inviteLink.enabled} onChange={next => { void manage(() => onInviteLinkRoleChange(next), "Invite-link role updated."); }} /> : <span className="rounded-full border border-border px-3 py-2 capitalize text-foreground">{roles.find(item => item.value === inviteLink.role)?.label ?? roles[0]?.label}</span>}</div>{onInviteLinkChange && <Button size="sm" variant="ghost" className="h-9 px-3 text-sm" disabled={action.busy} onClick={() => { void manage(() => onInviteLinkChange("reset"), "Invite link reset."); }}><RotateCcw className="size-3.5" />Reset link</Button>}</div>{onInviteLinkChange && <div className="flex flex-col gap-2 border-t border-border pt-4"><Switch label="Allow joining by link" className="[&_label]:text-sm [&_button]:h-6 [&_button]:w-10 [&_button>div]:size-4 [&_button>div>div]:size-4" ariaLabel="Allow joining by link" checked={inviteLink.enabled} disabled={action.busy} onCheckedChange={enabled => { void manage(() => onInviteLinkChange(enabled ? "enable" : "disable"), "Link settings updated."); }} />{inviteLink.expiresLabel && <p className="text-xs text-muted-foreground">{inviteLink.expiresLabel}</p>}</div>}</aside></div>}</section>
+    <div className="px-6">{!open && <DecisionFeedback {...action} />}{notice && <p role="status" className="sr-only">{notice}</p>}</div>
+    <DecisionDialog className="max-h-[calc(100dvh-2rem)] w-[calc(100vw-1.5rem)] max-w-xl rounded-3xl p-0" showCloseButton={false} initialFocus="panel" radius={24} backdropClassName="bg-foreground/10 backdrop-blur-xl" open={open} onOpenChange={setOpen} title="Invite teammates" busy={action.busy}><form noValidate onSubmit={event => { event.preventDefault(); void send(); }}><header className="flex items-start justify-between gap-4 border-b border-border px-5 pb-4 pt-5 sm:px-6"><div className="min-w-0"><h3 className="text-xl font-medium">Invite teammates</h3><p className="mt-1 text-sm text-muted-foreground">Add people to your workspace. They get an email to join.</p></div><Button type="button" size="icon" variant="ghost" className="size-9" aria-label="Close invite dialog" disabled={action.busy} onClick={() => setOpen(false)}><X className="size-4" /></Button></header><div className="flex flex-col gap-5 p-5 sm:p-6"><div className="[&>div]:w-full">{seats(people.length + emails.length)}</div><div className="flex flex-col gap-4"><div className="flex flex-col gap-1.5"><label htmlFor={emailId} className="px-1 text-sm font-medium">Email addresses</label><div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-3xl border border-border bg-background p-1 focus-within:border-foreground/60">{emails.map(email => <span key={email} className="inline-flex h-8 max-w-full items-center gap-1.5 rounded-full border border-border bg-background pl-3 pr-0.5 text-sm text-foreground"><span className="min-w-0 truncate">{email}</span><Button type="button" size="icon" variant="ghost" className="relative size-7 shrink-0 text-current after:absolute after:-inset-1.5 hover:bg-foreground/5" aria-label={`Remove ${email}`} disabled={action.busy} onClick={() => setEmails(previous => previous.filter(item => item !== email))}><X className="size-3.5" /></Button></span>)}<input id={emailId} aria-label="Email addresses" aria-describedby={`${emailId}-hint`} value={draft} onChange={event => { setDraft(event.target.value); setValidation(""); }} inputMode="email" autoComplete="off" spellCheck={false} placeholder={emails.length ? "" : "name@company.com"} disabled={action.busy} className="h-8 min-w-40 flex-1 bg-transparent pl-2 pr-3.5 text-sm leading-6 outline-none placeholder:text-muted-foreground/60" onKeyDown={event => { if ([",", ";", " ", "Enter"].includes(event.key) && draft.trim()) { event.preventDefault(); addDraft(); } }} /></div><p id={`${emailId}-hint`} className="px-1 text-xs text-muted-foreground">Press Enter, comma, or space to add. Paste a list to add many.</p></div><div className="flex flex-col gap-1.5"><span className="px-1 text-sm font-medium">Role for this batch</span><TeamRoleDropdown roles={roles} ariaLabel="Role for this batch" value={role} onChange={setRole} disabled={action.busy} fullWidth /></div><div className="flex flex-col gap-1.5"><label htmlFor={`${emailId}-note`} className="px-1 text-sm font-medium">Personal note</label><textarea id={`${emailId}-note`} rows={2} maxLength={280} placeholder="Optional. Shown in the invite email." value={note} onChange={event => setNote(event.target.value)} disabled={action.busy} className="min-h-20 resize-none rounded-2xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-foreground/60 disabled:opacity-60" /></div>{validation && <p role="alert" className="text-sm text-destructive">{validation}</p>}{(action.error || action.busy) && <DecisionFeedback {...action} />}<div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between"><p aria-live="polite" className="min-h-4 px-1 text-xs text-muted-foreground" /><Button type="submit" className="h-9 w-full gap-2 px-5 text-sm sm:w-auto" disabled={action.busy || !roles.length || (!emails.length && !draft.trim())}>Send invites<Send className="size-4" /></Button></div></div></div></form></DecisionDialog>
+  </section>;
+}

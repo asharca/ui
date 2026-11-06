@@ -11,6 +11,7 @@ import { native } from "@/lib/native";
 import { seoPagePath, seoPages } from "@/lib/seo-pages";
 import { changelogEntries } from "@/lib/changelog";
 import { SITE_URL as SITE } from "@/lib/site";
+import { standaloneTemplates } from "@/lib/standalone-templates";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const components = allComponents();
@@ -26,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/docs/native-setup`, lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/docs/theme`, lastModified: "2026-07-04", changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE}/changelog`, lastModified: changelogEntries[0]?.date, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${SITE}/templates`, lastModified: "2026-11-04", changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/llms.txt`, lastModified: newestComponentDate, changeFrequency: "weekly", priority: 0.5 },
   ];
 
@@ -48,6 +50,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${SITE}${componentPath(c.category.slug, c.slug)}`,
     lastModified: componentDates(c.category.slug, c.slug).updatedAt,
     changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  const templatePages: MetadataRoute.Sitemap = standaloneTemplates.map((template) => ({
+    url: `${SITE}/templates/${template.slug}`,
+    lastModified: "2026-11-04",
+    changeFrequency: "monthly",
     priority: 0.7,
   }));
 
@@ -75,5 +84,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       })),
   );
 
-  return [...staticPages, ...categoryPages, ...componentPages, ...nativePages, ...landingPages];
+  return [...staticPages, ...categoryPages, ...componentPages, ...templatePages, ...nativePages, ...landingPages];
 }

@@ -1,0 +1,30 @@
+{
+  "name": "Orbit Asset Workspace",
+  "publicReference": "folio-finance-dashboard",
+  "requiredRootComponents": [
+    "button",
+    "input",
+    "selector",
+    "center-morph-modal",
+    "line-chart"
+  ],
+  "sourceRepository": "asharca/ui",
+  "serviceMode": "browser-local-demonstration",
+  "routes": [
+    "/",
+    "/login/",
+    "/assets/",
+    "/assets/bitcoin/",
+    "/assets/ethereum/",
+    "/assets/solana/",
+    "/assets/usd-coin/",
+    "/assets/arbitrum/",
+    "/assets/avalanche/",
+    "/wallets/",
+    "/activity/",
+    "/staking/",
+    "/watchlist/",
+    "/assistant/",
+    "/settings/"
+  ]
+}

@@ -1,9 +1,11 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
+import { webPreviews } from "./web-previews";
 
 // Every preview is a client component dragging the library + motion with it.
 // Lazy chunks keep a page's JS limited to the previews it actually renders.
 export const previews: Record<string, ComponentType> = {
+  ...webPreviews,
   "motion/alert": dynamic(() =>
     import("./motion/alert.preview").then((m) => m.AlertPreview),
   ),

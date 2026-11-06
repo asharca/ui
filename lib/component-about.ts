@@ -1,3 +1,5 @@
+import { webCatalogFamilies } from "@/lib/web-catalog-data";
+
 /**
  * Long-form notes for a component page, rendered in a collapsed "About"
  * disclosure at the end of the page and in the page's markdown copy. The
@@ -3416,3 +3418,19 @@ export const componentAbout: Partial<Record<string, ComponentAbout>> = {
     ],
   },
 };
+
+// New compositions share the catalog's concrete variant copy. Curated entries
+// above remain authoritative, including every reused original component.
+for (const { existingEntrySlug, entry } of webCatalogFamilies) {
+  if (existingEntrySlug || componentAbout[entry.slug]) continue;
+  componentAbout[entry.slug] = {
+    overview: entry.description.replaceAll("\u2014", ","),
+    useWhen: (entry.examples ?? []).map((example) => (example.description || example.name).replaceAll("\u2014", ",")),
+    accessibility: "Use the documented labels and semantic controls. Verify focus order, reduced motion and responsive layout with your application data and surrounding page.",
+    faq: [
+      { question: "Which variants are included?", answer: (entry.examples ?? []).map((example) => example.name).join(", ").replaceAll("\u2014", ",") },
+      { question: "Can I use my own data?", answer: "Use the component's exported props and the public Usage example. Preview-only demo controllers are not required by the component." },
+      { question: "Is this licensed beUI Pro source?", answer: "No. This is an independently written implementation informed by publicly available descriptions and interactive previews. No paid registry source is included. Visual fidelity is verified separately from functional coverage; branding and replacement imagery may differ." },
+    ],
+  };
+}

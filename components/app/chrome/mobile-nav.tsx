@@ -106,6 +106,17 @@ export function MobileNav() {
               React Native
             </Link>
             <Link
+              href="/templates"
+              onClick={() => setOpen(false)}
+              aria-current={pathname.startsWith("/templates") ? "page" : undefined}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-sm transition-colors",
+                pathname.startsWith("/templates") ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Templates
+            </Link>
+            <Link
               href="/playground"
               onClick={() => setOpen(false)}
               className={cn(

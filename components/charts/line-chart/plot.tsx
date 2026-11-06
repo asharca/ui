@@ -37,7 +37,7 @@ import { useAnimatedPoints, type XYAnimatedPoint, type XYPointTarget } from "../
 import { useElementWidth } from "../xy/use-width";
 import { useLineChart } from "./context";
 
-/** Left gutter for value labels, in px. */
+/** Gutter for value labels, in px. */
 const AXIS = 44;
 const PAD = { top: 12, right: 16, bottom: 8 } as const;
 const BASELINE = "baseline";
@@ -56,6 +56,12 @@ export interface LineChartPlotProps {
   showGrid?: boolean;
   /** Fade lines and fills out toward the left and right edges of the plot. */
   fadeEdges?: boolean;
+  /** Side of the value labels; defaults to the left. */
+  valueAxisSide?: "left" | "right";
+  /** Explicit, distinct tick values within the chart domain; omitted uses automatic ticks. */
+  valueTicks?: readonly number[];
+  /** Zero-based category indices to label; defaults to automatic spacing. */
+  categoryTickIndices?: readonly number[];
   className?: string;
 }
 
@@ -64,6 +70,9 @@ export function LineChartPlot({
   strokeWidth = 2,
   showGrid = true,
   fadeEdges = true,
+  valueAxisSide = "left",
+  valueTicks,
+  categoryTickIndices,
   className,
 }: LineChartPlotProps) {
   const {
@@ -104,9 +113,12 @@ export function LineChartPlot({
     band: `${id}-band`,
   };
   const n = categories.length;
-  const plotWidth = Math.max(0, width - AXIS - PAD.right);
+  const plotLeft = valueAxisSide === "right" ? PAD.right : AXIS;
+  const plotRight = valueAxisSide === "right" ? AXIS : PAD.right;
+  const plotWidth = Math.max(0, width - plotLeft - plotRight);
+  const ticks = valueTicks ?? domain.ticks;
   const innerHeight = height - PAD.top - PAD.bottom;
-  const x = (i: number) => AXIS + (n === 1 ? plotWidth / 2 : (i / (n - 1)) * plotWidth);
+  const x = (i: number) => plotLeft + (n === 1 ? plotWidth / 2 : (i / (n - 1)) * plotWidth);
   const y = (value: number) =>
     PAD.top + ((domain.max - value) / (domain.max - domain.min || 1)) * innerHeight;
   const baseline = y(Math.min(domain.max, Math.max(domain.min, 0)));
@@ -164,7 +176,7 @@ export function LineChartPlot({
   const spring: Transition = reduce || touching ? { duration: 0 } : SPRING_LAYOUT;
   const revealed = (inView || reduce) && !loading;
   const fade = plotWidth > 0 ? Math.min(32, plotWidth * 0.08) / plotWidth : 0;
-  const crossX = active === null ? AXIS : x(active);
+  const crossX = active === null ? plotLeft : x(active);
 
   return (
     <div className={cn("min-w-0 select-none", className)}>
@@ -199,8 +211,8 @@ export function LineChartPlot({
                 <linearGradient
                   id={ids.edges}
                   gradientUnits="userSpaceOnUse"
-                  x1={AXIS}
-                  x2={AXIS + plotWidth}
+                  x1={plotLeft}
+                  x2={plotLeft + plotWidth}
                   y1={0}
                   y2={0}
                 >
@@ -245,11 +257,11 @@ export function LineChartPlot({
               </defs>
               {showGrid ? (
                 <XYGridLines
-                  ticks={domain.ticks}
+                  ticks={ticks}
                   position={y}
                   axis="y"
-                  from={AXIS}
-                  to={AXIS + plotWidth}
+                  from={plotLeft}
+                  to={plotLeft + plotWidth}
                   reduce={reduce}
                 />
               ) : null}
@@ -288,7 +300,7 @@ export function LineChartPlot({
                   <Placeholder
                     key="placeholder"
                     ids={ids}
-                    left={AXIS}
+                    left={plotLeft}
                     width={plotWidth}
                     top={PAD.top}
                     height={innerHeight}
@@ -325,12 +337,13 @@ export function LineChartPlot({
             </svg>
             <motion.div
               className="pointer-events-none absolute inset-0"
+              style={{ left: valueAxisSide === "right" ? width - AXIS : 0 }}
               initial={false}
               animate={{ opacity: loading ? 0 : 1 }}
               transition={{ duration: 0.15, ease: EASE_OUT }}
             >
               <XYTickLabels
-                ticks={domain.ticks}
+                ticks={ticks}
                 position={y}
                 axis="y"
                 format={formatTick}
@@ -345,7 +358,7 @@ export function LineChartPlot({
             <motion.output
               key="loading"
               className="pointer-events-none absolute flex items-center justify-center text-xs text-muted-foreground"
-              style={{ left: AXIS, right: PAD.right, top: PAD.top, bottom: PAD.bottom }}
+              style={{ left: plotLeft, right: plotRight, top: PAD.top, bottom: PAD.bottom }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{
@@ -366,7 +379,7 @@ export function LineChartPlot({
         <div
           ref={setOverlay}
           className="absolute rounded-sm has-focus-visible:outline-2 has-focus-visible:outline-offset-4 has-focus-visible:outline-ring"
-          style={{ left: AXIS, right: PAD.right, top: PAD.top, bottom: PAD.bottom }}
+          style={{ left: plotLeft, right: plotRight, top: PAD.top, bottom: PAD.bottom }}
         >
           {loading ? null : (
             <XYInspector
@@ -403,7 +416,7 @@ export function LineChartPlot({
       >
         {width > 0
           ? categories.map((category, i) =>
-              (n - 1 - i) % stride === 0 ? (
+              (categoryTickIndices === undefined ? (n - 1 - i) % stride === 0 : categoryTickIndices.includes(i)) ? (
                 <span
                   key={category}
                   className="absolute top-0.5 -translate-x-1/2 text-[11px] whitespace-nowrap text-muted-foreground transition-opacity duration-150"

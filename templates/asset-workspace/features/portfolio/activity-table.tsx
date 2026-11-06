@@ -1,0 +1,18 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowUpRight } from "lucide-react";
+import { Button } from "@/components/motion/button";
+import { CenterMorphModal, CenterMorphModalContent, CenterMorphModalTrigger } from "@/components/motion/center-morph-modal";
+import { findAsset, money, quantity, type Activity } from "./model";
+import { usePortfolio } from "./provider";
+
+export function ActivityTable({ items }: { items: Activity[] }) {
+  const { state } = usePortfolio();
+  const [selected, setSelected] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const lastPage = Math.max(0, Math.ceil(items.length / 8) - 1);
+  const currentPage = Math.min(page, lastPage);
+  const locale = state.preferences?.locale ?? "en-US";
+  return <><div className="table-scroll portfolio-activity-table"><table><caption className="sr-only">Local portfolio activity, not on-chain transactions</caption><thead><tr><th>Transaction</th><th>Network</th><th>Amount / reference value</th><th>Date (UTC)</th><th>Status</th><th><span className="sr-only">Details</span></th></tr></thead><tbody>{items.slice(currentPage * 8, currentPage * 8 + 8).map(item => { const asset = findAsset(item.asset)!; return <tr key={item.id}><td><span className="activity-table-title"><span className="activity-icon" aria-hidden="true">{item.kind === "reward" ? "✧" : "↗"}</span><span><strong>{item.kind === "wallet" ? "Tracked address" : `${item.kind[0].toUpperCase()}${item.kind.slice(1)} ${asset.symbol}`}</strong><small>{item.description}</small></span></span></td><td>{item.network}</td><td><strong>{quantity(item.amount)} {asset.symbol}</strong><small>{money(item.amount * asset.price)}</small></td><td><time dateTime={item.at}>{new Date(item.at).toLocaleDateString(locale, { month: "short", day: "numeric", timeZone: "UTC" })}<small>{new Date(item.at).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" })}</small></time></td><td><span className="pill">Local</span></td><td><CenterMorphModal open={selected === item.id} onOpenChange={open => setSelected(open ? item.id : null)}><CenterMorphModalTrigger><Button variant="ghost" size="icon" aria-label={`Inspect ${item.kind} activity`}><ArrowUpRight size={16}/></Button></CenterMorphModalTrigger><CenterMorphModalContent ariaLabel="Activity details"><h2>Local {item.kind}</h2><p>{item.description}</p><dl className="details"><div><dt>Record ID</dt><dd>{item.id}</dd></div><div><dt>Time (UTC)</dt><dd>{new Date(item.at).toLocaleString(locale, { timeZone: "UTC" })}</dd></div><div><dt>Amount</dt><dd>{quantity(item.amount)} {asset.symbol}</dd></div><div><dt>Network</dt><dd>{item.network}</dd></div><div><dt>Execution</dt><dd>Local browser simulation · No transaction hash</dd></div></dl><Button variant="outline" onClick={() => setSelected(null)}>Close details</Button></CenterMorphModalContent></CenterMorphModal></td></tr>; })}</tbody></table>{!items.length && <div className="empty"><h3>No local activity yet</h3><p>Simulated swaps, stakes, rewards and tracked addresses appear here. No remote transactions are imported.</p></div>}</div>{items.length > 0 && <div className="table-pagination"><span>{currentPage * 8 + 1}–{Math.min(items.length, currentPage * 8 + 8)} of {items.length} records</span><div><Button size="sm" variant="ghost" disabled={!currentPage} onClick={() => setPage(currentPage - 1)}>Previous</Button><span>Page {currentPage + 1} of {lastPage + 1}</span><Button size="sm" variant="ghost" disabled={currentPage >= lastPage} onClick={() => setPage(currentPage + 1)}>Next</Button></div></div>}</>;
+}

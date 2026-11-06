@@ -5,7 +5,7 @@
       "**",
       "!node_modules",
       "!mcp",
-      "!.next",
+      "!**/.next",
       "!.open-next",
       "!.cloudflare",
       "!.wrangler",

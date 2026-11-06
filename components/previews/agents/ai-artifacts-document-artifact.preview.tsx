@@ -1,0 +1,10 @@
+"use client";
+import { useState } from "react";
+import { AIArtifact, type ArtifactVersion } from "@/components/agents/ai-artifacts";
+const content = "# A calmer way to plan\n\nGood work starts with a little clarity. We’re building a workspace that helps small teams turn scattered ideas into a plan everyone can follow.\n\n## Less organizing. More doing.\n\nBring your notes, decisions, and next steps together in one place. Keep the context beside the work, so nobody needs to search through yesterday’s messages to understand what comes next.\n\n## Built around your day\n\nStart with an idea, shape it with your team, and leave with a clear next step. A quiet interface keeps your attention on the work while the details stay within reach.\n\n## Start small\n\nChoose one project. Invite a teammate. Write down the next three things you want to get done. That’s enough to get moving.";
+export function DocumentArtifactPreview() {
+  const [versions, setVersions] = useState<ArtifactVersion[]>([{ id: "v1", label: "Version 1", content }]);
+  const [version, setVersion] = useState("v1");
+  const [fail, setFail] = useState(false);
+  return <div className="relative w-full p-4 sm:p-6"><AIArtifact className="mx-auto max-w-2xl" kind="document" title="A calmer way to plan" filename="a-calmer-way-to-plan.md" versions={versions} version={version} onVersionChange={setVersion} onSave={async content => { if (fail) throw new Error("Demo save rejected; your draft is preserved."); const next = { id: crypto.randomUUID(), label: `Version ${versions.length + 1}`, content }; setVersions(items => [...items, next]); setVersion(next.id); }} /><details className="group mx-auto mt-3 max-w-2xl text-[10px] [&:not([open])]:mt-0 [&:not([open])]:h-0 text-muted-foreground"><summary className="sr-only cursor-pointer focus:not-sr-only group-open:not-sr-only">Demo controls</summary><label><input type="checkbox" checked={fail} onChange={event => setFail(event.target.checked)} /> Demo save rejection</label></details></div>;
+}
