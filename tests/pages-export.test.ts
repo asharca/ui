@@ -106,4 +106,10 @@ describe("GitHub Pages publication adapter", () => {
     expect(output.image.src).toBe("/ui/landing/coastal-sketch.webp");
     expect(output.links.map((link: { href: string }) => link.href)).toEqual(["/ui/docs/ai-agents", "/ui/docs/motion-patterns", "/ui/components/agents", "/ui/components/motion", "#details", "https://example.com"]);
   });
+  test("leaves site navigation descriptors for Next Link to prefix", () => {
+    const input = 'return { links: [{ href: "/charts" }], image: { src: "/beui-mark.png" } };';
+    const result = new Function(transformSiteSource(input, "/stage/components/app/chrome/sidebar.tsx", "https://asharca.github.io/ui", "/ui"))();
+    expect(result.links[0].href).toBe("/charts");
+    expect(result.image.src).toBe("/ui/beui-mark.png");
+  });
 });

@@ -88,7 +88,8 @@ export function transformSiteSource(source: string, filename: string, siteUrl: s
       if (ts.isStringLiteral(node) && ts.isPropertyAssignment(node.parent)) {
         const name = ts.isStringLiteral(node.parent.name) ? node.parent.name.text : node.parent.name.getText(file);
         if (name === "url" && node.text.startsWith("/r")) return ts.factory.createStringLiteral(staticResourcePath(node.text));
-        if (name === "href" || name === "src" || name === "start_url" || name === "manifest" || name === "homeHref" || name === "browseHref") return ts.factory.createStringLiteral(prefix(node.text));
+        const appNavigation = /\/components\/app\/|\/app\//.test(filename.replace(/\\/g, "/"));
+        if (name === "href" && !appNavigation || name === "src" || name === "start_url" || name === "manifest" || name === "homeHref" || name === "browseHref") return ts.factory.createStringLiteral(prefix(node.text));
         if (name === "url" && filename.replace(/\\/g, "/").includes("/components/previews/")) return ts.factory.createStringLiteral(prefix(node.text));
       }
       return ts.visitEachChild(node, visit, context);
