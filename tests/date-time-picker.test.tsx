@@ -153,3 +153,81 @@ test("controlled values remain consumer-owned and invalid wall-clock values are 
 		"YYYY-MM-DDTHH:mm",
 	);
 });
+
+test("month navigation keeps six full weeks without committing the draft", async () => {
+	const changes: string[] = [];
+	const view = render(
+		<DateTimePicker
+			defaultValue="2027-01-15T09:30"
+			onValueChange={(next) => changes.push(next)}
+		/>,
+	);
+	fireEvent.click(view.getByRole("button", { name: /^Choose date and time:/ }));
+	await view.findByRole("dialog");
+	// February 2027 needs four weeks; May needs six. Both keep the same footprint.
+	for (let month = 0; month < 12; month++) {
+		const grid = view.getByRole("grid");
+		expect(grid.querySelectorAll("tbody tr").length).toBe(6);
+		const cells = view.getAllByRole("gridcell");
+		expect(cells.length).toBe(42);
+		const first = new Date(cells[0].querySelector("button")?.dataset.calendarDay ?? "");
+		expect(first.getUTCDay()).toBe(1);
+		expect(
+			view.getByRole("button", {
+				name: new Intl.DateTimeFormat("en-US", {
+					dateStyle: "full",
+					timeZone: "UTC",
+				}).format(new Date(Date.UTC(2027, month + 1, 0))),
+			}),
+		).toBeTruthy();
+		fireEvent.click(view.getByRole("button", { name: "Next month" }));
+	}
+	expect(changes).toEqual([]);
+	fireEvent.click(view.getByRole("button", { name: "Previous month" }));
+	fireEvent.click(view.getByRole("button", { name: "Friday, December 31, 2027" }));
+	fireEvent.click(view.getByRole("button", { name: "Confirm" }));
+	expect(changes).toEqual(["2027-12-31T09:30"]);
+	expect(view.queryByRole("dialog", { hidden: true })).toBeNull();
+});
+
+test("year choices preserve the month, clamp leap days and leave confirmation explicit", async () => {
+	const changes: string[] = [];
+	const view = render(<DateTimePicker defaultValue="2028-02-29T23:59" onValueChange={(next) => changes.push(next)} />);
+	fireEvent.click(view.getByRole("button", { name: /^Choose date and time:/ }));
+	await view.findByRole("dialog");
+	const chooseYear = view.getByRole("button", { name: "Choose year" });
+	fireEvent.click(chooseYear);
+	expect(document.activeElement).toBe(view.getByRole("button", { name: "2028" }));
+	expect((await axe(view.getByRole("dialog"))).violations).toEqual([]);
+	fireEvent.keyDown(document.activeElement as HTMLElement, { key: "ArrowRight" });
+	expect(document.activeElement).toBe(view.getByRole("button", { name: "2029" }));
+	fireEvent.keyDown(document.activeElement as HTMLElement, { key: "Escape" });
+	expect(document.activeElement).toBe(chooseYear);
+	expect(view.getByRole("dialog")).toBeTruthy();
+	fireEvent.click(chooseYear);
+	fireEvent.click(view.getByRole("button", { name: "2029" }));
+	expect(document.activeElement?.getAttribute("data-calendar-day")).toBe("2029-02-28");
+	expect(changes).toEqual([]);
+	fireEvent.click(chooseYear);
+	fireEvent.click(view.getByRole("button", { name: "Next years" }));
+	fireEvent.click(view.getByRole("button", { name: "2041" }));
+	expect(document.activeElement?.getAttribute("data-calendar-day")).toBe("2041-02-28");
+	fireEvent.click(document.activeElement as HTMLElement);
+	fireEvent.click(view.getByRole("button", { name: "Confirm" }));
+	expect(changes).toEqual(["2041-02-28T23:59"]);
+});
+
+test.each([
+	["0000-01-15T09:30", "0", "Previous years", "Previous month"],
+	["9999-12-15T09:30", "9999", "Next years", "Next month"],
+])("year choices respect four-digit calendar bounds at %s", async (value, year, pageButton, monthButton) => {
+	const view = render(<DateTimePicker defaultValue={value} />);
+	fireEvent.click(view.getByRole("button", { name: /^Choose date and time:/ }));
+	await view.findByRole("dialog");
+	fireEvent.click(view.getByRole("button", { name: "Choose year" }));
+	expect((view.getByRole("button", { name: pageButton }) as HTMLButtonElement).disabled).toBe(true);
+	fireEvent.click(view.getByRole("button", { name: year }));
+	expect((view.getByRole("button", { name: monthButton }) as HTMLButtonElement).disabled).toBe(true);
+	expect(view.getByRole("grid").querySelectorAll("tbody tr").length).toBe(6);
+	expect(document.activeElement?.getAttribute("data-calendar-day")).toBe(value.slice(0, 10));
+});

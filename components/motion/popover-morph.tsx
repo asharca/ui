@@ -307,6 +307,8 @@ export interface MorphPopoverContentProps {
   radius?: number;
   /** Draw the surface shadow. Default true. */
   shadow?: boolean;
+  /** Animate the reveal and dismissal. Set false for an instant panel. Default true. */
+  animated?: boolean;
   /**
    * Runs after the portalled surface is positioned and visible. Passing it
    * hands focus to the caller: the panel then moves no focus on its own.
@@ -346,6 +348,7 @@ function MorphPopoverSurface({
   collisionPadding,
   radius = 16,
   shadow = true,
+  animated = true,
   onOpenAutoFocus,
   role = "dialog",
   initialFocus,
@@ -407,6 +410,10 @@ function MorphPopoverSurface({
     safeToRemoveRef.current = safeToRemove;
   });
   useEffect(() => {
+    if (!animated) {
+      if (!isPresent) safeToRemoveRef.current?.();
+      return;
+    }
     if (!ready) {
       if (!isPresent) safeToRemoveRef.current?.();
       return;
@@ -427,7 +434,7 @@ function MorphPopoverSurface({
       onComplete: settle,
     });
     return () => animation.stop();
-  }, [fade, progress, ready, isPresent, reduce]);
+  }, [animated, fade, progress, ready, isPresent, reduce]);
 
   // The wrapper stays `visibility: hidden` until the first measurement, and
   // focus() inside a hidden subtree is silently ignored. So move focus in the
@@ -515,7 +522,7 @@ function MorphPopoverSurface({
       style={{
         left,
         top,
-        opacity: reduce ? fade : surfaceOpacity,
+        opacity: animated ? (reduce ? fade : surfaceOpacity) : 1,
         pointerEvents: isPresent ? "auto" : "none",
         visibility: layout ? "visible" : "hidden",
       }}
@@ -533,7 +540,7 @@ function MorphPopoverSurface({
         aria-labelledby={ctx.triggerId}
         tabIndex={-1}
         style={{
-          clipPath: reduce ? undefined : clipPath,
+          clipPath: animated && !reduce ? clipPath : undefined,
           borderRadius: radius,
           maxHeight: layout ? availableHeight : undefined,
           maxWidth: collisionPadding === undefined ? undefined : `calc(100vw - ${collisionPadding * 2}px)`,
