@@ -16,3 +16,19 @@ test("an empty artifact snapshot disables content export", () => {
   fireEvent.click(copy);
   expect(onCopy).not.toHaveBeenCalled();
 });
+
+test("labels localize the controls and status text", () => {
+  const { getByRole, getByText } = render(
+    <AIArtifact
+      title="说明"
+      filename="notes.md"
+      kind="document"
+      versions={[{ id: "v1", label: "当前", content: "# 标题\n\n正文" }]}
+      labels={{ copy: () => "复制", versionHistory: "版本历史", words: (count) => `${count} 词` }}
+    />,
+  );
+  expect(getByRole("button", { name: "复制" })).toBeDefined();
+  expect(getByRole("button", { name: "版本历史" })).toBeDefined();
+  expect(getByText("3 词")).toBeDefined();
+  expect(getByText("Markdown document")).toBeDefined();
+});
