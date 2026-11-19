@@ -69,3 +69,26 @@ test("unsafe link schemes and raw HTML stay inert text", () => {
   expect(container.querySelector("img")).toBeNull();
   expect(container.textContent).toContain("<img src=x onerror=alert(1)>");
 });
+
+test("hosts can render documents, serve downloads and add header controls", () => {
+  const onDownload = mock(async () => {});
+  const onClose = mock(() => {});
+  const { getByRole, getByTestId } = render(
+    <AIArtifact
+      title="Notes"
+      filename="notes.md"
+      kind="document"
+      versions={[{ id: "v1", label: "v1", content: "| a |\n| - |\n| b |" }]}
+      renderDocument={(content) => <pre data-testid="host">{content}</pre>}
+      onDownload={onDownload}
+      onClose={onClose}
+      actions={<button type="button">Delete</button>}
+    />,
+  );
+  expect(getByTestId("host").textContent).toBe("| a |\n| - |\n| b |");
+  fireEvent.click(getByRole("button", { name: "Download document" }));
+  expect(onDownload).toHaveBeenCalledTimes(1);
+  expect(getByRole("button", { name: "Delete" })).toBeDefined();
+  fireEvent.click(getByRole("button", { name: "Close artifact" }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+});
