@@ -20,6 +20,8 @@ test("keyboard focus shows the tooltip as the trigger's description", async () =
   const trigger = getByRole("button", { name: "Share" });
   expect(trigger.hasAttribute("aria-describedby")).toBe(false);
   await act(async () => {
+    // Keyboard focus follows a key press; earlier pointer tests share the modality tracker.
+    fireEvent.keyDown(trigger, { key: "Tab" });
     trigger.focus();
   });
   await waitFor(() => expect(getByRole("tooltip").textContent).toBe("Copies the link"));
@@ -55,6 +57,7 @@ test("asLabel open state keeps a single name and no duplicate description", asyn
   );
   const trigger = getByRole("button", { name: "Italic" });
   await act(async () => {
+    fireEvent.keyDown(trigger, { key: "Tab" });
     trigger.focus();
   });
   await waitFor(() => expect(getByRole("tooltip", { hidden: true }).textContent).toBe("Italic"));
