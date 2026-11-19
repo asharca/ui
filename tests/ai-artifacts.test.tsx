@@ -32,3 +32,40 @@ test("labels localize the controls and status text", () => {
   expect(getByText("3 词")).toBeDefined();
   expect(getByText("Markdown document")).toBeDefined();
 });
+
+test("documents render lists, tables, code blocks and links as Markdown", () => {
+  const content = [
+    "Intro with [docs](https://example.com) and `code`.",
+    "",
+    "- [x] shipped",
+    "- nested",
+    "  1. first",
+    "",
+    "| Name | Size |",
+    "| :--- | ---: |",
+    "| a.md | 2 KB |",
+    "",
+    "```ts",
+    "const quota = 1;",
+    "```",
+  ].join("\n");
+  const { container, getByRole, getByText } = render(
+    <AIArtifact title="Notes" filename="notes.md" kind="document" versions={[{ id: "v1", label: "v1", content }]} />,
+  );
+  expect(getByRole("link", { name: "docs" }).getAttribute("href")).toBe("https://example.com");
+  expect(container.querySelector("ul ol li")?.textContent).toBe("first");
+  expect(getByText("Done")).toBeDefined();
+  expect(getByRole("columnheader", { name: "Size" }).className).toContain("text-right");
+  expect(container.querySelector("figure pre")?.textContent).toBe("const quota = 1;");
+  expect(getByRole("button", { name: "Copy" })).toBeDefined();
+});
+
+test("unsafe link schemes and raw HTML stay inert text", () => {
+  const content = "[run](javascript:alert(1)) [tab](java\tscript:alert(1)) <JavaScript:alert(1)> <img src=x onerror=alert(1)> ![pic](data:image/png;base64,AA)";
+  const { container } = render(
+    <AIArtifact title="Notes" filename="notes.md" kind="document" versions={[{ id: "v1", label: "v1", content }]} />,
+  );
+  expect(container.querySelector("a")).toBeNull();
+  expect(container.querySelector("img")).toBeNull();
+  expect(container.textContent).toContain("<img src=x onerror=alert(1)>");
+});

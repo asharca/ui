@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { Code2, Copy, Download, FileText, History, RotateCcw, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CodeBlock } from "@/components/agents/code-block";
+import { ArtifactCodeView, ArtifactMarkdown, type ArtifactMarkdownLabels } from "@/components/agents/ai-artifacts-markdown";
 import type { AgentCodeLanguage } from "@/components/agents/agent-code";
 import { Button } from "@/components/motion/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 export interface ArtifactVersion { id: string; label: string; content: string; }
 type ArtifactKind = "code" | "document";
 /** Every user-visible string; pass a partial object to localize or reword. */
-export interface AIArtifactLabels {
+export interface AIArtifactLabels extends ArtifactMarkdownLabels {
   artifact: (kind: ArtifactKind) => string;
   markdownDocument: string;
   copy: (kind: ArtifactKind) => string;
@@ -48,6 +48,11 @@ export interface AIArtifactLabels {
 export const defaultAIArtifactLabels: AIArtifactLabels = {
   artifact: kind => kind === "code" ? "Code artifact" : "Document artifact",
   markdownDocument: "Markdown document",
+  copyCode: "Copy",
+  codeCopied: "Copied",
+  plainText: "text",
+  taskDone: "Done",
+  taskOpen: "Not done",
   copy: kind => `Copy ${kind}`,
   download: kind => `Download ${kind}`,
   versionHistory: "Version history",
@@ -93,17 +98,6 @@ export interface AIArtifactProps {
   className?: string;
 }
 
-/** Text-only Markdown: generated HTML and code are never evaluated. */
-function DocumentContent({ content }: { content: string }) {
-  const occurrences = new Map<string, number>();
-  return <div className="space-y-3 text-sm leading-6">{content.split(/\n\n+/).map((paragraph) => {
-    const occurrence = occurrences.get(paragraph) ?? 0;
-    occurrences.set(paragraph, occurrence + 1);
-    const key = JSON.stringify([paragraph, occurrence]);
-    return paragraph.startsWith("# ") ? <h2 key={key} className="text-xl font-medium leading-tight tracking-tight">{paragraph.slice(2)}</h2> : paragraph.startsWith("## ") ? <h3 key={key} className="pt-3 text-base font-medium">{paragraph.slice(3)}</h3> : <p key={key} className="whitespace-pre-wrap text-muted-foreground">{paragraph}</p>;
-  })}</div>;
-}
-
 export function AIArtifact({ title, filename, versions, kind, language = "typescript", version, defaultVersion, onVersionChange, onSave, onCopy, onClose, labels, className }: AIArtifactProps) {
   const id = useId();
   const reduce = useReducedMotion();
@@ -147,9 +141,9 @@ export function AIArtifact({ title, filename, versions, kind, language = "typesc
     </header>
     {kind === "document" && <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-1.5"><Tabs value={editing ? "edit" : "preview"} onValueChange={mode => setEditing(mode === "edit")}><TabsList><TabsTrigger value="preview" disabled={saving} indicatorClassName="bg-background shadow-sm" className="w-20 text-xs [&_[data-tabs-label]]:text-foreground">{l.preview}</TabsTrigger>{onSave && <TabsTrigger value="edit" disabled={!current || saving} indicatorClassName="bg-background shadow-sm" className="w-20 text-xs [&_[data-tabs-label]]:text-foreground">{l.edit}</TabsTrigger>}</TabsList></Tabs><span className="text-xs text-muted-foreground">{dirty ? l.unsavedChanges : current?.label}</span></div>}
     <div className="relative isolate">
-      {!current ? <p className="p-6 text-sm text-muted-foreground">{l.noVersions}</p> : kind === "code" ? <CodeBlock code={current.content} language={language} copyable={false} showLineNumbers className="rounded-2xl border-0 bg-transparent" /> : <div className="h-80 overflow-auto overscroll-contain px-5 py-5 sm:px-6">{editing ? <textarea aria-label={l.documentContent} value={content} disabled={saving} onChange={event => setEdit({ base: current.id, text: event.target.value })} className="h-full min-h-64 w-full resize-none rounded-lg bg-transparent p-2 text-sm leading-7 outline-none focus-visible:ring-2 focus-visible:ring-ring" /> : <DocumentContent content={content} />}</div>}
+      {!current ? <p className="p-6 text-sm text-muted-foreground">{l.noVersions}</p> : kind === "code" ? <div className="max-h-[min(70vh,40rem)] overflow-auto overscroll-contain"><ArtifactCodeView code={current.content} language={language} /></div> : editing ? <div className="h-80 px-5 py-5 sm:px-6"><textarea aria-label={l.documentContent} value={content} disabled={saving} onChange={event => setEdit({ base: current.id, text: event.target.value })} className="h-full min-h-64 w-full resize-none rounded-lg bg-transparent p-2 font-mono text-[13px] leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring" /></div> : <div className="max-h-[min(70vh,40rem)] min-h-48 overflow-auto overscroll-contain px-5 py-6 sm:px-8"><ArtifactMarkdown content={content} labels={l} /></div>}
       <AnimatePresence initial={false}>{history && <PresenceGate>{({ gate }) => <motion.section {...gate} id={`${id}-history`} aria-label={l.versionHistory} initial={reduce ? false : { opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: reduce ? 0 : 20 }} transition={{ duration: 0.18, ease: EASE_OUT }} className="absolute inset-y-0 right-0 z-10 w-full max-w-xs overflow-y-auto border-l border-border bg-background p-5"><div className="mb-4 flex items-center justify-between gap-3"><h3 className="text-sm font-medium">{l.versionHistory}</h3><Button variant="ghost" size="icon" aria-label={l.closeVersionHistory} onClick={() => setHistory(false)}><X className="size-4" /></Button></div><p className="mb-4 text-xs leading-5 text-muted-foreground">{dirty ? l.historyLocked : l.historyHint}</p><div className="space-y-2">{versions.toReversed().map((item, index) => <button key={item.id} type="button" disabled={saving || dirty} aria-pressed={current?.id === item.id} onClick={() => choose(item.id)} className={cn("w-full rounded-xl border border-border p-3 text-left text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50", current?.id === item.id && "bg-muted/50")}><span className="block font-medium">{item.label}</span><span className="mt-1 block text-xs text-muted-foreground">{index === versions.length - 1 ? l.firstDraft : l.savedRevision}</span></button>)}</div></motion.section>}</PresenceGate>}</AnimatePresence>
     </div>
-    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-2.5 text-xs text-muted-foreground"><span>{kind === "code" ? l.lines(content.split("\n").length) : l.words(content.trim().split(/\s+/).filter(Boolean).length)}</span>{kind === "document" && dirty && onSave ? <div className="flex items-center gap-2"><Button variant="ghost" size="sm" disabled={saving} onClick={() => setEdit(null)} className="h-7 rounded-full text-xs"><RotateCcw className="size-3" />{l.discard}</Button><Button size="sm" disabled={saving} onClick={save} className="h-7 rounded-full text-xs">{saving ? l.saving : l.saveVersion}</Button></div> : <span>{kind === "code" ? current?.label : editing ? l.editingMarkdown : l.allChangesSaved}</span>}<span role="status" className="sr-only">{message}</span>{error && <p role="alert" className="w-full text-destructive">{error}</p>}</footer>
+    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-2.5 text-xs text-muted-foreground"><span>{kind === "code" ? l.lines(content.replace(/\n$/, "").split("\n").length) : l.words(content.trim().split(/\s+/).filter(Boolean).length)}</span>{kind === "document" && dirty && onSave ? <div className="flex items-center gap-2"><Button variant="ghost" size="sm" disabled={saving} onClick={() => setEdit(null)} className="h-7 rounded-full text-xs"><RotateCcw className="size-3" />{l.discard}</Button><Button size="sm" disabled={saving} onClick={save} className="h-7 rounded-full text-xs">{saving ? l.saving : l.saveVersion}</Button></div> : <span>{kind === "code" ? current?.label : editing ? l.editingMarkdown : l.allChangesSaved}</span>}<span role="status" className="sr-only">{message}</span>{error && <p role="alert" className="w-full text-destructive">{error}</p>}</footer>
   </section>;
 }
