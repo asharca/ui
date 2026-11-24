@@ -39,20 +39,20 @@ const BASE_CRITERIA = [
     id: "lp",
     label: "Liquidity provider",
     detail: "Provided liquidity for 42 days",
-    rewardAmount: 550,
+    rewardAmount: 350,
     eligible: true,
   },
 ];
 
 export function AirdropClaimPreview() {
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(3);
   const [txHash, setTxHash] = useState<string | null>(null);
 
   useEffect(() => {
     if (step >= BASE_CRITERIA.length) return;
     const timer = window.setTimeout(() => {
       setStep((prev) => prev + 1);
-    }, 650);
+    }, 550);
     return () => window.clearTimeout(timer);
   }, [step]);
 
@@ -76,13 +76,10 @@ export function AirdropClaimPreview() {
       tokenSymbol="ORB"
       walletAddress="0x8f3a…c21e"
       networkName="Base"
+      lockBonusPercent={20}
       criteria={criteria}
       claimedTxHash={txHash}
       onClaim={() => setTxHash("0x7c14…92b8")}
-      onReplay={() => {
-        setTxHash(null);
-        setStep(0);
-      }}
     />
   );
 }

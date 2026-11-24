@@ -67,9 +67,7 @@ export function McpConnectors({
 }: McpConnectorsProps) {
   const reduce = useReducedMotion() ?? false;
   const [servers, setServers] = useState(initialServers);
-  const [expandedId, setExpandedId] = useState<string | null>(
-    initialServers[0]?.id ?? null,
-  );
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [newUrl, setNewUrl] = useState("https://mcp.example.com/analytics");
   const [reconnectingId, setReconnectingId] = useState<string | null>(null);
@@ -183,7 +181,7 @@ export function McpConnectors({
         <button
           type="button"
           onClick={() => setAdding((prev) => !prev)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Plus aria-hidden="true" className="size-3.5" />
           Add server
@@ -215,12 +213,12 @@ export function McpConnectors({
         </motion.form>
       ) : null}
 
-      <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
+      <ul className="mt-4 divide-y divide-border border-t border-border">
         {servers.map((server) => {
           const isOpen = expandedId === server.id;
           const activeToolCount = server.tools.filter((t) => t.permission !== "off").length;
           return (
-            <li key={server.id} className="p-3.5">
+            <li key={server.id} className="py-3.5">
               <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
@@ -270,7 +268,7 @@ export function McpConnectors({
                     type="button"
                     disabled={reconnectingId === server.id}
                     onClick={() => handleReconnect(server.id)}
-                    className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                    className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06] disabled:opacity-50"
                   >
                     <span>
                       {reconnectingId === server.id ? "Connecting..." : "Reconnect"}
@@ -345,7 +343,7 @@ export function McpConnectors({
         })}
       </ul>
 
-      <footer className="mt-3 px-1 font-mono text-xs text-muted-foreground tabular-nums">
+      <footer className="mt-1 border-t border-border pt-3 font-mono text-xs text-muted-foreground tabular-nums">
         <NumberTicker value={enabledTools} startOnView={false} /> tools enabled ·{" "}
         <NumberTicker value={askFirstTools} startOnView={false} /> ask first
       </footer>

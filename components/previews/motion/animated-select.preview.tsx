@@ -1,6 +1,12 @@
 "use client";
 
-import { CheckCircle2, Circle, CircleDashed, Clock, Sparkles } from "lucide-react";
+import {
+  CircleCheck,
+  CircleDashed,
+  CircleDot,
+  CirclePause,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import {
   AnimatedSelect,
@@ -12,14 +18,52 @@ import {
   AnimatedSelectTrigger,
   AnimatedSelectValue,
 } from "@/components/motion/animated-select";
-import { Button } from "@/components/motion/button";
 import { MorphingModal } from "@/components/motion/morphing-modal";
+
+const STATUS_OPTIONS = [
+  { value: "todo", label: "To do", icon: <CircleDashed className="size-4 text-muted-foreground" /> },
+  { value: "in-progress", label: "In progress", icon: <CircleDot className="size-4 text-muted-foreground" /> },
+  { value: "paused", label: "Paused", icon: <CirclePause className="size-4 text-muted-foreground" /> },
+  { value: "done", label: "Done", icon: <CircleCheck className="size-4 text-muted-foreground" /> },
+];
+
+const TIMEZONES = [
+  {
+    group: "Americas",
+    items: [
+      { value: "america/los_angeles", label: "Los Angeles", description: "UTC−8" },
+      { value: "america/chicago", label: "Chicago", description: "UTC−6" },
+      { value: "america/new_york", label: "New York", description: "UTC−5" },
+      { value: "america/sao_paulo", label: "São Paulo", description: "UTC−3" },
+    ],
+  },
+  {
+    group: "Europe",
+    items: [
+      { value: "europe/london", label: "London", description: "UTC+0" },
+      { value: "europe/paris", label: "Paris", description: "UTC+1" },
+      { value: "europe/berlin", label: "Berlin", description: "UTC+1" },
+      { value: "europe/istanbul", label: "Istanbul", description: "UTC+3" },
+    ],
+  },
+  {
+    group: "Asia & Pacific",
+    items: [
+      { value: "asia/dubai", label: "Dubai", description: "UTC+4" },
+      { value: "asia/singapore", label: "Singapore", description: "UTC+8" },
+      { value: "asia/tokyo", label: "Tokyo", description: "UTC+9" },
+      { value: "australia/sydney", label: "Sydney", description: "UTC+10" },
+    ],
+  },
+];
 
 export function AnimatedSelectPreview() {
   const [status, setStatus] = useState("in-progress");
   const [plan, setPlan] = useState("team");
   const [timezone, setTimezone] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalTimezone, setModalTimezone] = useState("");
+  const [modalStatus, setModalStatus] = useState("in-progress");
 
   return (
     <div className="flex w-full flex-col items-center gap-6 py-4">
@@ -27,30 +71,18 @@ export function AnimatedSelectPreview() {
         <div className="space-y-1.5">
           <p className="px-1 text-xs text-muted-foreground">Status</p>
           <AnimatedSelect value={status} onValueChange={setStatus}>
-            <AnimatedSelectTrigger ariaLabel="Status">
+            <AnimatedSelectTrigger ariaLabel="Status" className="w-[158px]">
               <AnimatedSelectValue />
             </AnimatedSelectTrigger>
             <AnimatedSelectContent>
-              <AnimatedSelectItem
-                value="backlog"
-                label="Backlog"
-                icon={<CircleDashed className="size-3.5 text-muted-foreground" />}
-              />
-              <AnimatedSelectItem
-                value="in-progress"
-                label="In progress"
-                icon={<Clock className="size-3.5 text-primary" />}
-              />
-              <AnimatedSelectItem
-                value="review"
-                label="In review"
-                icon={<Circle className="size-3.5 text-amber-500" />}
-              />
-              <AnimatedSelectItem
-                value="done"
-                label="Completed"
-                icon={<CheckCircle2 className="size-3.5 text-emerald-500" />}
-              />
+              {STATUS_OPTIONS.map((opt) => (
+                <AnimatedSelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  label={opt.label}
+                  icon={opt.icon}
+                />
+              ))}
             </AnimatedSelectContent>
           </AnimatedSelect>
         </div>
@@ -58,26 +90,31 @@ export function AnimatedSelectPreview() {
         <div className="space-y-1.5">
           <p className="px-1 text-xs text-muted-foreground">Plan</p>
           <AnimatedSelect value={plan} onValueChange={setPlan}>
-            <AnimatedSelectTrigger ariaLabel="Plan">
+            <AnimatedSelectTrigger ariaLabel="Plan" className="w-[158px]">
               <AnimatedSelectValue />
             </AnimatedSelectTrigger>
-            <AnimatedSelectContent className="w-64">
+            <AnimatedSelectContent className="w-[196px]">
               <AnimatedSelectItem
                 value="starter"
                 label="Starter"
-                description="Up to 3 workspace projects"
+                description="One project, community help"
               />
               <AnimatedSelectItem
                 value="team"
                 label="Team"
-                description="Shared library and unlimited seats"
+                description="Unlimited projects, 10 seats"
+              />
+              <AnimatedSelectItem
+                value="scale"
+                label="Scale"
+                description="SSO, audit log, priority help"
               />
               <AnimatedSelectSeparator />
               <AnimatedSelectItem
-                value="enterprise"
-                label="Enterprise"
-                description="SSO, audit log, and custom SLA"
-                icon={<Sparkles className="size-3.5 text-primary" />}
+                value="legacy"
+                label="Legacy"
+                description="No longer offered"
+                disabled
               />
             </AnimatedSelectContent>
           </AnimatedSelect>
@@ -86,84 +123,134 @@ export function AnimatedSelectPreview() {
         <div className="space-y-1.5">
           <p className="px-1 text-xs text-muted-foreground">Time zone</p>
           <AnimatedSelect value={timezone} onValueChange={setTimezone} required>
-            <AnimatedSelectTrigger ariaLabel="Time zone">
+            <AnimatedSelectTrigger ariaLabel="Time zone" className="w-[204px]">
               <AnimatedSelectValue placeholder="Pick a time zone" />
             </AnimatedSelectTrigger>
             <AnimatedSelectContent
               searchable
-              searchPlaceholder="Search city or offset..."
-              className="w-64"
+              searchPlaceholder="Search cities"
+              className="w-[204px]"
             >
-              <AnimatedSelectGroup>
-                <AnimatedSelectLabel>Americas</AnimatedSelectLabel>
-                <AnimatedSelectItem
-                  value="america/los_angeles"
-                  label="San Francisco"
-                  description="UTC-8 · Pacific Time"
-                />
-                <AnimatedSelectItem
-                  value="america/new_york"
-                  label="New York"
-                  description="UTC-5 · Eastern Time"
-                />
-              </AnimatedSelectGroup>
-              <AnimatedSelectSeparator />
-              <AnimatedSelectGroup>
-                <AnimatedSelectLabel>Europe & Asia</AnimatedSelectLabel>
-                <AnimatedSelectItem
-                  value="europe/london"
-                  label="London"
-                  description="UTC+0 · GMT"
-                />
-                <AnimatedSelectItem
-                  value="asia/tokyo"
-                  label="Tokyo"
-                  description="UTC+9 · JST"
-                />
-              </AnimatedSelectGroup>
+              {TIMEZONES.map((section) => (
+                <AnimatedSelectGroup key={section.group}>
+                  <AnimatedSelectLabel>{section.group}</AnimatedSelectLabel>
+                  {section.items.map((tz) => (
+                    <AnimatedSelectItem
+                      key={tz.value}
+                      value={tz.value}
+                      label={tz.label}
+                      description={tz.description}
+                    />
+                  ))}
+                </AnimatedSelectGroup>
+              ))}
             </AnimatedSelectContent>
           </AnimatedSelect>
         </div>
       </div>
 
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setModalOpen(true)}
+      <button
+        type="button"
+        onClick={() => {
+          setModalTimezone(timezone);
+          setModalStatus(status);
+          setModalOpen(true);
+        }}
+        className="text-xs font-normal text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:underline"
       >
         Try it in a dialog
-      </Button>
+      </button>
 
       <MorphingModal
-        viewId={modalOpen ? "select-dialog" : null}
+        viewId={modalOpen ? "meeting-settings" : null}
         onClose={() => setModalOpen(false)}
         placement="center"
-        ariaLabel="Animated select inside dialog"
-        className="max-w-md"
+        ariaLabel="Meeting settings"
+        className="max-w-[360px]"
       >
-        <div className="space-y-4 p-2">
-          <div>
+        <div className="-m-5">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h3 className="text-base font-medium text-foreground">
-              Portal layering inside a dialog
+              Meeting settings
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Menus render in a top-layer portal so modal clipping never cuts them off.
-            </p>
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              aria-label="Close"
+              className="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
           </div>
-          <AnimatedSelect value={status} onValueChange={setStatus}>
-            <AnimatedSelectTrigger ariaLabel="Modal status">
-              <AnimatedSelectValue />
-            </AnimatedSelectTrigger>
-            <AnimatedSelectContent>
-              <AnimatedSelectItem value="backlog" label="Backlog" />
-              <AnimatedSelectItem value="in-progress" label="In progress" />
-              <AnimatedSelectItem value="done" label="Completed" />
-            </AnimatedSelectContent>
-          </AnimatedSelect>
-          <div className="flex justify-end">
-            <Button size="sm" variant="outline" onClick={() => setModalOpen(false)}>
-              Done
-            </Button>
+
+          <div className="space-y-4 px-5 py-4">
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">Time zone</p>
+              <AnimatedSelect value={modalTimezone} onValueChange={setModalTimezone}>
+                <AnimatedSelectTrigger ariaLabel="Meeting time zone" className="w-[204px]">
+                  <AnimatedSelectValue placeholder="Pick a time zone" />
+                </AnimatedSelectTrigger>
+                <AnimatedSelectContent
+                  searchable
+                  searchPlaceholder="Search cities"
+                  className="w-[204px]"
+                >
+                  {TIMEZONES.map((section) => (
+                    <AnimatedSelectGroup key={section.group}>
+                      <AnimatedSelectLabel>{section.group}</AnimatedSelectLabel>
+                      {section.items.map((tz) => (
+                        <AnimatedSelectItem
+                          key={tz.value}
+                          value={tz.value}
+                          label={tz.label}
+                          description={tz.description}
+                        />
+                      ))}
+                    </AnimatedSelectGroup>
+                  ))}
+                </AnimatedSelectContent>
+              </AnimatedSelect>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">Status</p>
+              <AnimatedSelect value={modalStatus} onValueChange={setModalStatus}>
+                <AnimatedSelectTrigger ariaLabel="Meeting status" className="w-[158px]">
+                  <AnimatedSelectValue />
+                </AnimatedSelectTrigger>
+                <AnimatedSelectContent>
+                  {STATUS_OPTIONS.map((opt) => (
+                    <AnimatedSelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      label={opt.label}
+                      icon={opt.icon}
+                    />
+                  ))}
+                </AnimatedSelectContent>
+              </AnimatedSelect>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 px-5 pb-5 pt-2">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="inline-flex h-9 items-center rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTimezone(modalTimezone);
+                setStatus(modalStatus);
+                setModalOpen(false);
+              }}
+              className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Save
+            </button>
           </div>
         </div>
       </MorphingModal>

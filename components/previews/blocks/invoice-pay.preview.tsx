@@ -16,6 +16,9 @@ export function InvoicePayPreview() {
       billToAddress="210 Dune Avenue, Austin, TX 78702"
       issuedDate="Nov 3, 2026"
       dueDate="Dec 3, 2026"
+      discountLabel="Returning client"
+      discountAmount={543}
+      taxRatePercent={8.25}
       paid={paid}
       onPay={() => setPaid(true)}
       onReset={() => setPaid(false)}
@@ -25,14 +28,27 @@ export function InvoicePayPreview() {
           description: "Brand system refresh",
           detail: "Logo, type, color tokens",
           qty: 1,
-          rate: 4200,
+          rate: 4800,
+        },
+        {
+          id: "site",
+          description: "Marketing site design",
+          detail: "Per page, light and dark",
+          qty: 6,
+          rate: 650,
         },
         {
           id: "motion",
-          description: "Interactive hero prototype",
-          detail: "Responsive motion study",
-          qty: 1,
-          rate: 1600,
+          description: "Motion prototypes",
+          detail: "Hourly, hero and pricing",
+          qty: 12,
+          rate: 120,
+        },
+        {
+          id: "reviews",
+          description: "Design review sessions",
+          qty: 4,
+          rate: 180,
         },
       ]}
     />

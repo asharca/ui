@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, MapPin, Search, Send } from "lucide-react";
+import { CheckCircle2, ChevronRight, MapPin, Search, Send } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useId, useMemo, useState } from "react";
 import { Button } from "@/components/motion/button";
@@ -83,26 +83,24 @@ export function CareersJobsExplorer({
         className,
       )}
     >
-      <header className="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h3 className="text-2xl font-medium tracking-tight">Open roles</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {filtered.length} open
-          </p>
-        </div>
-
-        <div className="flex w-full items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 sm:w-64">
-          <Search aria-hidden="true" className="size-3.5 text-muted-foreground" />
-          <input
-            type="text"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search roles"
-            aria-label="Search open roles"
-            className="w-full min-w-0 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
-          />
-        </div>
+      <header className="flex items-baseline justify-between gap-3">
+        <h3 className="text-2xl font-medium tracking-tight">Open roles</h3>
+        <p className="font-mono text-xs text-muted-foreground tabular-nums">
+          {filtered.length} open
+        </p>
       </header>
+
+      <div className="mt-4 flex w-full items-center gap-2 rounded-2xl border border-border bg-card px-3.5 py-2.5 focus-within:border-border-strong">
+        <Search aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
+        <input
+          type="text"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search roles"
+          aria-label="Search open roles"
+          className="w-full min-w-0 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
+        />
+      </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-1.5">
@@ -183,16 +181,27 @@ export function CareersJobsExplorer({
                     aria-pressed={selected}
                     onClick={() => chooseRole(role)}
                     className={cn(
-                      "w-full rounded-2xl border p-4 text-left transition-colors",
+                      "group flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors",
                       selected
                         ? "border-border-strong bg-card shadow-xs"
-                        : "border-border bg-background hover:bg-card/60",
+                        : "border-transparent bg-transparent hover:bg-foreground/[0.04]",
                     )}
                   >
-                    <p className="text-sm font-medium text-foreground">{role.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {role.department} · {role.location}
-                    </p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {role.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {role.department} · {role.location}
+                      </p>
+                    </div>
+                    <ChevronRight
+                      aria-hidden="true"
+                      className={cn(
+                        "size-4 shrink-0 text-muted-foreground transition-opacity",
+                        selected ? "opacity-100" : "opacity-0 group-hover:opacity-60",
+                      )}
+                    />
                   </button>
                 </li>
               );

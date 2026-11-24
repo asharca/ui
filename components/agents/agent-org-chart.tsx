@@ -13,8 +13,8 @@ import {
   X,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { EASE_OUT, SPRING_LAYOUT } from "@/lib/ease";
 import { NumberTicker } from "@/components/motion/number-ticker";
+import { EASE_OUT, SPRING_LAYOUT } from "@/lib/ease";
 import { cn } from "@/lib/utils";
 
 export type OrgChartAccent = "sky" | "amber" | "emerald" | "violet" | "rose";
@@ -47,31 +47,31 @@ const ACCENT_MAP: Record<
     ring: "bg-sky-500/15 text-sky-400",
     badge: "text-sky-400",
     stroke: "stroke-sky-400",
-    line: "bg-sky-400/70",
+    line: "bg-sky-400",
   },
   amber: {
     ring: "bg-amber-500/15 text-amber-400",
     badge: "text-amber-400",
     stroke: "stroke-amber-400",
-    line: "bg-amber-400/70",
+    line: "bg-amber-400",
   },
   emerald: {
     ring: "bg-emerald-500/15 text-emerald-400",
     badge: "text-emerald-400",
     stroke: "stroke-emerald-400",
-    line: "bg-emerald-400/70",
+    line: "bg-emerald-400",
   },
   violet: {
     ring: "bg-violet-500/15 text-violet-400",
     badge: "text-violet-400",
     stroke: "stroke-violet-400",
-    line: "bg-violet-400/70",
+    line: "bg-violet-400",
   },
   rose: {
     ring: "bg-rose-500/15 text-rose-400",
     badge: "text-rose-400",
     stroke: "stroke-rose-400",
-    line: "bg-rose-400/70",
+    line: "bg-rose-400",
   },
 };
 
@@ -115,8 +115,8 @@ function StatusPill({
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-[11px] font-medium",
-        status === "queued" && "bg-muted/40 text-muted-foreground",
-        status === "running" && "bg-card text-foreground",
+        status === "queued" && "bg-foreground/[0.04] text-muted-foreground",
+        status === "running" && "bg-background/80 text-foreground",
         status === "done" && "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
         status === "error" && "border-rose-500/30 bg-rose-500/10 text-rose-500",
       )}
@@ -258,7 +258,7 @@ function summarizeTree(root: OrgChartAgent) {
   return { total, running, cost };
 }
 
-/** Hierarchical multi-agent orchestrator org chart with live connector lines. */
+/** Hierarchical multi-agent orchestrator org chart with colored orthogonal connector branches. */
 export function AgentOrgChart({ root, onReplay, className }: AgentOrgChartProps) {
   const reduce = useReducedMotion() ?? false;
   const summary = summarizeTree(root);
@@ -298,7 +298,7 @@ export function AgentOrgChart({ root, onReplay, className }: AgentOrgChartProps)
               onClick={onReplay}
               aria-label="Replay agent run"
               title="Replay agent run"
-              className="ml-1 inline-flex size-7 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="ml-1 inline-flex size-7 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <RotateCcw aria-hidden="true" className="size-3.5" />
             </button>
@@ -311,20 +311,63 @@ export function AgentOrgChart({ root, onReplay, className }: AgentOrgChartProps)
 
         {children.length > 0 ? (
           <>
-            <div className="relative h-6 w-px bg-border" aria-hidden="true">
-              <motion.div
-                initial={false}
-                animate={{
-                  scaleY: root.status === "queued" ? 0 : 1,
-                }}
-                transition={{ duration: reduce ? 0 : 0.35, ease: EASE_OUT }}
-                style={{ transformOrigin: "top" }}
-                className={cn("h-full w-full", ACCENT_MAP[root.accent ?? "sky"].line)}
-              />
+            {/* Colored SVG orthogonal trunk + multi-branch distribution */}
+            <div className="hidden w-full md:block" aria-hidden="true">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 600 44"
+                preserveAspectRatio="none"
+                className="h-11 w-full overflow-visible"
+              >
+                {children.length === 3 ? (
+                  <>
+                    <motion.path
+                      d="M300 0 L300 20 L100 20 L100 44"
+                      fill="none"
+                      strokeWidth="1.5"
+                      className={ACCENT_MAP[children[0]?.accent ?? "sky"].stroke}
+                      initial={false}
+                      animate={{ pathLength: children[0]?.status === "queued" ? 0 : 1 }}
+                      transition={{ duration: reduce ? 0 : 0.4, ease: EASE_OUT }}
+                    />
+                    <motion.path
+                      d="M300 0 L300 44"
+                      fill="none"
+                      strokeWidth="1.5"
+                      className={ACCENT_MAP[children[1]?.accent ?? "amber"].stroke}
+                      initial={false}
+                      animate={{ pathLength: children[1]?.status === "queued" ? 0 : 1 }}
+                      transition={{ duration: reduce ? 0 : 0.4, ease: EASE_OUT }}
+                    />
+                    <motion.path
+                      d="M300 0 L300 20 L500 20 L500 44"
+                      fill="none"
+                      strokeWidth="1.5"
+                      className={ACCENT_MAP[children[2]?.accent ?? "emerald"].stroke}
+                      initial={false}
+                      animate={{ pathLength: children[2]?.status === "queued" ? 0 : 1 }}
+                      transition={{ duration: reduce ? 0 : 0.4, ease: EASE_OUT }}
+                    />
+                  </>
+                ) : (
+                  <line
+                    x1="300"
+                    y1="0"
+                    x2="300"
+                    y2="44"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    className="text-border-strong"
+                  />
+                )}
+              </svg>
             </div>
+
+            <div className="h-5 w-px bg-border md:hidden" aria-hidden="true" />
+
             <div
               className={cn(
-                "relative grid w-full gap-4 pt-5",
+                "grid w-full gap-4",
                 children.length === 1
                   ? "max-w-xs grid-cols-1"
                   : children.length === 2
@@ -332,33 +375,32 @@ export function AgentOrgChart({ root, onReplay, className }: AgentOrgChartProps)
                     : "grid-cols-1 md:grid-cols-3",
               )}
             >
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-[16%] top-0 hidden h-px bg-border md:block"
-              />
               {children.map((child) => {
-                const childAccent = ACCENT_MAP[child.accent ?? "sky"];
-                const active = child.status !== "queued";
+                const palette = ACCENT_MAP[child.accent ?? "sky"];
                 return (
                   <div key={child.id} className="relative flex flex-col">
-                    <div
-                      aria-hidden="true"
-                      className="mx-auto hidden h-5 w-px bg-border md:block md:-mt-5"
-                    >
-                      <motion.div
-                        initial={false}
-                        animate={{ scaleY: active ? 1 : 0 }}
-                        transition={{ duration: reduce ? 0 : 0.3, ease: EASE_OUT }}
-                        style={{ transformOrigin: "top" }}
-                        className={cn("h-full w-full", childAccent.line)}
-                      />
-                    </div>
                     <AgentCard agent={child} reduce={reduce} />
 
                     {child.children?.length ? (
-                      <div className="mt-3 space-y-3 border-l border-border pl-4">
+                      <div className="relative mt-3 space-y-3 pl-5">
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "absolute bottom-6 left-2 top-0 w-px opacity-75",
+                            palette.line,
+                          )}
+                        />
                         {child.children.map((sub) => (
-                          <AgentCard key={sub.id} agent={sub} reduce={reduce} />
+                          <div key={sub.id} className="relative">
+                            <span
+                              aria-hidden="true"
+                              className={cn(
+                                "absolute -left-3 top-5 h-px w-3 opacity-75",
+                                ACCENT_MAP[sub.accent ?? child.accent ?? "sky"].line,
+                              )}
+                            />
+                            <AgentCard agent={sub} reduce={reduce} />
+                          </div>
                         ))}
                       </div>
                     ) : null}

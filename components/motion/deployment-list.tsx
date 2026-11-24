@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Check, Copy, GitBranch, Plus, RotateCcw } from "lucide-react";
+import { Check, Copy, GitBranch, Plus, Rocket, Undo2, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useId, useMemo, useState } from "react";
 import { NumberTicker } from "@/components/motion/number-ticker";
@@ -13,10 +13,12 @@ export interface DeploymentItem {
   branch: string;
   sha: string;
   age: string;
+  authorInitials?: string;
+  authorAccent?: string;
   environment: "Production" | "Preview";
   duration: string;
   stage: 1 | 2 | 3 | 4 | 5;
-  status: "Building" | "Ready";
+  status: "Building" | "Ready" | "Error";
   current?: boolean;
   url: string;
 }
@@ -29,7 +31,54 @@ export interface DeploymentListProps {
   className?: string;
 }
 
-/** Recent deployments list with 5-stage progress bars, promote/rollback reordering, and URL copy. */
+function StatusGlyph({ status }: { status: DeploymentItem["status"] }) {
+  if (status === "Ready") {
+    return (
+      <span
+        aria-hidden="true"
+        className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-500 text-neutral-950"
+      >
+        <Check className="size-3" strokeWidth={2.75} />
+      </span>
+    );
+  }
+  if (status === "Error") {
+    return (
+      <span
+        aria-hidden="true"
+        className="grid size-5 shrink-0 place-items-center rounded-full bg-rose-500 text-neutral-950"
+      >
+        <X className="size-3" strokeWidth={2.75} />
+      </span>
+    );
+  }
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      className="size-5 shrink-0 animate-spin text-sky-400"
+    >
+      <circle
+        cx="10"
+        cy="10"
+        r="7.5"
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity="0.2"
+        strokeWidth="2.2"
+      />
+      <path
+        d="M10 2.5a7.5 7.5 0 0 1 7.5 7.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** Recent deployments list with 5-stage pipeline bars, promote/rollback reordering, and URL copy. */
 export function DeploymentList({
   deployments,
   onDeploy,
@@ -42,12 +91,11 @@ export function DeploymentList({
   const [filter, setFilter] = useState<"all" | "Production" | "Preview">("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const buildingCount = deployments.filter((item) => item.status === "Building").length;
+
   const visible = useMemo(() => {
-    const base =
-      filter === "all"
-        ? deployments
-        : deployments.filter((item) => item.environment === filter);
-    return [...base].sort((a, b) => Number(Boolean(b.current)) - Number(Boolean(a.current)));
+    if (filter === "all") return deployments;
+    return deployments.filter((item) => item.environment === filter);
   }, [deployments, filter]);
 
   const copyUrl = async (item: DeploymentItem) => {
@@ -64,20 +112,20 @@ export function DeploymentList({
     <section
       aria-label="Recent deployments"
       className={cn(
-        "mx-auto w-full max-w-3xl rounded-3xl border border-border bg-card p-5 text-foreground sm:p-6",
+        "mx-auto w-full max-w-4xl rounded-3xl border border-border bg-card p-5 text-foreground sm:p-6",
         className,
       )}
     >
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <h3 className="text-sm font-semibold">Deployments</h3>
-          <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground tabular-nums">
+          <span className="font-mono text-xs text-muted-foreground tabular-nums">
             <NumberTicker value={deployments.length} startOnView={false} />
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-full border border-border bg-background p-0.5">
+          <div className="inline-flex rounded-full border border-border bg-background/60 p-0.5">
             {(["all", "Production", "Preview"] as const).map((tab) => {
               const active = filter === tab;
               return (
@@ -95,7 +143,7 @@ export function DeploymentList({
                     <motion.span
                       layoutId={`${uid}-env`}
                       transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
-                      className="absolute inset-0 rounded-full bg-card shadow-xs"
+                      className="absolute inset-0 rounded-full bg-foreground/[0.08]"
                     />
                   ) : null}
                   <span className="relative z-10">{tab === "all" ? "All" : tab}</span>
@@ -116,45 +164,59 @@ export function DeploymentList({
         </div>
       </header>
 
-      <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
+      <ul className="mt-4 divide-y divide-border">
         {visible.map((item) => (
           <motion.li
             key={item.id}
             layout={!reduce}
             transition={{ duration: 0.22, ease: EASE_OUT }}
-            className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 py-3.5 first:pt-2 sm:flex-row sm:items-center sm:justify-between"
           >
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="truncate text-sm font-medium text-foreground">
-                  {item.title}
-                </span>
-                {item.current ? (
-                  <motion.span
-                    layoutId={`${uid}-current`}
-                    transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
-                    className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-500"
-                  >
-                    Current
-                  </motion.span>
-                ) : null}
-              </div>
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <StatusGlyph status={item.status} />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="truncate text-sm font-medium text-foreground">
+                    {item.title}
+                  </span>
+                  {item.current ? (
+                    <motion.span
+                      layoutId={`${uid}-current`}
+                      transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
+                      className="rounded-full border border-border bg-foreground/[0.06] px-2 py-0.5 text-[10px] font-medium text-foreground"
+                    >
+                      Current
+                    </motion.span>
+                  ) : null}
+                </div>
 
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1 font-mono">
-                  <GitBranch aria-hidden="true" className="size-3" />
-                  {item.branch}
-                </span>
-                <span className="font-mono">{item.sha}</span>
-                <span>{item.age}</span>
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">
-                  {item.environment}
-                </span>
-                <span className="font-mono tabular-nums">{item.duration}</span>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 font-mono">
+                    <GitBranch aria-hidden="true" className="size-3" />
+                    <span className="max-w-[10rem] truncate">{item.branch}</span>
+                  </span>
+                  <span className="font-mono">{item.sha}</span>
+                  {item.authorInitials ? (
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "grid size-4 place-items-center rounded-full text-[9px] font-semibold text-white",
+                        item.authorAccent ?? "bg-sky-500",
+                      )}
+                    >
+                      {item.authorInitials}
+                    </span>
+                  ) : null}
+                  <span>{item.age}</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-4 sm:justify-end">
+              <span className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                {item.environment}
+              </span>
+
               {/* 5-stage pipeline bar */}
               <div
                 role="img"
@@ -169,54 +231,78 @@ export function DeploymentList({
                       className={cn(
                         "h-1.5 w-3.5 rounded-full transition-colors",
                         filled
-                          ? item.status === "Building" && stageNum === item.stage
-                            ? "animate-pulse bg-sky-400"
-                            : "bg-emerald-500"
-                          : "bg-muted",
+                          ? item.status === "Error" && stageNum === item.stage
+                            ? "bg-rose-500"
+                            : item.status === "Building" && stageNum === item.stage
+                              ? "animate-pulse bg-sky-400"
+                              : "bg-emerald-500"
+                          : "bg-foreground/[0.08]",
                       )}
                     />
                   );
                 })}
               </div>
 
-              <button
-                type="button"
-                aria-label={`Copy URL for ${item.title}`}
-                onClick={() => void copyUrl(item)}
-                className="grid size-8 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {copiedId === item.id ? (
-                  <Check aria-hidden="true" className="size-3.5 text-emerald-500" />
-                ) : (
-                  <Copy aria-hidden="true" className="size-3.5" />
-                )}
-              </button>
+              <div className="w-14 text-right font-mono tabular-nums">
+                <p className="text-xs text-foreground">{item.duration}</p>
+                <p
+                  className={cn(
+                    "text-[11px]",
+                    item.status === "Ready" && "text-emerald-500",
+                    item.status === "Building" && "text-sky-400",
+                    item.status === "Error" && "text-rose-400",
+                  )}
+                >
+                  {item.status}
+                </p>
+              </div>
 
-              {!item.current && item.status === "Ready" ? (
-                item.environment === "Preview" && onPromote ? (
-                  <button
-                    type="button"
-                    onClick={() => onPromote(item.id)}
-                    className="inline-flex h-8 items-center gap-1 rounded-full border border-border bg-card px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    Promote
-                    <ArrowUpRight aria-hidden="true" className="size-3" />
-                  </button>
-                ) : onRollback ? (
-                  <button
-                    type="button"
-                    onClick={() => onRollback(item.id)}
-                    className="inline-flex h-8 items-center gap-1 rounded-full border border-border bg-card px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    <RotateCcw aria-hidden="true" className="size-3" />
-                    Rollback
-                  </button>
-                ) : null
-              ) : null}
+              <div className="flex w-16 items-center justify-end gap-1">
+                {!item.current && item.status === "Ready" ? (
+                  item.environment === "Preview" && onPromote ? (
+                    <button
+                      type="button"
+                      aria-label={`Promote ${item.title} to production`}
+                      title="Promote to production"
+                      onClick={() => onPromote(item.id)}
+                      className="grid size-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Rocket aria-hidden="true" className="size-3.5" />
+                    </button>
+                  ) : onRollback ? (
+                    <button
+                      type="button"
+                      aria-label={`Rollback to ${item.title}`}
+                      title="Rollback"
+                      onClick={() => onRollback(item.id)}
+                      className="grid size-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Undo2 aria-hidden="true" className="size-3.5" />
+                    </button>
+                  ) : null
+                ) : null}
+
+                <button
+                  type="button"
+                  aria-label={`Copy URL for ${item.title}`}
+                  onClick={() => void copyUrl(item)}
+                  className="grid size-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {copiedId === item.id ? (
+                    <Check aria-hidden="true" className="size-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy aria-hidden="true" className="size-3.5" />
+                  )}
+                </button>
+              </div>
             </div>
           </motion.li>
         ))}
       </ul>
+
+      <footer className="mt-2 border-t border-border pt-3 font-mono text-xs text-muted-foreground tabular-nums">
+        {deployments.length} deployments · {buildingCount} building · avg 45s
+      </footer>
     </section>
   );
 }

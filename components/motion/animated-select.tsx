@@ -17,6 +17,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { EASE_OUT, SPRING_LAYOUT, SPRING_PANEL, SPRING_SWAP } from "@/lib/ease";
+import { useFocusTrap } from "@/lib/hooks/use-focus-trap";
 import { cn } from "@/lib/utils";
 
 interface RegisteredItem {
@@ -306,9 +307,10 @@ export function AnimatedSelectTrigger({
       }}
       onKeyDown={handleKeyDown}
       className={cn(
-        "inline-flex min-h-9 items-center justify-between gap-2.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-medium text-foreground shadow-xs transition-colors outline-none",
-        "hover:border-border-strong hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring",
+        "inline-flex h-10 items-center justify-between gap-2.5 rounded-full border border-border bg-card/80 px-4 py-1.5 text-sm font-normal text-foreground shadow-xs transition-colors outline-none",
+        "hover:border-border-strong hover:bg-foreground/[0.04] focus-visible:ring-2 focus-visible:ring-ring",
         "disabled:cursor-not-allowed disabled:opacity-50",
+        open && "border-border-strong",
         isInvalid && "border-destructive ring-1 ring-destructive/30",
         className,
       )}
@@ -429,7 +431,7 @@ export function AnimatedSelectContent({
     const placement =
       spaceBelow < estimatedHeight && spaceAbove > spaceBelow ? "top" : "bottom";
 
-    const menuWidth = Math.max(rect.width, 224);
+    const menuWidth = Math.max(rect.width, 184);
     let left = rect.left;
     if (align === "center") {
       left = rect.left + rect.width / 2 - menuWidth / 2;
@@ -439,9 +441,9 @@ export function AnimatedSelectContent({
     left = Math.max(12, Math.min(left, window.innerWidth - menuWidth - 12));
 
     setCoords({
-      top: placement === "bottom" ? rect.bottom + 8 : rect.top - 8,
+      top: placement === "bottom" ? rect.bottom + 6 : rect.top - 6,
       left,
-      minWidth: Math.max(rect.width, 224),
+      minWidth: menuWidth,
       placement,
     });
   }, [align, items.length, searchable, triggerRef]);
@@ -450,6 +452,10 @@ export function AnimatedSelectContent({
     if (!open) return;
     updatePosition();
   }, [open, updatePosition]);
+
+  useFocusTrap(Boolean(open && coords), panelRef, {
+    onEscape: closeAndRestoreFocus,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -499,7 +505,7 @@ export function AnimatedSelectContent({
     );
   }, [activeValue, enabledVisible, open, setActiveValue, value]);
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (!enabledVisible.length && event.key !== "Escape") return;
     const currentIndex = Math.max(
       0,
@@ -582,15 +588,15 @@ export function AnimatedSelectContent({
     }
   };
 
-  // Hidden pre-pass keeps items registered while the portal is unmounted so the
-  // trigger displays the initial selected label and icon immediately.
-  const registrationPass = !open ? (
+  // Always keep registrationPass mounted in a hidden subtree so exiting portal
+  // animations never unregister options that should remain displayed in triggers.
+  const registrationPass = (
     <RegisterOnlyContext.Provider value={true}>
       <div hidden aria-hidden="true">
         {children}
       </div>
     </RegisterOnlyContext.Provider>
-  ) : null;
+  );
 
   if (typeof document === "undefined") {
     return registrationPass;
@@ -602,30 +608,9 @@ export function AnimatedSelectContent({
       {createPortal(
         <AnimatePresence>
           {open && coords ? (
-            <motion.div
+            <div
               ref={panelRef}
-              onKeyDown={handleKeyDown}
-              initial={
-                reduce
-                  ? { opacity: 0 }
-                  : {
-                      opacity: 0,
-                      scale: 0.96,
-                      y: coords.placement === "bottom" ? -6 : 6,
-                    }
-              }
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={
-                reduce
-                  ? { opacity: 0 }
-                  : {
-                      opacity: 0,
-                      scale: 0.96,
-                      y: coords.placement === "bottom" ? -4 : 4,
-                      transition: { duration: 0.14, ease: EASE_OUT },
-                    }
-              }
-              transition={reduce ? { duration: 0 } : SPRING_PANEL}
+              tabIndex={-1}
               style={{
                 position: "fixed",
                 top: coords.top,
@@ -633,16 +618,42 @@ export function AnimatedSelectContent({
                 minWidth: coords.minWidth,
                 transform:
                   coords.placement === "top" ? "translateY(-100%)" : undefined,
-                transformOrigin:
-                  coords.placement === "top" ? "bottom left" : "top left",
               }}
-              className={cn(
-                "z-[200] max-w-[min(22rem,calc(100vw-24px))] overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl",
-                className,
-              )}
+              className="z-[200] max-w-[min(22rem,calc(100vw-24px))] outline-none"
             >
+              <motion.div
+                initial={
+                  reduce
+                    ? { opacity: 0 }
+                    : {
+                        opacity: 0,
+                        scale: 0.96,
+                        y: coords.placement === "bottom" ? -6 : 6,
+                      }
+                }
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={
+                  reduce
+                    ? { opacity: 0 }
+                    : {
+                        opacity: 0,
+                        scale: 0.96,
+                        y: coords.placement === "bottom" ? -4 : 4,
+                        transition: { duration: 0.14, ease: EASE_OUT },
+                      }
+                }
+                transition={reduce ? { duration: 0 } : SPRING_PANEL}
+                style={{
+                  transformOrigin:
+                    coords.placement === "top" ? "bottom left" : "top left",
+                }}
+                className={cn(
+                  "overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl",
+                  className,
+                )}
+              >
               {searchable ? (
-                <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+                <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
                   <Search
                     aria-hidden="true"
                     className="size-3.5 shrink-0 text-muted-foreground"
@@ -652,9 +663,10 @@ export function AnimatedSelectContent({
                     type="text"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder={searchPlaceholder}
                     aria-label={searchPlaceholder}
-                    className="w-full min-w-0 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
+                    className="w-full min-w-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                   />
                 </div>
               ) : null}
@@ -662,6 +674,7 @@ export function AnimatedSelectContent({
                 id={listboxId}
                 role="listbox"
                 tabIndex={searchable ? -1 : 0}
+                onKeyDown={handleKeyDown}
                 aria-activedescendant={
                   activeValue ? `${listboxId}-opt-${activeValue}` : undefined
                 }
@@ -674,7 +687,8 @@ export function AnimatedSelectContent({
                   </p>
                 ) : null}
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           ) : null}
         </AnimatePresence>,
         document.body,
@@ -726,7 +740,7 @@ export function AnimatedSelectLabel({
   return (
     <div
       className={cn(
-        "px-2.5 py-1 text-[11px] font-medium tracking-wide text-muted-foreground",
+        "px-2.5 pb-1 pt-2 text-xs font-normal text-muted-foreground",
         className,
       )}
     >
@@ -780,9 +794,10 @@ export function AnimatedSelectItem({
     label ?? (typeof children === "string" || typeof children === "number" ? String(children) : value);
 
   useLayoutEffect(() => {
+    if (!registerOnly) return;
     registerItem({ value, label: textLabel, description, icon, disabled });
     return () => unregisterItem(value);
-  }, [description, disabled, icon, registerItem, textLabel, unregisterItem, value]);
+  }, [description, disabled, icon, registerItem, registerOnly, textLabel, unregisterItem, value]);
 
   const q = searchQuery.trim().toLowerCase();
   const visible =
@@ -828,7 +843,7 @@ export function AnimatedSelectItem({
           layoutId={`${layoutId}-highlight`}
           transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
           aria-hidden="true"
-          className="absolute inset-0 -z-0 rounded-xl bg-muted"
+          className="absolute inset-0 -z-0 rounded-xl bg-foreground/[0.07]"
         />
       ) : null}
       {icon ? (
@@ -837,7 +852,7 @@ export function AnimatedSelectItem({
         </span>
       ) : null}
       <span className="relative z-10 min-w-0 flex-1">
-        <span className="block truncate font-medium">{children ?? textLabel}</span>
+        <span className="block truncate font-normal">{children ?? textLabel}</span>
         {description ? (
           <span className="block truncate text-xs text-muted-foreground">
             {description}
@@ -847,7 +862,8 @@ export function AnimatedSelectItem({
       {selected ? (
         <Check
           aria-hidden="true"
-          className="relative z-10 size-3.5 shrink-0 text-primary"
+          strokeWidth={1.75}
+          className="relative z-10 size-4 shrink-0 text-foreground"
         />
       ) : null}
     </button>

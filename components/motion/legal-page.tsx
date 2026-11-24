@@ -1,5 +1,6 @@
 "use client";
 
+import { BookOpen } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { Fragment, useId, useState } from "react";
 import { Switch } from "@/components/motion/switch";
@@ -149,7 +150,7 @@ export function LegalPage({
           <p className="mb-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
             On this page
           </p>
-          <ul className="space-y-1.5">
+          <ul className="space-y-1 border-l border-border">
             {policy.sections.map((section) => {
               const active = activeSectionId === section.id;
               return (
@@ -163,13 +164,12 @@ export function LegalPage({
                         ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
                     }}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-xs transition-colors",
+                      "-ml-px flex w-full items-center border-l-2 py-1 pl-3 text-left text-xs transition-colors",
                       active
-                        ? "bg-muted font-medium text-foreground"
-                        : "text-muted-foreground hover:text-foreground",
+                        ? "border-foreground font-medium text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    <span className="font-mono text-[10px]">{section.number}</span>
                     <span className="truncate">{section.title}</span>
                   </button>
                 </li>
@@ -195,10 +195,11 @@ export function LegalPage({
               </div>
 
               <div className="mt-3 rounded-2xl border border-border bg-card/60 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <p className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <BookOpen aria-hidden="true" className="size-3" />
                   In short
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-foreground/90">
+                <p className="mt-1.5 text-xs leading-relaxed text-foreground/90">
                   {section.inShort}
                 </p>
               </div>
