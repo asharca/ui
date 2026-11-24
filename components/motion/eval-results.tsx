@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Minus, RotateCcw, X } from "lucide-react";
+import { Check, Minus, RotateCw, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useId, useMemo, useState } from "react";
 import { Button } from "@/components/motion/button";
@@ -120,46 +120,47 @@ export function EvalResults({
           <p className="mt-0.5 text-xs text-muted-foreground">{runLabel}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-            <span
-              aria-hidden="true"
-              className={cn(
-                "size-1.5 rounded-full",
-                running ? "animate-pulse bg-sky-400" : "bg-emerald-500",
-              )}
-            />
-            {running ? "Running" : "Completed"}
-          </span>
           {onReplay ? (
             <button
               type="button"
               onClick={onReplay}
-              aria-label="Replay eval run"
-              className="inline-flex size-8 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-7 items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <RotateCcw aria-hidden="true" className="size-3.5" />
+              <RotateCw aria-hidden="true" className="size-3 text-muted-foreground" />
+              Run again
             </button>
-          ) : null}
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "size-1.5 rounded-full",
+                  running ? "animate-pulse bg-sky-400" : "bg-emerald-500",
+                )}
+              />
+              {running ? "Running" : "Done"}
+            </span>
+          )}
         </div>
       </header>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      {/* Borderless divided summary columns */}
+      <div className="mt-4 grid divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {modelStats.map(({ model, passPct, passShare, partialShare, failShare }) => (
-          <div
-            key={model.id}
-            className="rounded-2xl border border-border bg-background p-4"
-          >
-            <p className="text-xs font-semibold text-foreground">{model.name}</p>
-            <p className="text-[11px] text-muted-foreground">{model.tier}</p>
+          <div key={model.id} className="px-4 py-3.5 first:pl-0 last:pr-0">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-xs font-semibold text-foreground">{model.name}</p>
+              <p className="text-[11px] text-muted-foreground">{model.tier}</p>
+            </div>
 
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-medium tracking-tight tabular-nums">
+            <div className="mt-2.5 flex items-baseline gap-2">
+              <span className="font-mono text-3xl font-semibold tracking-tight tabular-nums">
                 <NumberTicker value={passPct} suffix="%" startOnView={false} />
               </span>
               <span className="text-[11px] text-muted-foreground">pass rate</span>
             </div>
 
-            <div className="mt-2.5 flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div className="mt-2.5 flex h-1.5 w-full overflow-hidden rounded-full bg-foreground/[0.08]">
               <motion.div
                 initial={false}
                 animate={{ width: `${passShare}%` }}
@@ -181,7 +182,14 @@ export function EvalResults({
             </div>
 
             <p className="mt-2 font-mono text-[11px] text-muted-foreground tabular-nums">
-              {model.deltaVsLast >= 0 ? `+${model.deltaVsLast}` : model.deltaVsLast} vs last run
+              <span
+                className={
+                  model.deltaVsLast >= 0 ? "text-emerald-500" : "text-rose-400"
+                }
+              >
+                {model.deltaVsLast >= 0 ? `+${model.deltaVsLast}` : model.deltaVsLast}
+              </span>{" "}
+              vs last run
             </p>
           </div>
         ))}
@@ -212,7 +220,7 @@ export function EvalResults({
                   layoutId={`${uid}-filter`}
                   transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
                   aria-hidden="true"
-                  className="absolute inset-0 rounded-full border border-border bg-background shadow-xs"
+                  className="absolute inset-0 rounded-full bg-foreground/[0.08]"
                 />
               ) : null}
               <span className="relative z-10">{item.label}</span>
@@ -224,11 +232,11 @@ export function EvalResults({
         })}
       </div>
 
-      <div className="mt-3 overflow-x-auto rounded-2xl border border-border bg-background">
+      <div className="mt-3 overflow-x-auto">
         <table className="w-full border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-border text-muted-foreground">
-              <th className="px-4 py-2.5 font-medium">Test case</th>
+              <th className="px-2 py-2.5 font-medium">Test case</th>
               {models.map((m) => (
                 <th key={m.id} className="px-3 py-2.5 font-medium">
                   {m.name}
@@ -240,9 +248,9 @@ export function EvalResults({
             {visibleCases.map((testCase) => (
               <tr
                 key={testCase.id}
-                className="transition-colors hover:bg-muted/35"
+                className="transition-colors hover:bg-foreground/[0.04]"
               >
-                <td className="px-4 py-3">
+                <td className="px-2 py-3">
                   <button
                     type="button"
                     onClick={() => setSelectedCaseId(testCase.id)}
@@ -309,6 +317,10 @@ export function EvalResults({
         </table>
       </div>
 
+      <footer className="mt-2 border-t border-border pt-3 font-mono text-xs text-muted-foreground tabular-nums">
+        {cases.length} cases · {models.length} models · 0.84s avg latency
+      </footer>
+
       <MorphingModal
         viewId={activeCase?.id ?? null}
         onClose={() => setSelectedCaseId(null)}
@@ -323,7 +335,7 @@ export function EvalResults({
               <h4 className="mt-0.5 text-base font-semibold text-foreground">
                 {activeCase.title}
               </h4>
-              <p className="mt-2 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+              <p className="mt-2 rounded-xl border border-border bg-foreground/[0.04] p-3 text-xs text-muted-foreground">
                 Prompt: {activeCase.prompt}
               </p>
             </div>

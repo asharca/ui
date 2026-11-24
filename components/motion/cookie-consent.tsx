@@ -30,12 +30,26 @@ export interface CookieConsentProps {
 function CookieJarIcon({ reduce }: { reduce: boolean }) {
   return (
     <motion.div
-      animate={reduce ? undefined : { y: [0, -3, 0], rotate: [-1.5, 1.5, -1.5] }}
+      animate={reduce ? undefined : { y: [0, -2, 0], rotate: [-1.5, 1.5, -1.5] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       aria-hidden="true"
-      className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border bg-muted/60 text-amber-400"
+      className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border bg-foreground/[0.04] text-amber-400"
     >
-      <Cookie className="size-5" />
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M8 5h8M7 8h10l1 9a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3l1-9z" />
+        <circle cx="10.5" cy="13" r="1.4" />
+        <circle cx="14" cy="15.5" r="1.2" />
+        <circle cx="13.5" cy="11.2" r="0.9" />
+      </svg>
     </motion.div>
   );
 }
@@ -145,7 +159,7 @@ export function CookieConsent({
                   <button
                     type="button"
                     onClick={() => applyAll(false)}
-                    className="inline-flex h-8 items-center rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="inline-flex h-8 items-center rounded-full border border-border bg-background/70 px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Reject all
                   </button>
@@ -216,7 +230,7 @@ export function CookieConsent({
                   <button
                     type="button"
                     onClick={() => applyAll(false)}
-                    className="inline-flex h-8 items-center rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground hover:bg-muted"
+                    className="inline-flex h-8 items-center rounded-full border border-border bg-background/70 px-3 text-xs font-medium text-foreground hover:bg-foreground/[0.06]"
                   >
                     Reject optional
                   </button>

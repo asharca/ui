@@ -70,6 +70,8 @@ export function DeploymentBuild({
   const reduce = useReducedMotion() ?? false;
   const logContainerRef = useRef<HTMLDivElement>(null);
   const doneSteps = steps.filter((s) => s.status === "done").length;
+  const warnCount = logs.filter((l) => l.level === "warn").length;
+  const errCount = logs.filter((l) => l.level === "error").length;
   const logCount = logs.length;
 
   useEffect(() => {
@@ -91,15 +93,13 @@ export function DeploymentBuild({
     >
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-sm font-semibold text-foreground">
-              {commitMessage}
-            </h3>
-            <span className="rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+          <h3 className="truncate text-sm font-semibold text-foreground">
+            {commitMessage}
+          </h3>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className="rounded-full border border-border bg-background/60 px-2 py-0.5 text-[11px] font-medium text-foreground/90">
               {environment}
             </span>
-          </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1 font-mono">
               <GitBranch aria-hidden="true" className="size-3" />
               {branch}
@@ -111,13 +111,14 @@ export function DeploymentBuild({
             <span>{author}</span>
             <span aria-hidden="true">·</span>
             <span>{createdAgo}</span>
+            <span aria-hidden="true">·</span>
+            <span className="font-mono text-foreground/90 tabular-nums">
+              <NumberTicker value={elapsedSeconds} decimals={1} startOnView={false} />s
+            </span>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-xs text-muted-foreground tabular-nums">
-            <NumberTicker value={elapsedSeconds} decimals={1} startOnView={false} />s
-          </span>
           <span
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
@@ -128,7 +129,7 @@ export function DeploymentBuild({
               status === "error" &&
                 "border-rose-500/30 bg-rose-500/10 text-rose-400",
               status === "queued" &&
-                "border-border bg-background text-muted-foreground",
+                "border-border bg-background/60 text-muted-foreground",
             )}
           >
             {status === "ready"
@@ -143,7 +144,7 @@ export function DeploymentBuild({
             <button
               type="button"
               onClick={onRedeploy}
-              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <RotateCcw aria-hidden="true" className="size-3" />
               Redeploy
@@ -156,10 +157,10 @@ export function DeploymentBuild({
             }}
             aria-disabled={status !== "ready"}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
+              "inline-flex h-8 items-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-opacity",
               status === "ready"
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "pointer-events-none border border-border bg-muted/40 text-muted-foreground/60",
+                ? "hover:bg-primary/90"
+                : "pointer-events-none opacity-75",
             )}
           >
             Visit
@@ -169,7 +170,7 @@ export function DeploymentBuild({
       </header>
 
       {/* Fixed preview slot */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background p-4">
+      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background/60 px-4 py-3">
         <AnimatePresence mode="wait" initial={false}>
           {status === "ready" ? (
             <motion.div
@@ -183,14 +184,14 @@ export function DeploymentBuild({
               <div className="flex items-center gap-4">
                 <div
                   aria-hidden="true"
-                  className="grid h-16 w-28 shrink-0 place-items-center rounded-xl border border-border bg-gradient-to-br from-sky-500/15 via-card to-emerald-500/15 p-2"
+                  className="grid h-14 w-24 shrink-0 place-items-center rounded-xl border border-border bg-gradient-to-br from-sky-500/15 via-card to-emerald-500/15 p-2"
                 >
                   <div className="w-full space-y-1.5">
                     <div className="h-1.5 w-10 rounded-full bg-foreground/70" />
-                    <div className="h-1 w-16 rounded-full bg-muted-foreground/40" />
-                    <div className="grid grid-cols-2 gap-1 pt-1">
-                      <div className="h-3 rounded bg-card/90" />
-                      <div className="h-3 rounded bg-primary/30" />
+                    <div className="h-1 w-14 rounded-full bg-muted-foreground/40" />
+                    <div className="grid grid-cols-2 gap-1 pt-0.5">
+                      <div className="h-2.5 rounded bg-card/90" />
+                      <div className="h-2.5 rounded bg-primary/30" />
                     </div>
                   </div>
                 </div>
@@ -198,7 +199,7 @@ export function DeploymentBuild({
                   <p className="text-xs font-medium text-emerald-500">
                     Deployment live in {elapsedSeconds.toFixed(1)}s
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {domains.map((domain) => (
                       <span
                         key={domain}
@@ -222,7 +223,7 @@ export function DeploymentBuild({
               animate={{ opacity: 1, y: 0 }}
               exit={reduce ? undefined : { opacity: 0 }}
               transition={{ duration: 0.2, ease: EASE_OUT }}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3"
             >
               <div className="flex items-start gap-2.5 text-xs">
                 <AlertTriangle
@@ -253,122 +254,142 @@ export function DeploymentBuild({
               initial={reduce ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduce ? undefined : { opacity: 0 }}
-              className="flex flex-wrap items-center justify-between gap-3"
+              className="flex items-center justify-between gap-3"
             >
               <div className="flex items-center gap-3">
                 <div
                   aria-hidden="true"
-                  className="grid h-14 w-24 place-items-center rounded-xl border border-dashed border-border bg-muted/30"
+                  className="flex h-11 w-16 shrink-0 flex-col justify-between rounded-lg border border-border bg-card/80 p-1.5"
                 >
-                  <div className="h-2 w-12 animate-pulse rounded-full bg-muted-foreground/30" />
+                  <div className="flex gap-1">
+                    <span className="size-1 rounded-full bg-muted-foreground/40" />
+                    <span className="size-1 rounded-full bg-muted-foreground/40" />
+                    <span className="size-1 rounded-full bg-muted-foreground/40" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-1 w-8 rounded-full bg-muted-foreground/25" />
+                    <div className="h-1 w-11 rounded-full bg-muted-foreground/20" />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-foreground">
-                    {status === "queued"
-                      ? "Waiting for build worker"
-                      : "Building application bundle"}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    The preview shows up once the build is live
-                  </p>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  The preview shows up once the build is live
+                </p>
               </div>
-              <div className="h-1.5 w-32 overflow-hidden rounded-full bg-muted">
-                <motion.div
-                  initial={false}
-                  animate={{
-                    width: `${Math.max(8, Math.round((doneSteps / Math.max(1, steps.length)) * 100))}%`,
-                  }}
-                  transition={{ duration: reduce ? 0 : 0.35, ease: EASE_OUT }}
-                  className="h-full rounded-full bg-primary"
-                />
-              </div>
+              {onRedeploy ? (
+                <button
+                  type="button"
+                  onClick={onRedeploy}
+                  aria-label="Restart build preview"
+                  className="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
+                >
+                  <RotateCcw aria-hidden="true" className="size-3.5" />
+                </button>
+              ) : null}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Checklist + live log */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-2xl border border-border bg-background p-4">
-          <div className="mb-3 flex items-center justify-between text-xs">
-            <span className="font-medium text-foreground">Build steps</span>
-            <span className="font-mono text-muted-foreground tabular-nums">
-              {doneSteps}/{steps.length}
-            </span>
-          </div>
-          <ol className="space-y-2">
-            {steps.map((step) => (
-              <li
-                key={step.id}
-                className="flex items-center justify-between gap-2 text-xs"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "grid size-4 shrink-0 place-items-center rounded-full border",
-                      step.status === "done" &&
-                        "border-emerald-500 bg-emerald-500/15 text-emerald-500",
-                      step.status === "running" &&
-                        "border-primary text-primary",
-                      step.status === "error" &&
-                        "border-rose-500 bg-rose-500/15 text-rose-400",
-                      step.status === "pending" && "border-border",
-                    )}
-                  >
-                    {step.status === "done" ? (
-                      <Check className="size-2.5" strokeWidth={2.5} />
-                    ) : step.status === "running" ? (
-                      <span className="size-1.5 animate-ping rounded-full bg-primary" />
-                    ) : step.status === "error" ? (
-                      <span className="size-1.5 rounded-full bg-rose-400" />
-                    ) : null}
-                  </span>
-                  <span
-                    className={cn(
-                      "truncate",
-                      step.status === "pending"
-                        ? "text-muted-foreground"
-                        : step.status === "error"
-                          ? "font-medium text-rose-400"
-                          : "text-foreground",
-                    )}
-                  >
-                    {step.label}
-                  </span>
-                </span>
-                {step.durationSeconds !== undefined ? (
-                  <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
-                    {step.durationSeconds.toFixed(1)}s
-                  </span>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        <div
-          ref={logContainerRef}
-          role="log"
-          aria-label="Streaming build output"
-          className="h-64 overflow-y-auto rounded-2xl border border-border bg-neutral-950 p-3.5 font-mono text-[11px] leading-6 text-neutral-300"
-        >
-          {logs.map((entry) => (
-            <div key={entry.id} className="flex gap-2.5">
-              <span className="shrink-0 text-neutral-500">{entry.time}</span>
-              <span
-                className={cn(
-                  "break-all",
-                  entry.level === "error" && "text-rose-400",
-                  entry.level === "success" && "text-emerald-400",
-                  entry.level === "warn" && "text-amber-300",
-                )}
-              >
-                {entry.message}
+      {/* Unified split pane: build steps + streaming log */}
+      <div className="mt-4 grid overflow-hidden rounded-2xl border border-border bg-background/70 lg:grid-cols-[0.88fr_1.12fr] lg:divide-x divide-y lg:divide-y-0 divide-border">
+        <div className="flex flex-col justify-between p-4">
+          <div>
+            <div className="mb-3 flex items-center justify-between text-xs">
+              <span className="font-medium text-foreground">Build steps</span>
+              <span className="font-mono text-muted-foreground tabular-nums">
+                {doneSteps}/{steps.length}
               </span>
             </div>
-          ))}
+            <ol className="space-y-2.5">
+              {steps.map((step) => (
+                <li
+                  key={step.id}
+                  className="flex items-center justify-between gap-2 text-xs"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "grid size-4 shrink-0 place-items-center rounded-full border",
+                        step.status === "done" &&
+                          "border-emerald-500 bg-emerald-500/15 text-emerald-500",
+                        step.status === "running" &&
+                          "border-primary text-primary",
+                        step.status === "error" &&
+                          "border-rose-500 bg-rose-500/15 text-rose-400",
+                        step.status === "pending" && "border-border-strong",
+                      )}
+                    >
+                      {step.status === "done" ? (
+                        <Check className="size-2.5" strokeWidth={2.5} />
+                      ) : step.status === "running" ? (
+                        <span className="size-1.5 animate-ping rounded-full bg-primary" />
+                      ) : step.status === "error" ? (
+                        <span className="size-1.5 rounded-full bg-rose-400" />
+                      ) : null}
+                    </span>
+                    <span
+                      className={cn(
+                        "truncate",
+                        step.status === "pending"
+                          ? "text-muted-foreground"
+                          : step.status === "error"
+                            ? "font-medium text-rose-400"
+                            : "text-foreground",
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                  </span>
+                  {step.durationSeconds !== undefined ? (
+                    <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                      {step.durationSeconds.toFixed(1)}s
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-border pt-3 text-[11px]">
+            <dt className="text-muted-foreground">Deployment</dt>
+            <dd className="text-right font-mono text-foreground">dpl-7hq2xr</dd>
+            <dt className="text-muted-foreground">Runtime</dt>
+            <dd className="text-right font-mono text-foreground">Node 22.11</dd>
+            <dt className="text-muted-foreground">Bundle size</dt>
+            <dd className="text-right font-mono text-foreground">2.1 MB</dd>
+          </dl>
+        </div>
+
+        <div className="flex flex-col bg-neutral-950/75">
+          <div className="flex items-center justify-between border-b border-border px-4 py-2.5 text-xs">
+            <span className="font-medium text-foreground">Build log</span>
+            <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+              {logs.length} lines · {warnCount} warnings · {errCount} errors
+            </span>
+          </div>
+          <div
+            ref={logContainerRef}
+            role="log"
+            aria-label="Streaming build output"
+            className="h-72 overflow-y-auto px-4 py-3 font-mono text-[11px] leading-6 text-neutral-300"
+          >
+            {logs.map((entry) => (
+              <div key={entry.id} className="flex gap-2.5">
+                <span className="shrink-0 text-neutral-500">{entry.time}</span>
+                <span
+                  className={cn(
+                    "break-all",
+                    entry.level === "error" && "text-rose-400",
+                    entry.level === "success" && "text-emerald-400",
+                    entry.level === "warn" && "text-amber-300",
+                  )}
+                >
+                  {entry.message}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

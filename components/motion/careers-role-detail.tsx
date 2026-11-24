@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, MapPin, Send } from "lucide-react";
+import { ArrowLeft, Briefcase, CheckCircle2, Clock, MapPin, Send } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { Button } from "@/components/motion/button";
@@ -81,21 +81,25 @@ export function CareersRoleDetail({
       </a>
 
       <header className="mt-5 border-b border-border pb-6">
-        <span className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="inline-flex rounded-full border border-border bg-card/60 px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
           {role.department}
         </span>
-        <h3 className="mt-2 text-3xl font-medium tracking-tight sm:text-4xl">
+        <h3 className="mt-3 text-3xl font-medium tracking-tight sm:text-4xl">
           {role.title}
         </h3>
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
             <MapPin aria-hidden="true" className="size-3.5" />
             {role.location}
           </span>
-          <span aria-hidden="true">·</span>
-          <span>{role.employment}</span>
-          <span aria-hidden="true">·</span>
-          <span className="font-mono text-foreground">{role.compensation}</span>
+          <span className="inline-flex items-center gap-1.5">
+            <Clock aria-hidden="true" className="size-3.5" />
+            {role.employment}
+          </span>
+          <span className="inline-flex items-center gap-1.5 font-mono text-foreground">
+            <Briefcase aria-hidden="true" className="size-3.5 text-muted-foreground" />
+            {role.compensation}
+          </span>
         </div>
       </header>
 
@@ -168,13 +172,22 @@ export function CareersRoleDetail({
 
         {/* Pinned sidebar card */}
         <aside className="rounded-3xl border border-border bg-card p-5 lg:sticky lg:top-20">
-          <p className="text-xs text-muted-foreground">Compensation</p>
-          <p className="mt-1 font-mono text-xl font-semibold text-foreground">
-            {role.compensation}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {role.location} · {role.employment} · Equity included
-          </p>
+          <dl className="space-y-2.5 border-b border-border pb-4 text-xs">
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-muted-foreground">Pay</dt>
+              <dd className="font-mono font-medium text-foreground">
+                {role.compensation}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-muted-foreground">Location</dt>
+              <dd className="font-medium text-foreground">{role.location}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-muted-foreground">Type</dt>
+              <dd className="font-medium text-foreground">{role.employment}</dd>
+            </div>
+          </dl>
 
           <AnimatePresence mode="wait" initial={false}>
             {submitted ? (
@@ -257,11 +270,14 @@ export function CareersRoleDetail({
                 key="cta"
                 initial={reduce ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mt-5"
+                className="mt-4 space-y-2.5 text-center"
               >
                 <Button className="w-full" onClick={() => setApplying(true)}>
                   Apply for this role
                 </Button>
+                <p className="text-[11px] text-muted-foreground">
+                  Takes about three minutes.
+                </p>
               </motion.div>
             )}
           </AnimatePresence>

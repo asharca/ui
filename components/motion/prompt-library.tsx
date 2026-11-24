@@ -61,7 +61,7 @@ function renderTemplateChips(template: string, query: string) {
       return (
         <span
           key={key}
-          className="mx-0.5 inline-block rounded-md border border-dashed border-border-strong bg-muted/60 px-1.5 py-0.5 font-mono text-[11px] text-foreground"
+          className="mx-0.5 inline-block rounded-md border border-dashed border-border-strong bg-foreground/[0.05] px-1.5 py-0.5 font-mono text-[11px] text-foreground"
         >
           {match[1].trim()}
         </span>
@@ -236,7 +236,7 @@ export function PromptLibrary({
             <motion.li
               key={prompt.id}
               layout={!reduce}
-              className="group flex items-start gap-3 p-4 transition-colors hover:bg-muted/35"
+              className="group flex items-start gap-3 p-4 transition-colors hover:bg-foreground/[0.04]"
             >
               <button
                 type="button"
@@ -262,7 +262,7 @@ export function PromptLibrary({
                   "mt-0.5 grid size-8 shrink-0 place-items-center rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   prompt.starred
                     ? "text-amber-400 hover:bg-amber-400/10"
-                    : "text-muted-foreground/60 hover:bg-muted hover:text-foreground",
+                    : "text-muted-foreground/60 hover:bg-foreground/[0.06] hover:text-foreground",
                 )}
               >
                 <Star
@@ -310,7 +310,7 @@ export function PromptLibrary({
               </div>
             ) : null}
 
-            <div className="rounded-2xl border border-border bg-muted/40 p-3.5">
+            <div className="rounded-2xl border border-border bg-foreground/[0.04] p-3.5">
               <p className="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                 Live preview
               </p>

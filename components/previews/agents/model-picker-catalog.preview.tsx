@@ -7,66 +7,95 @@ import {
   type ModelProvider,
 } from "@/components/agents/model-picker";
 
-const AnthropicMark = () => (
-  <svg aria-hidden="true" viewBox="0 0 16 16" className="size-4 text-sky-400" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-    <path d="M8 2v12M2 8h12M3.8 3.8l8.4 8.4M12.2 3.8l-8.4 8.4" />
-  </svg>
-);
-
 const OpenAIMark = () => (
-  <svg aria-hidden="true" viewBox="0 0 16 16" className="size-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="1.4">
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 16 16"
+    className="size-4 text-foreground"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.35"
+  >
     <circle cx="8" cy="8" r="5.5" />
-    <path d="M5.2 6.5 8 4.8l2.8 1.7v3L8 11.2 5.2 9.5z" />
+    <path d="M5.4 6.5 8 5l2.6 1.5v3L8 11 5.4 9.5z" />
   </svg>
 );
 
-const GeminiMark = () => (
-  <svg aria-hidden="true" viewBox="0 0 16 16" className="size-4 text-violet-400" fill="currentColor">
-    <path d="M8 1.5 9.8 6.2 14.5 8 9.8 9.8 8 14.5 6.2 9.8 1.5 8l4.7-1.8z" />
+const AnthropicMark = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 16 16"
+    className="size-4 text-sky-400"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+  >
+    <path d="M8 2.2v11.6M2.2 8h11.6M3.9 3.9l8.2 8.2M12.1 3.9l-8.2 8.2" />
   </svg>
 );
 
-const OpenWeightMark = () => (
-  <svg aria-hidden="true" viewBox="0 0 16 16" className="size-4 text-amber-400" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
-    <path d="M8 2 13 5v6l-5 3-5-3V5zM8 2v12M3 5l5 3 5-3" />
+const GoogleMark = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 16 16"
+    className="size-4 text-emerald-400"
+    fill="currentColor"
+  >
+    <path d="M8 1.5 9.7 6.3 14.5 8 9.7 9.7 8 14.5 6.3 9.7 1.5 8l4.8-1.7z" />
+  </svg>
+);
+
+const MistralMark = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 16 16"
+    className="size-4 text-sky-400"
+    fill="currentColor"
+  >
+    <rect x="2.5" y="3" width="2.2" height="10" rx="0.5" />
+    <rect x="11.3" y="3" width="2.2" height="10" rx="0.5" />
+    <rect x="4.7" y="5.2" width="2.2" height="2.4" />
+    <rect x="9.1" y="5.2" width="2.2" height="2.4" />
+    <rect x="6.9" y="7.6" width="2.2" height="2.6" />
   </svg>
 );
 
 export const SAMPLE_PROVIDERS: ModelProvider[] = [
-  { id: "anthropic", name: "Anthropic", icon: <AnthropicMark /> },
   { id: "openai", name: "OpenAI", icon: <OpenAIMark /> },
-  { id: "google", name: "Google Gemini", icon: <GeminiMark /> },
-  { id: "open", name: "Open Weights", icon: <OpenWeightMark /> },
+  { id: "anthropic", name: "Anthropic", icon: <AnthropicMark /> },
+  { id: "google", name: "Google", icon: <GoogleMark /> },
+  { id: "mistral", name: "Mistral", icon: <MistralMark /> },
 ];
 
 export const SAMPLE_MODELS: ModelOption[] = [
-  { id: "claude-sonnet-5", providerId: "anthropic", name: "Claude Sonnet 5", description: "Balanced reasoning and coding", contextWindow: "200k", badge: "Default" },
-  { id: "claude-opus-4-6", providerId: "anthropic", name: "Claude Opus 4.6", description: "Deep architecture and research", contextWindow: "200k", badge: "Reasoning" },
-  { id: "claude-haiku-4-5", providerId: "anthropic", name: "Claude Haiku 4.5", description: "Instant lightweight replies", contextWindow: "200k" },
-  { id: "claude-sonnet-4", providerId: "anthropic", name: "Claude Sonnet 4", description: "Steady multi-file editing", contextWindow: "200k" },
-  { id: "claude-3-7-sonnet", providerId: "anthropic", name: "Claude 3.7 Sonnet", description: "Extended thinking mode", contextWindow: "200k" },
-  { id: "gpt-5-4", providerId: "openai", name: "GPT-5.4", description: "General intelligence flagship", contextWindow: "400k", badge: "New" },
-  { id: "gpt-5-mini", providerId: "openai", name: "GPT-5 Mini", description: "Fast structured extraction", contextWindow: "200k" },
-  { id: "gpt-5-nano", providerId: "openai", name: "GPT-5 Nano", description: "Ultra-low latency routing", contextWindow: "128k" },
-  { id: "o3-pro", providerId: "openai", name: "o3-pro", description: "Verifiable multi-step proofs", contextWindow: "200k", badge: "Reasoning" },
-  { id: "o4-mini", providerId: "openai", name: "o4-mini", description: "Compact tool calling", contextWindow: "200k" },
-  { id: "codex-max", providerId: "openai", name: "Codex Max", description: "Long-horizon software agent", contextWindow: "256k" },
-  { id: "gemini-2-5-pro", providerId: "google", name: "Gemini 2.5 Pro", description: "Long-context multimodal", contextWindow: "2M", badge: "2M ctx" },
-  { id: "gemini-2-5-flash", providerId: "google", name: "Gemini 2.5 Flash", description: "High-throughput streaming", contextWindow: "1M" },
-  { id: "gemini-2-5-flash-lite", providerId: "google", name: "Gemini 2.5 Flash-Lite", description: "Economical batch jobs", contextWindow: "1M" },
-  { id: "gemini-robotics", providerId: "google", name: "Gemini Vision Pro", description: "Spatial UI inspection", contextWindow: "512k" },
-  { id: "deepseek-r2", providerId: "open", name: "DeepSeek R2", description: "Open reasoning weights", contextWindow: "128k" },
-  { id: "deepseek-v3-2", providerId: "open", name: "DeepSeek V3.2", description: "Efficient MoE coder", contextWindow: "128k" },
-  { id: "qwen-3-coder", providerId: "open", name: "Qwen 3 Coder 480B", description: "Repository-scale synthesis", contextWindow: "256k" },
-  { id: "llama-4-maverick", providerId: "open", name: "Llama 4 Maverick", description: "Multilingual chat and vision", contextWindow: "1M" },
-  { id: "llama-4-scout", providerId: "open", name: "Llama 4 Scout", description: "Fast edge deployment", contextWindow: "512k" },
-  { id: "mistral-large-3", providerId: "open", name: "Mistral Large 3", description: "Deterministic JSON tools", contextWindow: "128k" },
+  { id: "gpt-5-4", providerId: "openai", name: "GPT-5.4" },
+  { id: "gpt-5-4-mini", providerId: "openai", name: "GPT-5.4 mini" },
+  { id: "gpt-5-4-nano", providerId: "openai", name: "GPT-5.4 nano" },
+  { id: "gpt-5-2", providerId: "openai", name: "GPT-5.2" },
+  { id: "gpt-4-1", providerId: "openai", name: "GPT-4.1" },
+  { id: "gpt-4-1-mini", providerId: "openai", name: "GPT-4.1 mini" },
+  { id: "o3", providerId: "openai", name: "o3" },
+  { id: "o4-mini", providerId: "openai", name: "o4-mini" },
+  { id: "claude-fable-5-1", providerId: "anthropic", name: "Claude Fable 5.1" },
+  { id: "claude-opus-5", providerId: "anthropic", name: "Claude Opus 5" },
+  { id: "claude-sonnet-5", providerId: "anthropic", name: "Claude Sonnet 5" },
+  { id: "claude-haiku-4-5", providerId: "anthropic", name: "Claude Haiku 4.5" },
+  { id: "gemini-3-1-pro", providerId: "google", name: "Gemini 3.1 Pro" },
+  { id: "gemini-3-1-flash", providerId: "google", name: "Gemini 3.1 Flash" },
+  { id: "gemini-3-1-flash-lite", providerId: "google", name: "Gemini 3.1 Flash-Lite" },
+  { id: "gemini-2-5-pro", providerId: "google", name: "Gemini 2.5 Pro" },
+  { id: "gemini-2-5-flash", providerId: "google", name: "Gemini 2.5 Flash" },
+  { id: "mistral-large", providerId: "mistral", name: "Mistral Large" },
+  { id: "mistral-small", providerId: "mistral", name: "Mistral Small" },
+  { id: "codestral", providerId: "mistral", name: "Codestral" },
+  { id: "devstral", providerId: "mistral", name: "Devstral" },
 ];
 
 export function ModelPickerCatalogPreview() {
   const [modelId, setModelId] = useState("claude-sonnet-5");
   return (
-    <div className="flex min-h-[300px] w-full items-start justify-center pt-6">
+    <div className="flex min-h-[260px] w-full items-center justify-center">
       <ModelPicker
         providers={SAMPLE_PROVIDERS}
         models={SAMPLE_MODELS}

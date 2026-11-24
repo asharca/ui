@@ -14,8 +14,9 @@ const INITIAL_DELIVERIES: WebhookDeliveryItem[] = [
     latency: "1.5 s",
     age: "12s ago",
     attempts: [
-      { id: "a1", label: "Attempt 1", status: 500, duration: "1.5 s", timestamp: "09:26:43" },
-      { id: "a2", label: "Attempt 2", status: 500, duration: "1.4 s", timestamp: "09:27:10" },
+      { id: "a1", label: "Attempt 1", status: 503, duration: "1.5 s", timestamp: "09:26:43" },
+      { id: "a2", label: "Retry 1", status: 503, duration: "1.5 s", timestamp: "09:27:04" },
+      { id: "a3", label: "Retry 2", status: 500, duration: "1.5 s", timestamp: "09:27:42" },
     ],
     payload: '{\n  "id": "ord_9184",\n  "carrier": "DHL Express",\n  "tracking": "1Z999AA101"\n}',
   },
@@ -32,17 +33,29 @@ const INITIAL_DELIVERIES: WebhookDeliveryItem[] = [
   },
   {
     id: "dlv_4bcc1",
+    event: "order.created",
+    status: 200,
+    latency: "194 ms",
+    age: "1m ago",
+    attempts: [
+      { id: "a1", label: "Attempt 1", status: 200, duration: "194 ms", timestamp: "09:25:10" },
+    ],
+    payload: '{\n  "id": "ord_9182",\n  "items": 3,\n  "status": "pending"\n}',
+  },
+  {
+    id: "dlv_4bcc0",
     event: "invoice.finalized",
     status: 502,
     latency: "2.1 s",
     age: "4m ago",
     attempts: [
       { id: "a1", label: "Attempt 1", status: 502, duration: "2.1 s", timestamp: "09:22:08" },
+      { id: "a2", label: "Retry 1", status: 502, duration: "2.0 s", timestamp: "09:22:39" },
     ],
     payload: '{\n  "id": "inv_0142",\n  "total": 486000,\n  "status": "open"\n}',
   },
   {
-    id: "dlv_4bcc0",
+    id: "dlv_4bcb9",
     event: "customer.updated",
     status: 200,
     latency: "132 ms",
@@ -52,14 +65,50 @@ const INITIAL_DELIVERIES: WebhookDeliveryItem[] = [
     ],
     payload: '{\n  "id": "cus_2019",\n  "plan": "team_annual"\n}',
   },
+  {
+    id: "dlv_4bcb8",
+    event: "payout.paid",
+    status: 201,
+    latency: "212 ms",
+    age: "14m ago",
+    attempts: [
+      { id: "a1", label: "Attempt 1", status: 201, duration: "212 ms", timestamp: "09:12:03" },
+    ],
+    payload: '{\n  "id": "po_7721",\n  "amount": 92000\n}',
+  },
+  {
+    id: "dlv_4bcb7",
+    event: "charge.succeeded",
+    status: 200,
+    latency: "148 ms",
+    age: "21m ago",
+    attempts: [
+      { id: "a1", label: "Attempt 1", status: 200, duration: "148 ms", timestamp: "09:05:19" },
+    ],
+    payload: '{\n  "id": "ch_3049",\n  "captured": true\n}',
+  },
+  {
+    id: "dlv_4bcb6",
+    event: "member.invited",
+    status: 200,
+    latency: "118 ms",
+    age: "33m ago",
+    attempts: [
+      { id: "a1", label: "Attempt 1", status: 200, duration: "118 ms", timestamp: "08:53:40" },
+    ],
+    payload: '{\n  "id": "mem_8831",\n  "role": "editor"\n}',
+  },
 ];
 
-const INITIAL_BARS = Array.from({ length: 40 }, (_, i) => i !== 2 && i !== 18 && i !== 33 && i !== 37);
+const INITIAL_BARS = Array.from(
+  { length: 40 },
+  (_, i) => i !== 2 && i !== 18 && i !== 33 && i !== 37,
+);
 
 export function WebhooksDeliveryLogPreview() {
   const [deliveries, setDeliveries] = useState(INITIAL_DELIVERIES);
   const [bars, setBars] = useState(INITIAL_BARS);
-  const [total, setTotal] = useState(12486);
+  const [total, setTotal] = useState(12488);
   const [failed, setFailed] = useState(195);
 
   const retryDelivery = (id: string) => {
@@ -75,7 +124,7 @@ export function WebhooksDeliveryLogPreview() {
                 ...d.attempts,
                 {
                   id: `retry-${Date.now()}`,
-                  label: `Attempt ${d.attempts.length + 1}`,
+                  label: `Retry ${d.attempts.length}`,
                   status: 200,
                   duration: "148 ms",
                   timestamp: "09:28:04",

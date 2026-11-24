@@ -54,23 +54,23 @@ export function AgentRunTimeline({
       )}
     >
       <header className="mb-5 flex items-center justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <div className="flex items-center gap-2">
+          <p className="font-mono text-xs text-muted-foreground tabular-nums">
             <NumberTicker value={doneCount} startOnView={false} /> of {steps.length} done
           </p>
+          {onReplay ? (
+            <button
+              type="button"
+              onClick={onReplay}
+              aria-label="Replay timeline"
+              title="Replay timeline"
+              className="inline-flex size-7 items-center justify-center rounded-full border border-border bg-background/70 text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <RotateCcw aria-hidden="true" className="size-3" />
+            </button>
+          ) : null}
         </div>
-        {onReplay ? (
-          <button
-            type="button"
-            onClick={onReplay}
-            aria-label="Replay timeline"
-            title="Replay timeline"
-            className="inline-flex size-8 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <RotateCcw aria-hidden="true" className="size-3.5" />
-          </button>
-        ) : null}
       </header>
 
       <ol className="space-y-1">
@@ -103,8 +103,8 @@ export function AgentRunTimeline({
                   "absolute left-0 top-0.5 grid size-6 place-items-center rounded-full border text-xs",
                   step.status === "completed" &&
                     "border-primary bg-primary text-primary-foreground",
-                  step.status === "running" && "border-primary/40 bg-background text-primary",
-                  step.status === "blocked" && "border-amber-500/40 bg-amber-500/10 text-amber-500",
+                  step.status === "running" && "border-amber-500/40 bg-background text-amber-400",
+                  step.status === "blocked" && "border-sky-500/40 bg-sky-500/10 text-sky-400",
                   step.status === "rejected" && "border-rose-500/40 bg-rose-500/10 text-rose-500",
                   step.status === "pending" && "border-border bg-background text-muted-foreground",
                 )}
@@ -213,7 +213,7 @@ export function AgentRunTimeline({
                   <button
                     type="button"
                     onClick={() => onReject?.(step.id)}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Reject
                   </button>

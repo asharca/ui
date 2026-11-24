@@ -15,7 +15,7 @@ import { PublicRoadmapBoard } from "@/components/motion/roadmap-board";
 afterEach(cleanup);
 
 describe("Web parity components", () => {
-  test("AnimatedSelect opens, filters options, and updates selection", () => {
+  test("AnimatedSelect opens, filters options, and updates selection", async () => {
     const selected: string[] = [];
     const view = render(
       <AnimatedSelect defaultValue="one" onValueChange={(v) => selected.push(v)}>
@@ -37,6 +37,12 @@ describe("Web parity components", () => {
     fireEvent.click(second);
 
     expect(selected).toEqual(["two"]);
+    expect(trigger.textContent).toContain("Second option");
+
+    // Re-open and close with Escape: trigger label must remain intact after exit cleanup.
+    fireEvent.click(trigger);
+    fireEvent.keyDown(view.getByRole("listbox"), { key: "Escape" });
+    await new Promise((resolve) => setTimeout(resolve, 220));
     expect(trigger.textContent).toContain("Second option");
   });
 

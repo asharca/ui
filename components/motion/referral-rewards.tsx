@@ -51,6 +51,8 @@ export function ReferralRewards({
   const maxTier = Math.max(1, tiers[tiers.length - 1]?.count ?? 10);
   const progressPct = Math.min(100, (referralsCount / maxTier) * 100);
   const nextTier = tiers.find((t) => t.count > referralsCount);
+  const pendingCount = friends.filter((f) => f.status === "Invited").length;
+  const joinedCount = friends.filter((f) => f.status !== "Invited").length;
 
   const copyLink = async () => {
     try {
@@ -74,7 +76,7 @@ export function ReferralRewards({
         <div className="flex items-start gap-3">
           <span
             aria-hidden="true"
-            className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border bg-background text-foreground"
+            className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border bg-background/70 text-foreground"
           >
             <Gift className="size-4" />
           </span>
@@ -87,7 +89,7 @@ export function ReferralRewards({
           <button
             type="button"
             onClick={onInvite}
-            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <UserPlus aria-hidden="true" className="size-3.5" />
             Invite
@@ -95,7 +97,7 @@ export function ReferralRewards({
         ) : null}
       </header>
 
-      <div className="mt-4 flex items-center justify-between gap-2 rounded-2xl border border-border bg-background px-3 py-2">
+      <div className="mt-4 flex items-center justify-between gap-2 rounded-2xl border border-border bg-background/70 px-3 py-2">
         <span className="flex min-w-0 items-center gap-2 font-mono text-xs text-muted-foreground">
           <Link2 aria-hidden="true" className="size-3.5 shrink-0" />
           <span className="truncate">{inviteUrl}</span>
@@ -104,7 +106,7 @@ export function ReferralRewards({
           type="button"
           aria-label="Copy invite link"
           onClick={() => void copyLink()}
-          className="grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
         >
           {copied ? (
             <Check aria-hidden="true" className="size-3.5 text-emerald-500" />
@@ -114,17 +116,16 @@ export function ReferralRewards({
         </button>
       </div>
 
-      {/* Reward track */}
-      <div className="mt-4 rounded-2xl border border-border bg-background p-4">
+      {/* Flush reward track */}
+      <div className="mt-5 border-t border-border pt-4">
         <div className="flex items-center justify-between text-xs">
           <span className="font-medium text-foreground">Rewards</span>
           <span className="font-mono text-muted-foreground tabular-nums">
-            <NumberTicker value={referralsCount} startOnView={false} /> of {maxTier} ·{" "}
-            <NumberTicker value={earnedAmount} prefix="$" startOnView={false} /> earned
+            <NumberTicker value={referralsCount} startOnView={false} /> of {maxTier}
           </span>
         </div>
 
-        <div className="relative mt-4 mb-2 h-1.5 w-full rounded-full bg-muted">
+        <div className="relative mt-4 mb-2 h-1.5 w-full rounded-full bg-foreground/[0.08]">
           <motion.div
             initial={false}
             animate={{ width: `${progressPct}%` }}
@@ -167,7 +168,7 @@ export function ReferralRewards({
           ))}
         </div>
 
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-2.5 text-xs text-muted-foreground">
           {nextTier
             ? `${nextTier.count - referralsCount} more for ${nextTier.rewardLabel}`
             : "All reward tiers unlocked"}
@@ -175,15 +176,15 @@ export function ReferralRewards({
       </div>
 
       {/* Invited friends */}
-      <div className="mt-4">
-        <div className="mb-2 flex items-center justify-between px-1 text-xs">
+      <div className="mt-4 border-t border-border pt-4">
+        <div className="mb-2 flex items-center justify-between text-xs">
           <span className="font-medium text-foreground">Friends</span>
           <span className="font-mono text-muted-foreground tabular-nums">
             <NumberTicker value={friends.length} startOnView={false} />
           </span>
         </div>
 
-        <ul className="space-y-2">
+        <ul className="divide-y divide-border">
           <AnimatePresence initial={false}>
             {friends.map((friend) => (
               <motion.li
@@ -193,7 +194,7 @@ export function ReferralRewards({
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduce ? undefined : { opacity: 0 }}
                 transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background px-3.5 py-2.5"
+                className="flex items-center justify-between gap-3 py-2.5"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span
@@ -232,6 +233,12 @@ export function ReferralRewards({
           </AnimatePresence>
         </ul>
       </div>
+
+      <footer className="mt-2 border-t border-border pt-3 font-mono text-xs text-muted-foreground tabular-nums">
+        <NumberTicker value={joinedCount} startOnView={false} /> joined ·{" "}
+        <NumberTicker value={earnedAmount} prefix="$" startOnView={false} /> earned ·{" "}
+        <NumberTicker value={pendingCount} startOnView={false} /> pending
+      </footer>
     </section>
   );
 }

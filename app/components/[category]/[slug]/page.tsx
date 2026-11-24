@@ -269,9 +269,11 @@ export default async function ComponentPage({
         <p className="mt-2 max-w-2xl text-muted-foreground">{comp.description}</p>
       </div>
 
-      <div className="mt-6">
-        <PlatformSwitch />
-      </div>
+      {nativeComponent ? (
+        <div className="mt-6">
+          <PlatformSwitch />
+        </div>
+      ) : null}
       {webContent}
 
       {comp.guide ? <ComponentGuide guide={comp.guide} /> : null}

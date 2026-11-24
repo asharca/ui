@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Lock, RotateCcw, Sparkles, Wallet, X } from "lucide-react";
+import { Check, Lock, RotateCcw, Wallet, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { NumberTicker } from "@/components/motion/number-ticker";
@@ -29,6 +29,20 @@ export interface AirdropClaimProps {
   className?: string;
 }
 
+function OrbMark({ size = "md" }: { size?: "sm" | "md" }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "relative inline-block shrink-0 rounded-full bg-gradient-to-br from-cyan-300 via-teal-400 to-sky-600 shadow-[0_0_24px_rgba(45,212,191,0.35)]",
+        size === "sm" ? "size-7" : "size-10",
+      )}
+    >
+      <span className="absolute inset-1 rounded-full bg-gradient-to-tr from-white/10 to-white/40 blur-[1px]" />
+    </span>
+  );
+}
+
 /** Token airdrop card with staggered eligibility check, lock bonus option, and claim confirmation. */
 export function AirdropClaim({
   seasonTitle,
@@ -37,7 +51,7 @@ export function AirdropClaim({
   walletAddress,
   networkName,
   criteria,
-  lockBonusPercent = 25,
+  lockBonusPercent = 20,
   claimedTxHash = null,
   onClaim,
   onReplay,
@@ -54,6 +68,7 @@ export function AirdropClaim({
   const finalAmount = lockBonus
     ? Math.round(baseAllocation * (1 + lockBonusPercent / 100))
     : baseAllocation;
+  const approxUsd = Math.round(finalAmount * 0.42);
 
   return (
     <section
@@ -65,12 +80,7 @@ export function AirdropClaim({
     >
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="grid size-10 shrink-0 place-items-center rounded-full bg-cyan-500/15 text-cyan-400"
-          >
-            <Sparkles className="size-4" />
-          </span>
+          <OrbMark />
           <div>
             <h3 className="text-sm font-semibold text-foreground">{seasonTitle}</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">{protocolLine}</p>
@@ -81,7 +91,7 @@ export function AirdropClaim({
             type="button"
             onClick={onReplay}
             aria-label="Replay eligibility check"
-            className="grid size-8 place-items-center rounded-full border border-border bg-background text-muted-foreground hover:text-foreground"
+            className="grid size-8 place-items-center rounded-full border border-border bg-background/70 text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground"
           >
             <RotateCcw aria-hidden="true" className="size-3.5" />
           </button>
@@ -89,11 +99,13 @@ export function AirdropClaim({
       </header>
 
       {/* Connected wallet strip */}
-      <div className="mt-4 flex items-center justify-between gap-2 rounded-2xl border border-border bg-background px-3.5 py-2.5 text-xs">
+      <div className="mt-4 flex items-center justify-between gap-2 rounded-2xl border border-border bg-background/60 px-3.5 py-2.5 text-xs">
         <span className="flex items-center gap-2 font-mono text-foreground">
           <Wallet aria-hidden="true" className="size-3.5 text-muted-foreground" />
           <span>{walletAddress}</span>
-          <span className="text-muted-foreground">{networkName}</span>
+          <span className="rounded-md bg-foreground/[0.06] px-1.5 py-0.5 text-[10px] text-muted-foreground">
+            {networkName}
+          </span>
         </span>
         <span className="inline-flex items-center gap-1.5 text-emerald-500">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-emerald-500" />
@@ -101,12 +113,12 @@ export function AirdropClaim({
         </span>
       </div>
 
-      {/* Criteria checklist */}
-      <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
+      {/* Criteria flush divider list */}
+      <ul className="mt-4 divide-y divide-border border-t border-border">
         {criteria.map((item) => (
           <li
             key={item.id}
-            className="flex items-center justify-between gap-3 px-4 py-3 text-xs"
+            className="flex items-center justify-between gap-3 py-3 text-xs"
           >
             <div className="flex min-w-0 items-center gap-2.5">
               <span
@@ -116,7 +128,7 @@ export function AirdropClaim({
                   item.status === "eligible" &&
                     "border-emerald-500/40 bg-emerald-500/15 text-emerald-500",
                   item.status === "ineligible" &&
-                    "border-border bg-muted text-muted-foreground",
+                    "border-border bg-foreground/[0.06] text-muted-foreground",
                   item.status === "checking" && "border-primary/40 text-primary",
                 )}
               >
@@ -157,7 +169,7 @@ export function AirdropClaim({
             initial={reduce ? false : { opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, ease: EASE_OUT }}
-            className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center"
+            className="mt-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center"
           >
             <p className="text-xs font-semibold text-emerald-500">
               Allocation claimed
@@ -174,12 +186,30 @@ export function AirdropClaim({
             key="claim-panel"
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-4 space-y-3"
+            className="mt-2 space-y-4 border-t border-border pt-4"
           >
-            <div className="grid grid-cols-2 gap-1.5 rounded-2xl border border-border bg-background p-1">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Your allocation</p>
+                <div className="mt-1 flex items-center gap-2.5">
+                  <OrbMark size="sm" />
+                  <p className="font-mono text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+                    <NumberTicker value={finalAmount} locale startOnView={false} />{" "}
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {tokenSymbol}
+                    </span>
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  about ${approxUsd.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1 rounded-full border border-border bg-background/70 p-1">
               {[
                 { lock: false, label: "Claim now" },
-                { lock: true, label: `Lock 90d (+${lockBonusPercent}%)` },
+                { lock: true, label: `Lock 90 days (+${lockBonusPercent}%)` },
               ].map((option) => {
                 const active = lockBonus === option.lock;
                 return (
@@ -188,7 +218,7 @@ export function AirdropClaim({
                     type="button"
                     onClick={() => setLockBonus(option.lock)}
                     className={cn(
-                      "relative flex items-center justify-center gap-1 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors",
+                      "relative flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors",
                       active
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground",
@@ -198,7 +228,7 @@ export function AirdropClaim({
                       <motion.span
                         layoutId="airdrop-mode"
                         transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
-                        className="absolute inset-0 rounded-xl bg-card shadow-xs"
+                        className="absolute inset-0 rounded-full bg-foreground/[0.09]"
                       />
                     ) : null}
                     <span className="relative z-10 inline-flex items-center gap-1">
@@ -210,24 +240,22 @@ export function AirdropClaim({
               })}
             </div>
 
-            <div className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3">
-              <div>
-                <p className="text-[11px] text-muted-foreground">Total allocation</p>
-                <p className="font-mono text-xl font-semibold text-foreground tabular-nums">
-                  <NumberTicker value={finalAmount} locale startOnView={false} />{" "}
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {tokenSymbol}
-                  </span>
-                </p>
-              </div>
+            <div className="space-y-1.5 text-center">
               <button
                 type="button"
                 disabled={!allChecked || finalAmount <= 0}
                 onClick={() => onClaim?.({ lockBonus, totalAmount: finalAmount })}
-                className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                className="inline-flex h-10 w-full items-center justify-center rounded-full bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
-                {allChecked ? "Claim tokens" : "Checking..."}
+                {allChecked
+                  ? `Claim ${finalAmount.toLocaleString()} ${tokenSymbol}`
+                  : "Checking eligibility..."}
               </button>
+              <p className="text-[11px] text-muted-foreground">
+                {lockBonus
+                  ? "Tokens unlock automatically after 90 days"
+                  : "Sent to your wallet right away"}
+              </p>
             </div>
           </motion.div>
         )}
