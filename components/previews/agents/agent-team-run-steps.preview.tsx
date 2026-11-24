@@ -1,105 +1,160 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useInView, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import {
   AgentRunTimeline,
   type AgentRunStep,
+  type AgentRunSubagent,
 } from "@/components/agents/agent-run-timeline";
 
+function subagentProgress(
+  id: string,
+  name: string,
+  stepElapsed: number,
+  delayMs: number,
+  durationMs: number,
+): AgentRunSubagent {
+  if (stepElapsed < delayMs) {
+    return { id, name, status: "queued" };
+  }
+  const activeMs = Math.min(durationMs, stepElapsed - delayMs);
+  const done = stepElapsed >= delayMs + durationMs;
+  return {
+    id,
+    name,
+    status: done ? "completed" : "running",
+    elapsedSeconds: Math.floor(activeMs / 1000),
+  };
+}
+
+function stepTiming(elapsedMs: number, startMs: number, durationMs: number) {
+  if (elapsedMs < startMs) {
+    return { status: "pending" as const, progress: 0, elapsedSeconds: undefined };
+  }
+  if (elapsedMs >= startMs + durationMs) {
+    return {
+      status: "completed" as const,
+      progress: 100,
+      elapsedSeconds: Math.round(durationMs / 1000),
+    };
+  }
+  const activeMs = elapsedMs - startMs;
+  return {
+    status: "running" as const,
+    progress: Math.max(4, Math.min(98, (activeMs / durationMs) * 100)),
+    elapsedSeconds: Math.floor(activeMs / 1000),
+  };
+}
+
 function createSteps(
-  stage: number,
-  gateDecision: "pending" | "approved" | "rejected",
+  elapsedMs: number,
+  approvedAtMs: number | null,
 ): AgentRunStep[] {
+  const s1 = stepTiming(elapsedMs, 0, 2000);
+  const s2 = stepTiming(elapsedMs, 2000, 5000);
+  const s3 = stepTiming(elapsedMs, 7000, 2000);
+  const s4 = stepTiming(elapsedMs, 9000, 4000);
+  const s5 = stepTiming(elapsedMs, 13_000, 2000);
+
+  const s2Elapsed = Math.max(0, elapsedMs - 2000);
+  const s4Elapsed = Math.max(0, elapsedMs - 9000);
+
+  let s6: Pick<AgentRunStep, "status" | "progress" | "elapsedSeconds">;
+  if (elapsedMs < 15_000) {
+    s6 = { status: "pending", progress: 0, elapsedSeconds: undefined };
+  } else if (approvedAtMs === null) {
+    s6 = { status: "blocked", progress: 0, elapsedSeconds: undefined };
+  } else {
+    s6 = stepTiming(elapsedMs, approvedAtMs, 2000);
+  }
+
   return [
     {
       id: "spec",
       label: "Read the product spec",
-      status: stage >= 1 ? "completed" : "running",
-      elapsedSeconds: stage >= 1 ? 2 : 1,
-      progress: stage >= 1 ? 100 : 65,
+      ...s1,
     },
     {
       id: "research",
       label: "Send out researchers",
-      status: stage >= 3 ? "completed" : stage >= 1 ? "running" : "pending",
-      elapsedSeconds: stage >= 1 ? Math.min(4, stage + 1) : 0,
-      progress: stage >= 3 ? 100 : 55,
+      ...s2,
       subagents: [
-        {
-          id: "r1",
-          name: "Docs scanner",
-          status: stage >= 2 ? "completed" : stage >= 1 ? "running" : "queued",
-          detail: stage >= 2 ? "14 notes extracted" : "Reading changelog",
-        },
-        {
-          id: "r2",
-          name: "Customer quotes",
-          status: stage >= 3 ? "completed" : stage >= 1 ? "running" : "queued",
-          detail: stage >= 3 ? "6 quotes verified" : "Checking feedback",
-        },
+        subagentProgress("r1", "Scan competitor pricing", s2Elapsed, 250, 3000),
+        subagentProgress("r2", "Pull support tickets", s2Elapsed, 1000, 2500),
+        subagentProgress("r3", "Skim user interviews", s2Elapsed, 1750, 2000),
       ],
     },
     {
       id: "merge",
       label: "Merge what came back",
-      status: stage >= 4 ? "completed" : stage === 3 ? "running" : "pending",
-      elapsedSeconds: stage >= 3 ? 2 : 0,
-      progress: 70,
+      ...s3,
     },
     {
       id: "draft",
       label: "Write the brief",
-      status: stage >= 5 ? "completed" : stage === 4 ? "running" : "pending",
-      elapsedSeconds: stage >= 4 ? 3 : 0,
-      progress: 60,
+      ...s4,
+      subagents: [
+        subagentProgress("w1", "Draft three headlines", s4Elapsed, 250, 2400),
+        subagentProgress("w2", "Cite every source", s4Elapsed, 950, 2000),
+      ],
     },
     {
       id: "tighten",
       label: "Tighten the copy",
-      status: stage >= 6 ? "completed" : stage === 5 ? "running" : "pending",
-      elapsedSeconds: stage >= 5 ? 2 : 0,
-      progress: 80,
+      ...s5,
     },
     {
       id: "post",
       label: "Post to #launch",
       requiresApproval: true,
-      status:
-        gateDecision === "approved"
-          ? "completed"
-          : gateDecision === "rejected"
-            ? "rejected"
-            : "blocked",
-      elapsedSeconds: gateDecision === "approved" ? 1 : undefined,
+      ...s6,
     },
   ];
 }
 
 export function AgentTeamRunStepsPreview() {
-  const [stage, setStage] = useState(2);
-  const [decision, setDecision] = useState<"pending" | "approved" | "rejected">("pending");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(containerRef, { once: true, amount: 0.15 });
+  const reduce = useReducedMotion();
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [approvedAtMs, setApprovedAtMs] = useState<number | null>(null);
+
+  const stopTargetMs = approvedAtMs === null ? 15_000 : approvedAtMs + 2000;
 
   useEffect(() => {
-    if (stage >= 6) return;
-    const timer = window.setTimeout(() => {
-      setStage((prev) => prev + 1);
-    }, 1150);
-    return () => window.clearTimeout(timer);
-  }, [stage]);
+    if (reduce) setElapsedMs(15_000);
+  }, [reduce]);
+
+  const running = inView && !reduce && elapsedMs < stopTargetMs;
+
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setInterval(() => {
+      setElapsedMs((prev) => Math.min(stopTargetMs, prev + 100));
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [running, stopTargetMs]);
 
   return (
-    <AgentRunTimeline
-      title="Launch brief"
-      steps={createSteps(stage, decision)}
-      onApprove={() => {
-        setStage(6);
-        setDecision("approved");
-      }}
-      onReject={() => setDecision("rejected")}
-      onReplay={() => {
-        setStage(0);
-        setDecision("pending");
-      }}
-    />
+    <div ref={containerRef} className="w-full">
+      <AgentRunTimeline
+        title="Launch brief"
+        steps={createSteps(elapsedMs, approvedAtMs)}
+        onApprove={() => {
+          const start = Math.max(15_000, elapsedMs);
+          setApprovedAtMs(start);
+          if (reduce) {
+            setElapsedMs(start + 2000);
+          } else {
+            setElapsedMs(start + 100);
+          }
+        }}
+        onReplay={() => {
+          setApprovedAtMs(null);
+          setElapsedMs(0);
+        }}
+      />
+    </div>
   );
 }
