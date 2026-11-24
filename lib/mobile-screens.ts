@@ -1102,3 +1102,7 @@ export function adjacentMobileScreenGroups(slug: string) {
     next: MOBILE_SCREEN_GROUPS[index + 1],
   };
 }
+
+export function mobileScreenStaticParams() {
+  return MOBILE_SCREEN_GROUPS.map((group) => ({ slug: group.slug }));
+}

@@ -15,9 +15,9 @@ import {
 import {
   adjacentMobileScreenGroups,
   findMobileScreenGroup,
-  MOBILE_SCREEN_GROUPS,
   MOBILE_SCREENS_PATH,
   mobileScreenPath,
+  mobileScreenStaticParams,
 } from "@/lib/mobile-screens";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
@@ -26,9 +26,7 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return MOBILE_SCREEN_GROUPS.map((group) => ({ slug: group.slug }));
-}
+export const generateStaticParams = mobileScreenStaticParams;
 
 export async function generateMetadata({
   params,

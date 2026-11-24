@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { generateStaticParams } from "@/app/components/mobile/[slug]/page";
 import { PhoneFrame } from "@/components/mobile/phone-frame";
 import { mobilePreviews } from "@/components/mobile/previews";
 import { getCatalogSection } from "@/lib/catalog-taxonomy";
@@ -14,6 +13,7 @@ import {
   MOBILE_SCREEN_GROUPS,
   MOBILE_SCREEN_VARIANT_COUNT,
   mobileScreenPath,
+  mobileScreenStaticParams,
 } from "@/lib/mobile-screens";
 
 const FORBIDDEN =
@@ -91,7 +91,7 @@ describe("mobile screens 1:1 catalog", () => {
     const mobileSection = getCatalogSection("mobile");
     expect(mobileSection.items.length).toBe(35);
 
-    const staticParams = generateStaticParams();
+    const staticParams = mobileScreenStaticParams();
     expect(staticParams.length).toBe(35);
 
     for (const group of MOBILE_SCREEN_GROUPS) {

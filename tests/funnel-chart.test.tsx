@@ -26,6 +26,7 @@ test("handles zeros, increases, invalid values, and repeated IDs", () => {
 });
 test("focused tooltips expose animated quantities and drop-off", async () => {
   const view = render(<FunnelChart stages={stages} unit="users" />);
+  fireEvent.keyDown(window, { key: "Tab" });
   fireEvent.focus(view.getByRole("button", { name: "Paid: 25 users, 25.0% of starting total" }));
   await waitFor(() => expect(view.getByRole("tooltip").textContent).toContain("75 dropped"));
   expect(view.getByRole("tooltip").textContent).toContain("25 users");
