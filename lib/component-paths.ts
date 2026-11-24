@@ -20,10 +20,18 @@ export function isNativePath(pathname: string) {
 
 /** Pages whose catalog navigation is visible from the md breakpoint. */
 export function hasSiteSidebar(pathname: string) {
+  if (pathname === "/illustrations" || pathname.startsWith("/illustrations/")) {
+    return false;
+  }
   return (
-    ["/components", "/docs", "/charts", "/guides", "/alternatives"].some((path) =>
-      pathname.startsWith(path),
-    ) ||
+    [
+      "/components",
+      "/docs",
+      "/charts",
+      "/templates",
+      "/guides",
+      "/alternatives",
+    ].some((path) => pathname === path || pathname.startsWith(`${path}/`)) ||
     isNativePath(pathname)
   );
 }

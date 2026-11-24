@@ -1,8 +1,9 @@
-import { categoryPath } from "@/lib/component-paths";
+import { categoryPath, componentPath } from "@/lib/component-paths";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { findCategory, registry } from "@/lib/registry";
-import { LandingComponentCard } from "@/components/app/landing/landing-component-card";
+import { CatalogCard } from "@/components/app/catalog/catalog-card";
+import { classifyBlockSection } from "@/lib/catalog-taxonomy";
 import { JsonLd } from "@/components/app/analytics/json-ld";
 import { isComponentNew } from "@/lib/component-status";
 import { breadcrumbJsonLd, categoryJsonLd } from "@/lib/seo";
@@ -218,10 +219,27 @@ export default async function CategoryPage({
                     {group.description}
                   </p>
                 </div>
-                <div className="mt-5 grid grid-cols-1 gap-4 [grid-auto-rows:17rem] sm:grid-cols-2 2xl:grid-cols-3">
-                  {group.components.map((comp) => (
-                    <LandingComponentCard key={comp.slug} component={comp} category={cat.slug} />
-                  ))}
+                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.components.map((comp) => {
+                    const variantCount = comp.examples?.length || 1;
+                    const previewKey =
+                      comp.examples?.[0]?.previewKey ?? `${cat.slug}/${comp.slug}`;
+                    return (
+                      <CatalogCard
+                        key={comp.slug}
+                        href={componentPath(cat.slug, comp.slug)}
+                        title={comp.name}
+                        previewKey={previewKey}
+                        badgeLabel={
+                          variantCount === 1
+                            ? "1 variant"
+                            : `${variantCount} variants`
+                        }
+                        badge={comp.badge}
+                        launchedAt={comp.launchedAt}
+                      />
+                    );
+                  })}
                 </div>
               </section>
             ))}
@@ -233,10 +251,31 @@ export default async function CategoryPage({
                 <h2 className="font-display text-xs font-medium uppercase text-muted-foreground">
                   New
                 </h2>
-                <div className="mt-4 grid grid-cols-1 gap-4 [grid-auto-rows:17rem] sm:grid-cols-2 2xl:grid-cols-3">
-                  {newComponents.map((comp) => (
-                    <LandingComponentCard key={comp.slug} component={comp} category={cat.slug} />
-                  ))}
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {newComponents.map((comp) => {
+                    const variantCount = comp.examples?.length || 1;
+                    const previewKey =
+                      comp.examples?.[0]?.previewKey ?? `${cat.slug}/${comp.slug}`;
+                    const wide =
+                      cat.slug === "blocks" &&
+                      classifyBlockSection(comp.slug) !== "components";
+                    return (
+                      <CatalogCard
+                        key={comp.slug}
+                        href={componentPath(cat.slug, comp.slug)}
+                        title={comp.name}
+                        previewKey={previewKey}
+                        badgeLabel={
+                          variantCount === 1
+                            ? "1 variant"
+                            : `${variantCount} variants`
+                        }
+                        badge={comp.badge}
+                        launchedAt={comp.launchedAt}
+                        widePreview={wide}
+                      />
+                    );
+                  })}
                 </div>
               </section>
             ) : null}
@@ -246,10 +285,31 @@ export default async function CategoryPage({
                 <h2 className="font-display text-xs font-medium uppercase text-muted-foreground">
                   {content.allLabel}
                 </h2>
-                <div className="mt-4 grid grid-cols-1 gap-4 [grid-auto-rows:17rem] sm:grid-cols-2 2xl:grid-cols-3">
-                  {components.map((comp) => (
-                    <LandingComponentCard key={comp.slug} component={comp} category={cat.slug} />
-                  ))}
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {components.map((comp) => {
+                    const variantCount = comp.examples?.length || 1;
+                    const previewKey =
+                      comp.examples?.[0]?.previewKey ?? `${cat.slug}/${comp.slug}`;
+                    const wide =
+                      cat.slug === "blocks" &&
+                      classifyBlockSection(comp.slug) !== "components";
+                    return (
+                      <CatalogCard
+                        key={comp.slug}
+                        href={componentPath(cat.slug, comp.slug)}
+                        title={comp.name}
+                        previewKey={previewKey}
+                        badgeLabel={
+                          variantCount === 1
+                            ? "1 variant"
+                            : `${variantCount} variants`
+                        }
+                        badge={comp.badge}
+                        launchedAt={comp.launchedAt}
+                        widePreview={wide}
+                      />
+                    );
+                  })}
                 </div>
               </section>
             ) : null}

@@ -3,24 +3,29 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-    /* Light mode — beUI Current. */
-    --background: oklch(99% 0 0);
-    --foreground: oklch(15% 0 0);
-    --card: oklch(97% 0 0);
-    --muted-foreground: oklch(50% 0 0);
-    --border: oklch(15% 0 0 / 0.06);
+    /* Light mode */
+    --bg: #fcfcfc;
+    --bg-elev: #f5f5f5;
+    --fg: #0b0b0b;
+    --fg-muted: #636363;
+    --background: var(--bg);
+    --foreground: var(--fg);
+    --card: var(--bg-elev);
+    --muted-foreground: var(--fg-muted);
+    --border: #0b0b0b0f;
     /* beUI extensions (no shadcn equivalent). */
-    --border-strong: oklch(15% 0 0 / 0.12);
-    --accent-fg: oklch(15% 0 0);
-    --neon: oklch(80% 0.22 145);
-    --violet: oklch(68% 0.22 295);
-    --danger: oklch(62% 0.22 25);
-    --success: oklch(70% 0.18 155);
-    --warning: oklch(78% 0.18 75);
-    --glass-bg: oklch(99% 0 0 / 0.55);
-    --glass-border: oklch(15% 0 0 / 0.08);
-    --glass-strong-bg: rgb(255 255 255 / 0.7);
-    --glass-thin-bg: rgb(255 255 255 / 0.45);
+    --border-strong: #0b0b0b1f;
+    --accent-fg: #0b0b0b;
+    --neon: #45e059;
+    --violet: #a37aff;
+    --danger: #ee343b;
+    --success: #00bd6c;
+    --success-foreground: #00572f;
+    --warning: #f5a500;
+    --glass-bg: #fcfcfc8c;
+    --glass-border: #0b0b0b14;
+    --glass-strong-bg: #ffffffb3;
+    --glass-thin-bg: #ffffff73;
     --gradient-bg: linear-gradient(
         135deg,
         oklch(99% 0 0) 0%,
@@ -28,39 +33,44 @@
     );
     --gradient-accent: linear-gradient(
         to right,
-        oklch(72% 0.18 195) 0%,
-        oklch(68% 0.22 295) 100%
+        #00bebf 0%,
+        #a37aff 100%
     );
     /* shadcn semantic tokens, mapped onto the base. */
-    --card-foreground: var(--foreground);
-    --popover: var(--card);
-    --popover-foreground: var(--foreground);
-    --primary: #0285f7;
+    --card-foreground: var(--fg);
+    --popover: var(--bg-elev);
+    --popover-foreground: var(--fg);
+    --primary: #0276db;
     --primary-foreground: #ffffff;
-    --secondary: var(--card);
-    --secondary-foreground: var(--foreground);
-    --muted: var(--card);
-    --accent: oklch(72% 0.18 195);
+    --secondary: var(--bg-elev);
+    --secondary-foreground: var(--fg);
+    --muted: var(--bg-elev);
+    --accent: #00bebf;
     --accent-foreground: var(--accent-fg);
     --destructive: var(--danger);
     --input: var(--border);
-    --ring: var(--border-strong);
+    --ring: var(--primary);
 }
 
-/* Dark mode — beUI Current. Semantic tokens follow the base via var(). */
+/* Dark mode */
 .dark {
-    --background: #151515;
-    --foreground: oklch(96% 0 0);
-    --card: #1c1c1c;
-    --muted-foreground: oklch(62% 0 0);
-    --border: rgb(255 255 255 / 0.05);
-    --border-strong: rgb(255 255 255 / 0.1);
-    --accent: oklch(80% 0.18 195);
+    --bg: #151515;
+    --bg-elev: #1c1c1c;
+    --fg: #f2f2f2;
+    --fg-muted: #868686;
+    --background: var(--bg);
+    --foreground: var(--fg);
+    --card: var(--bg-elev);
+    --muted-foreground: var(--fg-muted);
+    --border: #ffffff0d;
+    --border-strong: #ffffff1a;
+    --accent: #00dadb;
     --accent-fg: #151515;
-    --glass-bg: rgb(28 28 28 / 0.55);
-    --glass-border: rgb(255 255 255 / 0.08);
-    --glass-strong-bg: rgb(28 28 28 / 0.6);
-    --glass-thin-bg: rgb(21 21 21 / 0.45);
+    --success-foreground: #6ad895;
+    --glass-bg: #1c1c1c8c;
+    --glass-border: #ffffff14;
+    --glass-strong-bg: #1c1c1c99;
+    --glass-thin-bg: #15151573;
     --gradient-bg: linear-gradient(
         135deg,
         oklch(19% 0 0) 0%,
@@ -68,9 +78,21 @@
     );
     --gradient-accent: linear-gradient(
         to right,
-        oklch(80% 0.18 195) 0%,
-        oklch(72% 0.18 295) 100%
+        #00dadb 0%,
+        #ad8cff 100%
     );
+    --card-foreground: var(--fg);
+    --popover: var(--bg-elev);
+    --popover-foreground: var(--fg);
+    --primary: #0276db;
+    --primary-foreground: #ffffff;
+    --secondary: var(--bg-elev);
+    --secondary-foreground: var(--fg);
+    --muted: var(--bg-elev);
+    --accent-foreground: var(--accent-fg);
+    --destructive: var(--danger);
+    --input: var(--border);
+    --ring: var(--primary);
 }
 
 @theme inline {
@@ -79,11 +101,16 @@
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
+    --color-bg: var(--bg);
+    --color-bg-elev: var(--bg-elev);
+    --color-fg: var(--fg);
+    --color-fg-muted: var(--fg-muted);
     --color-border: var(--border);
     --color-border-strong: var(--border-strong);
     --color-neon: var(--neon);
     --color-violet: var(--violet);
     --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
     --color-warning: var(--warning);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -121,6 +148,31 @@
     --animate-action-archive: action-archive 520ms var(--ease-out) both;
     --animate-action-bell: action-bell 680ms var(--ease-out) both;
     --animate-action-settings: action-settings 720ms var(--ease-out) both;
+    --animate-hero-rise: hero-rise 680ms var(--ease-out) both;
+    --animate-hero-fade-rise: hero-fade-rise 760ms var(--ease-out) both;
+
+    @keyframes hero-rise {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+            filter: blur(6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+    }
+    @keyframes hero-fade-rise {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
     @keyframes marquee {
         from {

@@ -401,6 +401,37 @@ ${SOURCE_SNIPPET}
 
 Every React Native component page (${SITE_URL}/react-native) has a recording in light and dark. Agents can fetch components from ${SITE_URL}/native/r or the beUI MCP server. Every component follows the system Reduce Motion setting and takes a \`disableAnimation\` prop. Source: ${native.repository}`,
   },
+  installation: {
+    title: "Installation",
+    description:
+      "Configure the @beui registry in components.json, set up theme tokens, and install components via shadcn CLI or manual copy.",
+    body: `## 1. Register the registry
+
+Add the \`@beui\` registry to \`components.json\`:
+
+\`\`\`json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "registries": {
+    "@beui": "${SITE_URL}/r/{name}.json"
+  }
+}
+\`\`\`
+
+## 2. Add theme tokens
+
+Run \`npx shadcn@latest init\` or paste the CSS tokens from ${SITE_URL}/theme.css into \`globals.css\`.
+
+## 3. Install a component
+
+\`\`\`bash
+bunx --bun shadcn add @beui/hero-sections
+\`\`\`
+
+## 4. Manual install
+
+Open any component page's Usage and Code tabs, or fetch \`${SITE_URL}/r/{slug}/raw\` directly.`,
+  },
 } as const;
 
 export type GuideSlug = keyof typeof guides;

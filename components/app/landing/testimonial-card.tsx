@@ -17,9 +17,11 @@ function VerifiedBadge() {
 export function TestimonialCard({
   testimonial,
   compact = false,
+  className,
 }: {
   testimonial: Testimonial;
   compact?: boolean;
+  className?: string;
 }) {
   // Swap Twitter's 48px `_normal` avatar for the crisper 73px `_bigger`.
   const avatar = testimonial.user.avatar.replace("_normal", "_bigger");
@@ -37,6 +39,7 @@ export function TestimonialCard({
         // No forced height: a card sizes to its own tweet, so a short one-liner
         // doesn't inherit a tall neighbor's height and sit with a dead gap.
         compact ? "w-[330px] whitespace-normal p-4" : "p-5",
+        className,
       )}
     >
       <div className="flex items-center gap-3">
