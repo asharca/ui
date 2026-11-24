@@ -1,43 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
-import { categoryPath, componentPath } from "@/lib/component-paths";
-import { registry } from "@/lib/registry";
+import { ThemeToggle } from "@/components/app/chrome/theme-toggle";
+import { GithubIcon } from "@/components/app/icons";
+import {
+  getCatalogSection,
+  ILLUSTRATION_COLLECTIONS,
+} from "@/lib/catalog-taxonomy";
 import { GITHUB_REPOSITORY_URL } from "@/lib/repository";
 
-const FOOTER_LIMIT = 7;
-const COLUMNS = [
-  { category: "motion", title: "Components" },
-  { category: "blocks", title: "Blocks" },
-  { category: "agents", title: "AI Agents" },
-  { category: "charts", title: "Charts" },
-].map(({ category, title }) => {
-  const components =
-    registry.find((entry) => entry.slug === category)?.components ?? [];
-  return {
-    category,
-    title,
-    total: components.length,
-    items: components.slice(0, FOOTER_LIMIT),
-  };
-});
+const COMPONENT_ITEMS = getCatalogSection("components").items;
+const BLOCK_ITEMS = getCatalogSection("blocks").items;
+const TEMPLATE_ITEMS = getCatalogSection("templates").items;
 
 const LINKS = [
-  { href: "/components/motion", label: "Browse all" },
-  { href: "/playground", label: "Playground" },
   { href: "/changelog", label: "Changelog" },
-  { href: GITHUB_REPOSITORY_URL, label: "GitHub" },
-  { href: "/docs/ai-agents", label: "For coding agents" },
+  { href: "/components", label: "Browse all" },
+  { href: "/explore", label: "Explore" },
+  { href: "/illustrations", label: "Illustrations" },
+  { href: "/templates", label: "Templates" },
+  { href: "/studio", label: "Background Studio" },
+  { href: "/workspace", label: "Workspace" },
+  { href: "/docs/installation", label: "Installation" },
+  { href: "/docs/ai-agents", label: "For AI agents" },
   { href: "/docs/theme", label: "Theming" },
-  { href: "/docs/motion-patterns", label: "Motion patterns" },
+  { href: "/docs/motion-patterns", label: "Motion guides" },
+  { href: GITHUB_REPOSITORY_URL, label: "GitHub" },
   { href: "/llms.txt", label: "llms.txt" },
-  { href: "https://usemarkd.app", label: "Markd" },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="relative isolate overflow-hidden border-border/60 border-t">
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl gap-x-8 gap-y-12 px-4 pt-16 pb-48 sm:pb-64 sm:grid-cols-2 md:grid-cols-[1.4fr_repeat(5,1fr)]">
-        {/* Brand. */}
+    <footer className="relative isolate overflow-hidden border-t border-border/60">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl gap-x-8 gap-y-12 px-4 py-16 sm:grid-cols-2 md:grid-cols-[1.4fr_repeat(5,1fr)]">
+        {/* Brand */}
         <div className="max-w-xs">
           <Link
             prefetch={false}
@@ -51,18 +46,28 @@ export function SiteFooter() {
               height={30}
               className="size-[30px] rounded-full"
             />
-            <span className="font-semibold text-lg text-foreground tracking-[-0.01em]">
+            <span className="text-lg font-semibold tracking-[-0.01em] text-foreground">
               beUI
             </span>
           </Link>
-          <p className="mt-4 text-muted-foreground text-sm leading-6">
-            Animated components for React, Next.js and React Native. Copy the
-            source or install with a CLI.
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">
+            Animated motion components, illustrations, blocks, and full templates
+            for React, Next.js and React Native. Copy the source or install with
+            a CLI.
           </p>
-          <p className="mt-4 text-muted-foreground text-sm">
+          <p className="mt-4 text-sm text-muted-foreground">
             Created by <span className="text-foreground">Saurabh</span>
           </p>
           <div className="mt-4 flex items-center gap-1.5">
+            <a
+              href={GITHUB_REPOSITORY_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <span className="sr-only">GitHub</span>
+              <GithubIcon className="size-4" />
+            </a>
             <a
               href="https://x.com/saurra3h"
               target="_blank"
@@ -99,57 +104,152 @@ export function SiteFooter() {
               </svg>
             </a>
           </div>
+          <div className="mt-5">
+            <ThemeToggle />
+          </div>
         </div>
 
-        {/* Registry item columns. */}
-        {COLUMNS.map((column) => (
-          <nav key={column.title} aria-label={column.title}>
-            <p className="font-medium text-xs text-muted-foreground uppercase tracking-wider">
-              {column.title}
-            </p>
-            <ul className="mt-4 space-y-2.5">
-              {column.items.map((item) => (
-                <li key={item.slug}>
-                  <Link
-                    prefetch={false}
-                    href={componentPath(column.category, item.slug)}
-                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-              {column.total > column.items.length ? (
-                <li>
-                  <Link
-                    prefetch={false}
-                    href={categoryPath(column.category)}
-                    className="font-medium text-foreground text-sm transition-colors hover:text-muted-foreground"
-                  >
-                    View all ({column.total})
-                  </Link>
-                </li>
-              ) : null}
-            </ul>
-          </nav>
-        ))}
+        {/* Components */}
+        <nav aria-label="Components">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Components
+          </p>
+          <ul className="mt-4 space-y-2.5">
+            {COMPONENT_ITEMS.slice(0, 7).map((item) => (
+              <li key={item.slug}>
+                <Link
+                  prefetch={false}
+                  href={item.href}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                prefetch={false}
+                href="/components?tab=components"
+                className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              >
+                View all ({COMPONENT_ITEMS.length})
+              </Link>
+            </li>
+          </ul>
+        </nav>
 
-        {/* Links. */}
+        {/* Blocks */}
+        <nav aria-label="Blocks">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Blocks
+          </p>
+          <ul className="mt-4 space-y-2.5">
+            {BLOCK_ITEMS.slice(0, 7).map((item) => (
+              <li key={item.slug}>
+                <Link
+                  prefetch={false}
+                  href={item.href}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                prefetch={false}
+                href="/components?tab=blocks"
+                className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              >
+                View all ({BLOCK_ITEMS.length})
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Illustrations */}
+        <nav aria-label="Illustrations">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Illustrations
+          </p>
+          <ul className="mt-4 space-y-2.5">
+            <li>
+              <Link
+                prefetch={false}
+                href="/illustrations"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Animated Illustrations
+              </Link>
+            </li>
+            {ILLUSTRATION_COLLECTIONS.slice(0, 5).map((item) => (
+              <li key={item.slug}>
+                <Link
+                  prefetch={false}
+                  href={`/illustrations/${item.slug}`}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                prefetch={false}
+                href="/illustrations"
+                className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              >
+                View all ({ILLUSTRATION_COLLECTIONS.length})
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Templates */}
+        <nav aria-label="Templates">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Templates
+          </p>
+          <ul className="mt-4 space-y-2.5">
+            {TEMPLATE_ITEMS.slice(0, 7).map((item) => (
+              <li key={item.slug}>
+                <Link
+                  prefetch={false}
+                  href={item.href}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                prefetch={false}
+                href="/templates"
+                className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              >
+                View all ({TEMPLATE_ITEMS.length})
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Links */}
         <nav aria-label="Links">
-          <p className="font-medium text-xs text-muted-foreground uppercase tracking-wider">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Links
           </p>
           <ul className="mt-4 space-y-2.5">
             {LINKS.map((item) => {
               const external = item.href.startsWith("http");
               return (
-                <li key={item.href}>
+                <li key={`${item.label}-${item.href}`}>
                   <Link
                     prefetch={false}
                     href={item.href}
                     target={external ? "_blank" : undefined}
                     rel={external ? "noreferrer noopener" : undefined}
-                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {item.label}
                   </Link>
@@ -158,20 +258,6 @@ export function SiteFooter() {
             })}
           </ul>
         </nav>
-      </div>
-
-      {/* Match the artwork height to the grid’s bottom padding so it never sits behind links. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 [mask-image:linear-gradient(to_bottom,transparent,black_80%)] sm:h-64"
-      >
-        <Image
-          src="/landing/coastal-sketch.webp"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover object-bottom dark:brightness-50"
-        />
       </div>
     </footer>
   );

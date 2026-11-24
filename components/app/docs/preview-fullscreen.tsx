@@ -1,6 +1,12 @@
 "use client";
 
-import { Maximize2, Minimize2, RotateCcw } from "lucide-react";
+import {
+  Maximize2,
+  Minimize2,
+  Monitor,
+  RotateCcw,
+  Smartphone,
+} from "lucide-react";
 import {
   createContext,
   Fragment,
@@ -13,6 +19,8 @@ import {
 import { useFocusTrap } from "@/lib/hooks/use-focus-trap";
 import { cn } from "@/lib/utils";
 
+type PreviewViewport = "desktop" | "mobile";
+
 type Expand = {
   stageId: string;
   expanded: boolean;
@@ -20,10 +28,12 @@ type Expand = {
   toggleRef: React.RefObject<HTMLButtonElement | null>;
   replayKey: number;
   replay: () => void;
+  viewport: PreviewViewport;
+  setViewport: (viewport: PreviewViewport) => void;
 };
 
 const ICON_BUTTON_CLASS =
-  "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+  "inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
 const ExpandContext = createContext<Expand | null>(null);
 
@@ -33,10 +43,21 @@ function useExpand() {
   return ctx;
 }
 
+function showPreviewTabForStage(stageId: string) {
+  const panel = document
+    .getElementById(stageId)
+    ?.closest<HTMLElement>("[role=tabpanel]");
+  if (panel?.hidden) {
+    document
+      .querySelector<HTMLElement>(`[role=tab][aria-controls="${panel.id}"]`)
+      ?.click();
+  }
+  return panel;
+}
+
 /**
- * Lets the preview stage expand to fill the app window (not the system full
- * screen). Wraps one Preview / Usage / Code block; the toggle sits in the tab
- * row and the stage inside the Preview panel.
+ * Lets the preview stage expand to fill the app window and switch between
+ * desktop and mobile widths.
  */
 export function PreviewExpand({
   stageId,
@@ -47,14 +68,74 @@ export function PreviewExpand({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
+  const [viewport, setViewport] = useState<PreviewViewport>("desktop");
   const toggleRef = useRef<HTMLButtonElement>(null);
   const replay = () => setReplayKey((key) => key + 1);
   return (
     <ExpandContext.Provider
-      value={{ stageId, expanded, setExpanded, toggleRef, replayKey, replay }}
+      value={{
+        stageId,
+        expanded,
+        setExpanded,
+        toggleRef,
+        replayKey,
+        replay,
+        viewport,
+        setViewport,
+      }}
     >
       {children}
     </ExpandContext.Provider>
+  );
+}
+
+/** Segmented toggle for desktop vs 390px mobile preview framing. */
+export function PreviewViewportToggle({ className }: { className?: string }) {
+  const { stageId, viewport, setViewport } = useExpand();
+
+  const select = (next: PreviewViewport) => {
+    showPreviewTabForStage(stageId);
+    setViewport(next);
+  };
+
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-0.5 rounded-full bg-card p-1",
+        className,
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => select("desktop")}
+        aria-label="Desktop preview"
+        title="Desktop preview"
+        aria-pressed={viewport === "desktop"}
+        className={cn(
+          "inline-flex size-7 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          viewport === "desktop"
+            ? "bg-background text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <Monitor aria-hidden="true" className="size-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={() => select("mobile")}
+        aria-label="Mobile preview"
+        title="Mobile preview"
+        aria-pressed={viewport === "mobile"}
+        className={cn(
+          "inline-flex size-7 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          viewport === "mobile"
+            ? "bg-background text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <Smartphone aria-hidden="true" className="size-3.5" />
+      </button>
+    </div>
   );
 }
 
@@ -62,28 +143,17 @@ export function PreviewExpand({
 export function PreviewExpandToggle({ className }: { className?: string }) {
   const { stageId, expanded, setExpanded, toggleRef } = useExpand();
   const open = () => {
-    // Inactive tab panels are hidden; show the Preview tab first so the stage
-    // being expanded is the one on screen.
-    const panel = document
-      .getElementById(stageId)
-      ?.closest<HTMLElement>("[role=tabpanel]");
+    const panel = showPreviewTabForStage(stageId);
     if (!panel?.hidden) {
       setExpanded(true);
       return;
     }
-    document
-      .querySelector<HTMLElement>(`[role=tab][aria-controls="${panel.id}"]`)
-      ?.click();
-    // The panel slides in on a transform, and a transformed ancestor would
-    // trap the fixed stage inside it: expand once the transform settles.
     const start = performance.now();
     const whenSettled = () => {
       const shown = document
         .getElementById(stageId)
         ?.closest<HTMLElement>("[role=tabpanel]");
       const moving = shown && getComputedStyle(shown).transform !== "none";
-      // A timer, not animation frames, so the expand still happens (after
-      // the cap) if frames are paused.
       if (moving && performance.now() - start < 500) {
         window.setTimeout(whenSettled, 16);
       } else {
@@ -108,22 +178,11 @@ export function PreviewExpandToggle({ className }: { className?: string }) {
   );
 }
 
-/**
- * Button beside the expand toggle that remounts the demo, so entrance
- * animations can be watched again. Shows the Preview tab first when another
- * tab is open.
- */
+/** Button beside the expand toggle that remounts the demo. */
 export function PreviewReplayToggle({ className }: { className?: string }) {
   const { stageId, replay } = useExpand();
   const onClick = () => {
-    const panel = document
-      .getElementById(stageId)
-      ?.closest<HTMLElement>("[role=tabpanel]");
-    if (panel?.hidden) {
-      document
-        .querySelector<HTMLElement>(`[role=tab][aria-controls="${panel.id}"]`)
-        ?.click();
-    }
+    showPreviewTabForStage(stageId);
     replay();
   };
   return (
@@ -139,11 +198,7 @@ export function PreviewReplayToggle({ className }: { className?: string }) {
   );
 }
 
-/**
- * The preview stage. Expanded, it becomes a fixed layer over the whole app
- * window that paints the page background; the demo stays mounted, so it
- * keeps its state either way.
- */
+/** The preview stage with optional mobile framing and fullscreen expansion. */
 export function PreviewExpandStage({
   className,
   children,
@@ -151,7 +206,7 @@ export function PreviewExpandStage({
   className?: string;
   children: ReactNode;
 }) {
-  const { stageId, expanded, setExpanded, toggleRef, replayKey, replay } =
+  const { stageId, expanded, setExpanded, toggleRef, replayKey, replay, viewport } =
     useExpand();
   const exitRef = useRef<HTMLButtonElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -178,6 +233,8 @@ export function PreviewExpandStage({
       } as const)
     : {};
 
+  const mobileFramed = viewport === "mobile" && !expanded;
+
   return (
     <div
       ref={stageRef}
@@ -185,10 +242,11 @@ export function PreviewExpandStage({
       tabIndex={expanded ? -1 : undefined}
       id={stageId}
       data-expanded={expanded || undefined}
+      data-viewport={viewport}
       className={cn(
         className,
         expanded &&
-          "fixed inset-0 z-[100] min-h-0 overflow-auto bg-background p-6 py-16",
+          "fixed inset-0 z-[100] min-h-0 overflow-auto rounded-none border-0 bg-background p-6 py-16",
       )}
     >
       {expanded ? (
@@ -214,8 +272,13 @@ export function PreviewExpandStage({
           </button>
         </div>
       ) : null}
-      {/* A new key remounts the demo, replaying its entrance. */}
-      <Fragment key={replayKey}>{children}</Fragment>
+      {mobileFramed ? (
+        <div className="mx-auto w-full max-w-[390px] overflow-x-hidden rounded-2xl border border-border bg-card/30 p-3 shadow-sm">
+          <Fragment key={replayKey}>{children}</Fragment>
+        </div>
+      ) : (
+        <Fragment key={replayKey}>{children}</Fragment>
+      )}
     </div>
   );
 }

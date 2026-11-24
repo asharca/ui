@@ -69,8 +69,12 @@ export type RegistryTarget = {
 };
 
 const SHADCN_DEP_SKIP = new Set(["next", "react", "react-dom"]);
+const PARSE_DEPS_CACHE = new Map<string, { external: string[]; internal: string[] }>();
 
 function parseDeps(source: string) {
+  const cached = PARSE_DEPS_CACHE.get(source);
+  if (cached) return cached;
+
   const external = new Set<string>();
   const internal = new Set<string>();
   const specs = new Set<string>();
@@ -98,10 +102,12 @@ function parseDeps(source: string) {
       : spec.split("/")[0];
     if (pkg) external.add(pkg);
   }
-  return {
+  const result = {
     external: Array.from(external).sort(),
     internal: Array.from(internal).sort(),
   };
+  PARSE_DEPS_CACHE.set(source, result);
+  return result;
 }
 
 function fileTypeForPath(rel: string): ShadcnFileType {

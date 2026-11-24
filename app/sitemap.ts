@@ -1,15 +1,21 @@
+import type { MetadataRoute } from "next";
+import { ILLUSTRATION_COLLECTIONS } from "@/lib/catalog-taxonomy";
+import { changelogEntries } from "@/lib/changelog";
+import { componentDates } from "@/lib/component-dates";
 import {
   categoryPath,
   componentPath,
   NATIVE_PATH,
   nativeComponentPath,
 } from "@/lib/component-paths";
-import type { MetadataRoute } from "next";
-import { allComponents, registry } from "@/lib/registry";
-import { componentDates } from "@/lib/component-dates";
+import {
+  MOBILE_SCREEN_GROUPS,
+  MOBILE_SCREENS_PATH,
+  mobileScreenPath,
+} from "@/lib/mobile-screens";
 import { native } from "@/lib/native";
+import { allComponents, registry } from "@/lib/registry";
 import { seoPagePath, seoPages } from "@/lib/seo-pages";
-import { changelogEntries } from "@/lib/changelog";
 import { SITE_URL as SITE } from "@/lib/site";
 import { standaloneTemplates } from "@/lib/standalone-templates";
 
@@ -21,6 +27,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .at(-1);
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${SITE}/`, lastModified: newestComponentDate, changeFrequency: "weekly", priority: 1 },
+    { url: `${SITE}/components`, lastModified: newestComponentDate, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${SITE}/explore`, lastModified: newestComponentDate, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${SITE}/illustrations`, lastModified: newestComponentDate, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${SITE}/studio`, lastModified: newestComponentDate, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE}/docs/installation`, lastModified: "2026-11-04", changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/docs/ai-agents`, lastModified: "2026-07-04", changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/docs/motion-patterns`, lastModified: "2026-07-09", changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/docs/openui`, lastModified: "2026-08-13", changeFrequency: "monthly", priority: 0.7 },
@@ -53,6 +64,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const illustrationPages: MetadataRoute.Sitemap = ILLUSTRATION_COLLECTIONS.map(
+    (collection) => ({
+      url: `${SITE}/illustrations/${collection.slug}`,
+      lastModified: collection.launchedAt ?? "2026-11-04",
+      changeFrequency: "monthly",
+      priority: 0.7,
+    }),
+  );
+
   const templatePages: MetadataRoute.Sitemap = standaloneTemplates.map((template) => ({
     url: `${SITE}/templates/${template.slug}`,
     lastModified: "2026-11-04",
@@ -60,9 +80,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // beUI Native's own pages, at /react-native.
+  // beUI Native & Mobile screen pages.
   const nativeLaunch = "2026-10-16";
+  const mobileLaunch = "2026-11-15";
   const nativePages: MetadataRoute.Sitemap = [
+    { url: `${SITE}/mobile`, lastModified: mobileLaunch, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${SITE}${MOBILE_SCREENS_PATH}`, lastModified: mobileLaunch, changeFrequency: "weekly", priority: 0.85 },
+    ...MOBILE_SCREEN_GROUPS.map((group) => ({
+      url: `${SITE}${mobileScreenPath(group.slug)}`,
+      lastModified: group.launchedAt ?? mobileLaunch,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    })),
     { url: `${SITE}${NATIVE_PATH}`, lastModified: nativeLaunch, changeFrequency: "weekly", priority: 0.8 },
     ...native.components.map((component) => ({
       url: `${SITE}${nativeComponentPath(component.slug)}`,
@@ -84,5 +113,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       })),
   );
 
-  return [...staticPages, ...categoryPages, ...componentPages, ...templatePages, ...nativePages, ...landingPages];
+  return [
+    ...staticPages,
+    ...categoryPages,
+    ...componentPages,
+    ...illustrationPages,
+    ...templatePages,
+    ...nativePages,
+    ...landingPages,
+  ];
 }

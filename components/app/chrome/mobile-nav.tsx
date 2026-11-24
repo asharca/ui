@@ -5,29 +5,64 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SidebarNav } from "@/components/app/chrome/site-sidebar";
+import { ThemeToggle } from "@/components/app/chrome/theme-toggle";
+import { PlatformSwitch } from "@/components/app/docs/native/platform-switch";
 import { BottomSheet } from "@/components/motion/bottom-sheet";
 import { Button } from "@/components/motion/button";
-import { PlatformSwitch } from "@/components/app/docs/native/platform-switch";
-import { hasPlatformSwitch, isNativePath, NATIVE_PATH } from "@/lib/component-paths";
+import {
+  hasPlatformSwitch,
+  isNativePath,
+} from "@/lib/component-paths";
 import { cn } from "@/lib/utils";
 
+const MOBILE_TOP_LINKS = [
+  { href: "/components", label: "Components" },
+  { href: "/explore", label: "Explore" },
+  { href: "/illustrations", label: "Illustrations" },
+  { href: "/templates", label: "Templates" },
+  { href: "/studio", label: "Studio" },
+  { href: "/mobile", label: "Mobile" },
+  { href: "/workspace", label: "Workspace" },
+  { href: "/playground", label: "Playground" },
+];
+
 /** Mobile nav: a header hamburger that opens the sidebar list in beUI's own bottom sheet. */
-export function MobileNav() {
+export function MobileNav({ overHero = false }: { overHero?: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Covers navigation that doesn't go through a sheet link (back/forward).
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger — close the sheet on any route change.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  const isActive = (href: string) => {
+    if (href === "/components") {
+      return (
+        pathname.startsWith("/components") &&
+        !pathname.startsWith("/components/templates") &&
+        !pathname.startsWith("/components/mobile")
+      );
+    }
+    if (href === "/mobile") {
+      return (
+        pathname === "/mobile" ||
+        pathname.startsWith("/components/mobile") ||
+        isNativePath(pathname)
+      );
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <div className="xl:hidden">
       <Button
         variant="ghost"
         size="icon"
-        className="rounded-full"
+        className={cn(
+          "rounded-full",
+          overHero && "text-white hover:bg-white/10 hover:text-white",
+        )}
         onClick={() => setOpen(true)}
         aria-label="Open navigation"
         aria-haspopup="dialog"
@@ -42,92 +77,30 @@ export function MobileNav() {
         snapPoints={[0.85]}
       >
         <div className="flex flex-col gap-5 pt-2">
-          {/* The list below follows the platform, so pick it here too. */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Theme
+            </span>
+            <ThemeToggle />
+          </div>
           {hasPlatformSwitch(pathname) ? <PlatformSwitch layout="block" /> : null}
           <nav className="flex flex-wrap gap-1">
-            <Link
-              href="/components/motion"
-              onClick={() => setOpen(false)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
-                pathname.startsWith("/components/motion")
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Components
-            </Link>
-            <Link
-              href="/components/blocks"
-              onClick={() => setOpen(false)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
-                pathname.startsWith("/components/blocks")
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Blocks
-            </Link>
-            <Link
-              href="/components/agents"
-              onClick={() => setOpen(false)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
-                pathname.startsWith("/components/agents")
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Agents
-            </Link>
-            <Link
-              href="/charts"
-              onClick={() => setOpen(false)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
-                pathname.startsWith("/charts")
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Charts
-            </Link>
-            <Link
-              href={NATIVE_PATH}
-              onClick={() => setOpen(false)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
-                isNativePath(pathname)
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              React Native
-            </Link>
-            <Link
-              href="/templates"
-              onClick={() => setOpen(false)}
-              aria-current={pathname.startsWith("/templates") ? "page" : undefined}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
-                pathname.startsWith("/templates") ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Templates
-            </Link>
-            <Link
-              href="/playground"
-              onClick={() => setOpen(false)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
-                pathname.startsWith("/playground")
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Playground
-            </Link>
+            {MOBILE_TOP_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-sm transition-colors",
+                  isActive(item.href)
+                    ? "bg-muted font-medium text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
           <SidebarNav onNavigate={() => setOpen(false)} />
         </div>

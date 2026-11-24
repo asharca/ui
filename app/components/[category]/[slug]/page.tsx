@@ -31,6 +31,7 @@ import {
   PreviewExpandStage,
   PreviewExpandToggle,
   PreviewReplayToggle,
+  PreviewViewportToggle,
 } from "@/components/app/docs/preview-fullscreen";
 import { JsonLd } from "@/components/app/analytics/json-ld";
 import { getPreview, previews } from "@/components/previews";
@@ -246,12 +247,17 @@ export default async function ComponentPage({
           <span className="font-medium text-foreground">{comp.name}</span>
         </nav>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             <h1 className="text-3xl font-medium tracking-tight text-foreground">
               {comp.name}
             </h1>
+            <span className="rounded-md bg-foreground/[0.05] px-2 py-1 font-mono text-[11px] text-muted-foreground tabular-nums">
+              {(comp.examples?.length || 1) === 1
+                ? "1 variant"
+                : `${comp.examples?.length} variants`}
+            </span>
             {comp.badge === "new" ? (
-              <NewBadge launchedAt={comp.launchedAt} className="mt-1" />
+              <NewBadge launchedAt={comp.launchedAt} />
             ) : null}
           </div>
           <CopyPage
@@ -338,18 +344,25 @@ async function ExampleBlock({
 
   return (
     <section id={example.slug} className="scroll-mt-24">
-      <div className="mb-4 flex items-baseline justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-medium tracking-tight text-foreground">
-            {example.name}
-          </h2>
-          {example.badge === "new" ? (
-            <NewBadge launchedAt={example.launchedAt} />
-          ) : null}
+      <div className="mb-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-medium tracking-tight text-foreground">
+              {example.name}
+            </h2>
+            {example.badge === "new" ? (
+              <NewBadge launchedAt={example.launchedAt} />
+            ) : null}
+          </div>
+          <code className="rounded-md bg-foreground/5 px-2 py-0.5 font-mono text-[11px] text-foreground">
+            {example.file.split("/").pop()}
+          </code>
         </div>
-        <code className="rounded-md bg-foreground/5 px-2 py-0.5 font-mono text-[11px] text-foreground">
-          {example.file.split("/").pop()}
-        </code>
+        {example.description ? (
+          <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            {example.description}
+          </p>
+        ) : null}
       </div>
       <div id={`${example.slug}-preview`} className="scroll-mt-24">
         <PreviewExpand stageId={`${example.slug}-stage`}>
@@ -379,12 +392,13 @@ async function ExampleBlock({
             </TabsTrigger>
           </TabsList>
             <div className="flex items-center gap-2">
-            <PreviewReplayToggle />
-            <PreviewExpandToggle />
-          </div>
+              <PreviewViewportToggle />
+              <PreviewReplayToggle />
+              <PreviewExpandToggle />
+            </div>
           </div>
           <TabsContent value="preview" className="mt-4">
-            <PreviewExpandStage className="flex min-h-[260px] items-center justify-center py-10">
+            <PreviewExpandStage className="flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-background px-4 py-10 sm:px-6">
               {Preview ? <Preview /> : null}
             </PreviewExpandStage>
           </TabsContent>
@@ -481,12 +495,13 @@ async function DefaultTabs({
           </TabsTrigger>
         </TabsList>
           <div className="flex items-center gap-2">
+            <PreviewViewportToggle />
             <PreviewReplayToggle />
             <PreviewExpandToggle />
           </div>
         </div>
         <TabsContent value="preview" className="mt-4">
-          <PreviewExpandStage className="flex min-h-[320px] items-center justify-center py-10">
+          <PreviewExpandStage className="flex min-h-[320px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-background px-4 py-10 sm:px-6">
             {Preview ? <Preview /> : null}
           </PreviewExpandStage>
         </TabsContent>

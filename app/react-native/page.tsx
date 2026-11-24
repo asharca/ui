@@ -1,3 +1,4 @@
+import { ArrowRight, Smartphone } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/app/analytics/json-ld";
@@ -5,6 +6,11 @@ import { ComponentCard } from "@/components/app/docs/component-card";
 import { InstallCommand } from "@/components/app/docs/install-command";
 import { PlatformSwitch } from "@/components/app/docs/native/platform-switch";
 import { NATIVE_PATH, nativeComponentPath } from "@/lib/component-paths";
+import {
+  MOBILE_SCREEN_GROUPS,
+  MOBILE_SCREEN_VARIANT_COUNT,
+  MOBILE_SCREENS_PATH,
+} from "@/lib/mobile-screens";
 import { native } from "@/lib/native";
 import nativeSlugs from "@/lib/native/slugs.json";
 import {
@@ -97,6 +103,28 @@ export default function NativeIndexPage() {
       <div className="mt-6">
         <PlatformSwitch />
       </div>
+
+      <Link
+        href={MOBILE_SCREENS_PATH}
+        className="group mt-6 flex max-w-2xl items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none transition-colors hover:border-(--color-border-strong) focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Smartphone aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 flex-1">
+          <span className="font-medium text-foreground">
+            Looking for full app screens?
+          </span>{" "}
+          <span className="text-muted-foreground">
+            Browse {MOBILE_SCREEN_GROUPS.length} mobile screen groups (
+            {MOBILE_SCREEN_VARIANT_COUNT} variants) inside interactive phone
+            frames.
+          </span>
+        </span>
+        <ArrowRight
+          aria-hidden="true"
+          className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transition-none"
+        />
+      </Link>
+
       <InstallCommand tool="beui-native" slugs={nativeSlugs} className="mt-6 max-w-2xl" />
 
       <div className="mt-12 space-y-12">

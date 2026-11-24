@@ -1499,12 +1499,26 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
     "entry": {
       "slug": "feature-sections",
       "name": "Feature Sections",
-      "description": "Thirteen distinct product-feature compositions: visual benefits, alternating rows, synchronized hotspots, triptych, signal grid, operations and voice decks, lists, steps, looping bento and product tabs.",
+      "description": "Fourteen distinct product-feature compositions: sticky scroll story, visual benefits, alternating rows, synchronized hotspots, triptych, signal grid, operations and voice decks, lists, steps, looping bento and product tabs.",
       "file": "components/motion/marketing-feature-sections.tsx",
       "extraFiles": [
-        "components/motion/marketing-features-playback.ts"
+        "components/motion/marketing-features-playback.ts",
+        "components/motion/features-sticky-scroll.tsx"
       ],
       "examples": [
+        {
+          "slug": "sticky-scroll",
+          "name": "Sticky scroll story",
+          "description": "Numbered workflow steps drive a sticky gradient stage whose scene cards repose cleanly between stages.",
+          "file": "components/motion/features-sticky-scroll.tsx",
+          "previewKey": "blocks/feature-sections-sticky-scroll",
+          "previewFile": "components/previews/blocks/feature-sections-sticky-scroll.preview.tsx",
+          "usageFile": "components/previews/blocks/feature-sections-sticky-scroll.preview.tsx",
+          "installSlug": "feature-sections-sticky-scroll",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        },
         {
           "slug": "visual-benefits",
           "name": "Visual benefits",
@@ -2784,12 +2798,26 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
     "entry": {
       "slug": "hero-sections",
       "name": "Hero Sections",
-      "description": "Twelve complete product hero compositions with source-backed demos, host actions and accessible navigation.",
+      "description": "Thirteen complete product hero compositions with interactive tours, source-backed demos, host actions and accessible navigation.",
       "file": "components/motion/hero-sections.tsx",
       "extraFiles": [
-        "components/motion/marketing-story.tsx"
+        "components/motion/marketing-story.tsx",
+        "components/motion/hero-video-showcase.tsx"
       ],
       "examples": [
+        {
+          "slug": "video-showcase",
+          "name": "Video showcase",
+          "description": "Split headline above a live looping product stage that expands smoothly into an interactive tour player.",
+          "file": "components/motion/hero-video-showcase.tsx",
+          "previewKey": "blocks/hero-sections-video-showcase",
+          "previewFile": "components/previews/blocks/hero-sections-video-showcase.preview.tsx",
+          "usageFile": "components/previews/blocks/hero-sections-video-showcase.preview.tsx",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24",
+          "installSlug": "hero-sections-video-showcase"
+        },
         {
           "slug": "analytics-flow",
           "name": "Analytics flow",
@@ -3715,12 +3743,40 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
     "entry": {
       "slug": "agent-team",
       "name": "Agent Team",
-      "description": "A data-owned hierarchy of lead and subagents, their dependencies, step progress, reports and independently scoped lifecycle actions.",
+      "description": "Multi-agent orchestration across an org chart tree, step-by-step run timeline with delegation branches, and hierarchical subagent tree.",
       "file": "components/agents/agent-team.tsx",
       "extraFiles": [
-        "components/agents/lifecycle-actions.ts"
+        "components/agents/lifecycle-actions.ts",
+        "components/agents/agent-org-chart.tsx",
+        "components/agents/agent-run-timeline.tsx"
       ],
       "examples": [
+        {
+          "slug": "org-chart",
+          "name": "Org chart",
+          "description": "Orchestrator and worker tree with color-coded SVG connectors, live status rings, and rolling cost counters.",
+          "file": "components/agents/agent-org-chart.tsx",
+          "previewKey": "AgentTeamOrgChartPreview",
+          "previewFile": "components/previews/agents/agent-team-org-chart.preview.tsx",
+          "usageFile": "components/previews/agents/agent-team-org-chart.preview.tsx",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24",
+          "installSlug": "agent-team-org-chart"
+        },
+        {
+          "slug": "run-steps",
+          "name": "Run steps",
+          "description": "Vertical run timeline where pie progress marks fill, delegating steps branch to subagents, and final steps await approval.",
+          "file": "components/agents/agent-run-timeline.tsx",
+          "previewKey": "AgentTeamRunStepsPreview",
+          "previewFile": "components/previews/agents/agent-team-run-steps.preview.tsx",
+          "usageFile": "components/previews/agents/agent-team-run-steps.preview.tsx",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24",
+          "installSlug": "agent-team-run-steps"
+        },
         {
           "slug": "subagent-tree",
           "name": "Subagent Tree",
@@ -5093,11 +5149,13 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
     "entry": {
       "slug": "careers",
       "name": "Careers",
-      "description": "A filtered expandable roles board and an independent culture page with host-owned role and application destinations.",
+      "description": "Filtered roles board, culture page, dedicated role detail template, and interactive master-detail jobs explorer.",
       "file": "components/motion/careers.tsx",
       "extraFiles": [
         "components/motion/select.tsx",
-        "components/motion/text-reveal.tsx"
+        "components/motion/text-reveal.tsx",
+        "components/motion/careers-role-detail.tsx",
+        "components/motion/careers-explorer.tsx"
       ],
       "examples": [
         {
@@ -5123,6 +5181,32 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
           "badge": "new",
           "launchedAt": "2026-11-04",
           "installSlug": "careers-culture-page"
+        },
+        {
+          "slug": "role-detail",
+          "name": "Role detail",
+          "description": "Single role specification with responsibilities, hiring process timeline, and stateful sidebar application form.",
+          "file": "components/motion/careers-role-detail.tsx",
+          "previewKey": "blocks/careers-role-detail",
+          "previewFile": "components/previews/blocks/careers-role-detail.preview.tsx",
+          "usageFile": "components/previews/blocks/careers-role-detail.preview.tsx",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24",
+          "installSlug": "careers-role-detail"
+        },
+        {
+          "slug": "explorer",
+          "name": "Jobs explorer",
+          "description": "Split master-detail role explorer with live search, department and region filters, and application modal.",
+          "file": "components/motion/careers-explorer.tsx",
+          "previewKey": "blocks/careers-explorer",
+          "previewFile": "components/previews/blocks/careers-explorer.preview.tsx",
+          "usageFile": "components/previews/blocks/careers-explorer.preview.tsx",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24",
+          "installSlug": "careers-explorer"
         }
       ],
       "author": "asharca",
@@ -5758,8 +5842,11 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
     "entry": {
       "slug": "roadmap",
       "name": "Roadmap",
-      "description": "A period-grouped public release roadmap with explicit UTC ordering, undated plans, host-defined phases and statuses, progress, votes and release details.",
+      "description": "Period-grouped release timeline and three-column public roadmap board with area filters, votes, release details, and idea posting.",
       "file": "components/motion/release-roadmap.tsx",
+      "extraFiles": [
+        "components/motion/roadmap-board.tsx"
+      ],
       "examples": [
         {
           "slug": "release-timeline",
@@ -5773,6 +5860,19 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
           "badge": "new",
           "launchedAt": "2026-11-04",
           "installSlug": "roadmap"
+        },
+        {
+          "slug": "board",
+          "name": "Public roadmap board",
+          "description": "Three-column Planned, In progress, and Shipped board with area filtering, rolling upvotes, and live feature suggestions.",
+          "file": "components/motion/roadmap-board.tsx",
+          "previewKey": "blocks/roadmap-board",
+          "previewFile": "components/previews/blocks/roadmap-board.preview.tsx",
+          "usageFile": "components/previews/blocks/roadmap-board.preview.tsx",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24",
+          "installSlug": "roadmap-board"
         }
       ],
       "author": "asharca",
@@ -5912,13 +6012,27 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
     "entry": {
       "slug": "social-proof",
       "name": "Social Proof",
-      "description": "Inspectable evidence and synchronized customer outcome compositions.",
+      "description": "Press recognition laurels, inspectable evidence benchmarks, and synchronized customer outcome compositions.",
       "file": "components/motion/social-proof.tsx",
       "extraFiles": [
         "components/motion/marketing-stories-shared.tsx",
-        "components/motion/case-studies.tsx"
+        "components/motion/case-studies.tsx",
+        "components/motion/social-proof-press-awards.tsx"
       ],
       "examples": [
+        {
+          "slug": "press-awards",
+          "name": "Press and awards",
+          "description": "Animated SVG laurel wreaths paired with rotating publication quotes and active underline timing.",
+          "file": "components/motion/social-proof-press-awards.tsx",
+          "previewKey": "blocks/social-proof-press-awards",
+          "previewFile": "components/previews/blocks/social-proof-press-awards.preview.tsx",
+          "usageFile": "components/previews/blocks/social-proof-press-awards.preview.tsx",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24",
+          "installSlug": "social-proof-press-awards"
+        },
         {
           "slug": "evidence-brief",
           "name": "Evidence brief",
@@ -6793,10 +6907,499 @@ export const webCatalogFamilies: WebCatalogFamily[] = [
     "url": "https://github.com/asharca/ui"
   },
   "badge": "new",
-  "launchedAt": "2026-11-04" } }
+  "launchedAt": "2026-11-04" } },
+  {
+    "publicSlug": "animated-select",
+    "category": "motion",
+    "entry": {
+      "slug": "animated-select",
+      "name": "Animated Select",
+      "description": "A composable select whose menu drops from a pill trigger with a gliding highlight, checkmarks, icons, descriptions, groups, separators, and optional search.",
+      "file": "components/motion/animated-select.tsx",
+      "examples": [
+        {
+          "slug": "default",
+          "name": "Animated select",
+          "description": "Pill trigger with portal collision placement, keyboard navigation, searchable option groups, and dialog layering.",
+          "file": "components/motion/animated-select.tsx",
+          "previewKey": "motion/animated-select",
+          "previewFile": "components/previews/motion/animated-select.preview.tsx",
+          "usageFile": "components/previews/motion/animated-select.preview.tsx",
+          "installSlug": "animated-select",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "model-picker",
+    "category": "agents",
+    "entry": {
+      "slug": "model-picker",
+      "name": "Model Picker",
+      "description": "Searchable AI model selectors with provider marks, grouped catalogs, an icon filter rail, keyboard navigation, and compact radio rows.",
+      "file": "components/agents/model-picker.tsx",
+      "examples": [
+        {
+          "slug": "provider-catalog",
+          "name": "Provider catalog",
+          "description": "Browse grouped models across four providers with context lengths and a pinned bottom search input.",
+          "file": "components/agents/model-picker.tsx",
+          "previewKey": "agents/model-picker-catalog",
+          "previewFile": "components/previews/agents/model-picker-catalog.preview.tsx",
+          "usageFile": "components/previews/agents/model-picker-catalog.preview.tsx",
+          "installSlug": "model-picker",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        },
+        {
+          "slug": "provider-rail",
+          "name": "Provider rail",
+          "description": "Filter models from a vertical provider icon rail alongside a compact radio list.",
+          "file": "components/agents/model-picker.tsx",
+          "previewKey": "agents/model-picker-rail",
+          "previewFile": "components/previews/agents/model-picker-rail.preview.tsx",
+          "usageFile": "components/previews/agents/model-picker-rail.preview.tsx",
+          "installSlug": "model-picker-rail",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "deployments",
+    "category": "blocks",
+    "entry": {
+      "slug": "deployments",
+      "name": "Deployments",
+      "description": "Deployment views featuring a live step checklist and streaming build log beside a filterable list with promote and rollback actions.",
+      "file": "components/motion/deployment-build.tsx",
+      "extraFiles": ["components/motion/deployment-list.tsx"],
+      "examples": [
+        {
+          "slug": "build-log",
+          "name": "Build log",
+          "description": "Step progress checklist, streaming terminal log, and fixed preview reveal slot with success and retry states.",
+          "file": "components/motion/deployment-build.tsx",
+          "previewKey": "blocks/deployments-build-log",
+          "previewFile": "components/previews/blocks/deployments-build-log.preview.tsx",
+          "usageFile": "components/previews/blocks/deployments-build-log.preview.tsx",
+          "installSlug": "deployments",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        },
+        {
+          "slug": "deployment-list",
+          "name": "Deployment list",
+          "description": "Five-stage pipeline bars, animated Current badge transitions, copyable URLs, and smooth promote or rollback sorting.",
+          "file": "components/motion/deployment-list.tsx",
+          "previewKey": "blocks/deployments-list",
+          "previewFile": "components/previews/blocks/deployments-list.preview.tsx",
+          "usageFile": "components/previews/blocks/deployments-list.preview.tsx",
+          "installSlug": "deployments-list",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "webhooks",
+    "category": "blocks",
+    "entry": {
+      "slug": "webhooks",
+      "name": "Webhooks",
+      "description": "Webhook inspection and management blocks with a live outcome strip, payload inspector, retry action, and endpoint test sender.",
+      "file": "components/motion/webhook-deliveries.tsx",
+      "extraFiles": ["components/motion/webhook-endpoints.tsx"],
+      "examples": [
+        {
+          "slug": "delivery-log",
+          "name": "Delivery log",
+          "description": "Signed delivery KPIs, 40-block outcome strip, latency sparkline, attempt history, and one-click failed delivery retry.",
+          "file": "components/motion/webhook-deliveries.tsx",
+          "previewKey": "blocks/webhooks-delivery-log",
+          "previewFile": "components/previews/blocks/webhooks-delivery-log.preview.tsx",
+          "usageFile": "components/previews/blocks/webhooks-delivery-log.preview.tsx",
+          "installSlug": "webhooks",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        },
+        {
+          "slug": "endpoints",
+          "name": "Endpoints",
+          "description": "Endpoint directory with success rings, inline URL creation, active switches, and animated test event pings.",
+          "file": "components/motion/webhook-endpoints.tsx",
+          "previewKey": "blocks/webhooks-endpoints",
+          "previewFile": "components/previews/blocks/webhooks-endpoints.preview.tsx",
+          "usageFile": "components/previews/blocks/webhooks-endpoints.preview.tsx",
+          "installSlug": "webhooks-endpoints",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "referral-rewards",
+    "category": "blocks",
+    "entry": {
+      "slug": "referral-rewards",
+      "name": "Referral Rewards",
+      "description": "Compact referral card with a copyable invite URL, milestone tier progress track, rolling credit counters, and friend status list.",
+      "file": "components/motion/referral-rewards.tsx",
+      "examples": [
+        {
+          "slug": "invite-tracker",
+          "name": "Invite tracker",
+          "description": "Animated milestone bar that unlocks tiers and rolls earned credits as invited friends join.",
+          "file": "components/motion/referral-rewards.tsx",
+          "previewKey": "blocks/referral-rewards",
+          "previewFile": "components/previews/blocks/referral-rewards.preview.tsx",
+          "usageFile": "components/previews/blocks/referral-rewards.preview.tsx",
+          "installSlug": "referral-rewards",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "leaderboard",
+    "category": "blocks",
+    "entry": {
+      "slug": "leaderboard",
+      "name": "Leaderboard",
+      "description": "Leaderboard card with a top-three podium, period filter tabs, layout re-sorting, rank deltas, and a pinned viewer row.",
+      "file": "components/motion/leaderboard.tsx",
+      "examples": [
+        {
+          "slug": "live-ranking",
+          "name": "Live ranking",
+          "description": "Growing podium plinths, gliding rank rows across timeframes, and rolling point totals.",
+          "file": "components/motion/leaderboard.tsx",
+          "previewKey": "blocks/leaderboard",
+          "previewFile": "components/previews/blocks/leaderboard.preview.tsx",
+          "usageFile": "components/previews/blocks/leaderboard.preview.tsx",
+          "installSlug": "leaderboard",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "invoice",
+    "category": "blocks",
+    "entry": {
+      "slug": "invoice",
+      "name": "Invoice",
+      "description": "Invoice document and payment card components with staggered line reveals, rolling totals, and animated paid settlement.",
+      "file": "components/motion/invoice-document.tsx",
+      "extraFiles": ["components/motion/invoice-pay.tsx"],
+      "examples": [
+        {
+          "slug": "invoice-document",
+          "name": "Invoice document",
+          "description": "Full invoice layout with atmospheric banner, line rules, rolling totals, and copy/download actions.",
+          "file": "components/motion/invoice-document.tsx",
+          "previewKey": "blocks/invoice-document",
+          "previewFile": "components/previews/blocks/invoice-document.preview.tsx",
+          "usageFile": "components/previews/blocks/invoice-document.preview.tsx",
+          "installSlug": "invoice",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        },
+        {
+          "slug": "pay-invoice",
+          "name": "Pay invoice",
+          "description": "Payable invoice sheet with payment method confirmation modal, hairline sweep, and Paid status transition.",
+          "file": "components/motion/invoice-pay.tsx",
+          "previewKey": "blocks/invoice-pay",
+          "previewFile": "components/previews/blocks/invoice-pay.preview.tsx",
+          "usageFile": "components/previews/blocks/invoice-pay.preview.tsx",
+          "installSlug": "invoice-pay",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "cookie-consent",
+    "category": "blocks",
+    "entry": {
+      "slug": "cookie-consent",
+      "name": "Cookie Consent",
+      "description": "Floating cookie consent banner with a preferences dialog for each category, saved choices, and a corner settings button.",
+      "file": "components/motion/cookie-consent.tsx",
+      "examples": [
+        {
+          "slug": "floating-banner",
+          "name": "Floating banner",
+          "description": "Animated consent card with category switches and a persistent corner launcher after saving.",
+          "file": "components/motion/cookie-consent.tsx",
+          "previewKey": "blocks/cookie-consent",
+          "previewFile": "components/previews/blocks/cookie-consent.preview.tsx",
+          "usageFile": "components/previews/blocks/cookie-consent.preview.tsx",
+          "installSlug": "cookie-consent",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "prompt-library",
+    "category": "blocks",
+    "entry": {
+      "slug": "prompt-library",
+      "name": "Prompt Library",
+      "description": "Searchable library of saved AI prompts with category tabs, starring, variable chips, and live parameter fill dialog.",
+      "file": "components/motion/prompt-library.tsx",
+      "examples": [
+        {
+          "slug": "prompt-library",
+          "name": "Prompt library",
+          "description": "Filter prompts by category or stars, highlight matches, fill variables, and copy resolved text.",
+          "file": "components/motion/prompt-library.tsx",
+          "previewKey": "blocks/prompt-library",
+          "previewFile": "components/previews/blocks/prompt-library.preview.tsx",
+          "usageFile": "components/previews/blocks/prompt-library.preview.tsx",
+          "installSlug": "prompt-library",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "mcp-connectors",
+    "category": "blocks",
+    "entry": {
+      "slug": "mcp-connectors",
+      "name": "MCP Connectors",
+      "description": "Connector manager for MCP servers with live connection status, per-tool permissions, and inline server registration.",
+      "file": "components/motion/mcp-connectors.tsx",
+      "examples": [
+        {
+          "slug": "server-manager",
+          "name": "Server manager",
+          "description": "Toggle connected servers, reconnect auth-needed servers, set tool permissions, and add custom URLs.",
+          "file": "components/motion/mcp-connectors.tsx",
+          "previewKey": "blocks/mcp-connectors",
+          "previewFile": "components/previews/blocks/mcp-connectors.preview.tsx",
+          "usageFile": "components/previews/blocks/mcp-connectors.preview.tsx",
+          "installSlug": "mcp-connectors",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "airdrop-claim",
+    "category": "blocks",
+    "entry": {
+      "slug": "airdrop-claim",
+      "name": "Airdrop Claim",
+      "description": "Token airdrop eligibility checker with sequential criterion verification, rolling token allocation, lock bonus mode, and claim confirmation.",
+      "file": "components/motion/airdrop-claim.tsx",
+      "examples": [
+        {
+          "slug": "eligibility-claim",
+          "name": "Eligibility and claim",
+          "description": "Checks wallet criteria step by step, totals rewards, and transitions smoothly to claimed state.",
+          "file": "components/motion/airdrop-claim.tsx",
+          "previewKey": "blocks/airdrop-claim",
+          "previewFile": "components/previews/blocks/airdrop-claim.preview.tsx",
+          "usageFile": "components/previews/blocks/airdrop-claim.preview.tsx",
+          "installSlug": "airdrop-claim",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "eval-results",
+    "category": "blocks",
+    "entry": {
+      "slug": "eval-results",
+      "name": "Eval Results",
+      "description": "AI eval comparison card with rolling pass rates, segmented split bars, failing and regression filters, and response inspection dialog.",
+      "file": "components/motion/eval-results.tsx",
+      "examples": [
+        {
+          "slug": "model-comparison",
+          "name": "Model comparison",
+          "description": "Compare model pass rates across test cases, filter regressions, and open full grader notes.",
+          "file": "components/motion/eval-results.tsx",
+          "previewKey": "blocks/eval-results",
+          "previewFile": "components/previews/blocks/eval-results.preview.tsx",
+          "usageFile": "components/previews/blocks/eval-results.preview.tsx",
+          "installSlug": "eval-results",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "bento-showcase",
+    "category": "blocks",
+    "entry": {
+      "slug": "bento-showcase",
+      "name": "Bento Showcase",
+      "description": "Interactive bento feature grids where every tile runs a live demo and sibling tiles subtly dim during inspection.",
+      "file": "components/motion/bento-live-tiles.tsx",
+      "extraFiles": ["components/motion/bento-photo-mosaic.tsx"],
+      "examples": [
+        {
+          "slug": "live-tiles",
+          "name": "Live tiles",
+          "description": "Collaborator cursors, rolling metrics, command search cycling, live switches, and a data hub.",
+          "file": "components/motion/bento-live-tiles.tsx",
+          "previewKey": "blocks/bento-showcase-live-tiles",
+          "previewFile": "components/previews/blocks/bento-showcase-live-tiles.preview.tsx",
+          "usageFile": "components/previews/blocks/bento-showcase-live-tiles.preview.tsx",
+          "installSlug": "bento-showcase",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        },
+        {
+          "slug": "photo-mosaic",
+          "name": "Photo mosaic",
+          "description": "Lead atmospheric tile, before/after comparison slider, fanned prints, copyable swatches, and live album viewers.",
+          "file": "components/motion/bento-photo-mosaic.tsx",
+          "previewKey": "blocks/bento-showcase-photo-mosaic",
+          "previewFile": "components/previews/blocks/bento-showcase-photo-mosaic.preview.tsx",
+          "usageFile": "components/previews/blocks/bento-showcase-photo-mosaic.preview.tsx",
+          "installSlug": "bento-showcase-photo-mosaic",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  },
+  {
+    "publicSlug": "legal-pages",
+    "category": "blocks",
+    "entry": {
+      "slug": "legal-pages",
+      "name": "Legal Pages",
+      "description": "Policy pages for privacy, terms, and cookies with plain-language summaries, numbered table of contents, and version diff highlights.",
+      "file": "components/motion/legal-page.tsx",
+      "examples": [
+        {
+          "slug": "policy-with-changes",
+          "name": "Policy with changes",
+          "description": "Switch policies, jump via numbered contents, read In-short cards, and toggle highlighted diffs between versions.",
+          "file": "components/motion/legal-page.tsx",
+          "previewKey": "blocks/legal-pages-policy",
+          "previewFile": "components/previews/blocks/legal-pages-policy.preview.tsx",
+          "usageFile": "components/previews/blocks/legal-pages-policy.preview.tsx",
+          "installSlug": "legal-pages",
+          "author": "asharca",
+          "badge": "new",
+          "launchedAt": "2026-11-24"
+        }
+      ],
+      "author": "asharca",
+      "credit": { "name": "Asharca", "url": "https://github.com/asharca/ui" },
+      "badge": "new",
+      "launchedAt": "2026-11-24"
+    }
+  }
 ];
 
 export const webCatalogDates: Record<string, { publishedAt: string; updatedAt: string }> = {
+  "motion/animated-select": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "agents/model-picker": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/deployments": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/webhooks": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/referral-rewards": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/leaderboard": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/invoice": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/cookie-consent": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/prompt-library": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/mcp-connectors": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/airdrop-claim": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/eval-results": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/bento-showcase": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
+  "blocks/legal-pages": { "publishedAt": "2026-11-24", "updatedAt": "2026-11-24" },
   "motion/illustration-app-preview": {
     "publishedAt": "2026-11-04",
     "updatedAt": "2026-11-06"
