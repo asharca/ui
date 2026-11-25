@@ -743,7 +743,9 @@ export function AssetWorkspaceTemplatePreview() {
           <span className="inline-flex size-6 items-center justify-center rounded-md border border-border bg-background">
             <Wallet className="size-3.5" aria-hidden="true" />
           </span>
-          <span className="text-sm font-semibold tracking-tight">folio.</span>
+          <span className="text-sm font-semibold tracking-tight">
+            Asset Workspace
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1 rounded-full bg-foreground/[0.05] p-0.5 text-xs">
