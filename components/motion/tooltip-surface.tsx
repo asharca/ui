@@ -84,7 +84,7 @@ export function TooltipSurface({
       animate={ready ? "animate" : "initial"}
       exit="exit"
       className={cn(
-        "block whitespace-nowrap rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-lg",
+        "block whitespace-nowrap rounded-lg border border-border bg-popover px-2.5 py-1 text-xs font-medium text-foreground shadow-lg",
         className,
       )}
       {...props}

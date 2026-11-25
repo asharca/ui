@@ -48,8 +48,16 @@
     --accent: #00bebf;
     --accent-foreground: var(--accent-fg);
     --destructive: var(--danger);
+    --destructive-foreground: #ffffff;
     --input: var(--border);
     --ring: var(--primary);
+    --z-dropdown: 50;
+    --z-sticky: 60;
+    --z-popover: 70;
+    --z-drawer: 80;
+    --z-modal: 100;
+    --z-command: 105;
+    --z-tooltip: 110;
 }
 
 /* Dark mode */
@@ -91,6 +99,7 @@
     --muted: var(--bg-elev);
     --accent-foreground: var(--accent-fg);
     --destructive: var(--danger);
+    --destructive-foreground: #ffffff;
     --input: var(--border);
     --ring: var(--primary);
 }
@@ -127,6 +136,7 @@
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
     --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
     --color-input: var(--input);
     --color-ring: var(--ring);
 

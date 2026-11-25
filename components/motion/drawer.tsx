@@ -17,6 +17,8 @@ export interface DrawerProps {
   /** Class for the backdrop. */
   backdropClassName?: string;
   ariaLabel?: string;
+  /** Localized accessible label for the backdrop close action. */
+  closeLabel?: string;
   /** Close when the backdrop is clicked or Escape is pressed. Default true. */
   dismissable?: boolean;
 }
@@ -29,6 +31,7 @@ export function Drawer({
   className,
   backdropClassName,
   ariaLabel,
+  closeLabel = "Close",
   dismissable = true,
 }: DrawerProps) {
   const reduce = useReducedMotion();
@@ -37,7 +40,18 @@ export function Drawer({
   // Focus moves into the panel on open, Tab stays inside it, and focus returns
   // to the opener on close.
   useFocusTrap(open, panelRef, {
-    onEscape: dismissable ? () => onOpenChange(false) : undefined,
+    onEscape: dismissable
+      ? () => {
+          // Defer to a dialog opened on top of the drawer.
+          const dialogs = document.querySelectorAll(
+            '[role="dialog"][aria-modal="true"]',
+          );
+          const topmost = dialogs[dialogs.length - 1];
+          if (topmost && panelRef.current && topmost !== panelRef.current)
+            return;
+          onOpenChange(false);
+        }
+      : undefined,
   });
 
   useEffect(() => {
@@ -63,7 +77,7 @@ export function Drawer({
           {({ gate }) => (
             <motion.button
               type="button"
-              aria-label="Close"
+              aria-label={closeLabel}
               // Outside the panel, so the focus trap never lands on it; it is
               // a pointer target only.
               tabIndex={-1}
@@ -74,7 +88,7 @@ export function Drawer({
               transition={{ duration: 0.25, ease: EASE_OUT }}
               {...gate}
               className={cn(
-                "fixed inset-0 z-50 h-full w-full cursor-default bg-black/40 backdrop-blur-sm",
+                "fixed inset-0 z-(--z-drawer) h-full w-full cursor-default bg-black/40 backdrop-blur-sm",
                 backdropClassName,
               )}
             />
@@ -98,7 +112,7 @@ export function Drawer({
               }
               {...gate}
               className={cn(
-                "fixed inset-y-0 z-50 flex w-80 max-w-[85vw] flex-col bg-background shadow-2xl outline-none",
+                "fixed inset-y-0 z-(--z-drawer) flex w-80 max-w-[85vw] flex-col bg-popover shadow-2xl outline-none",
                 side === "right"
                   ? "right-0 border-l border-border"
                   : "left-0 border-r border-border",

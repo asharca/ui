@@ -6,16 +6,41 @@ import {
   useEffect,
   useState,
 } from "react";
-import { createHighlighter, type Highlighter } from "shiki";
+import {
+  type BundledLanguage,
+  createHighlighter,
+  type Highlighter,
+} from "shiki";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import { cn } from "@/lib/utils";
 
 export type AgentCodeLanguage =
   | "bash"
+  | "c"
+  | "cpp"
+  | "css"
   | "diff"
+  | "dockerfile"
+  | "go"
+  | "graphql"
+  | "html"
+  | "java"
+  | "javascript"
   | "json"
+  | "jsx"
+  | "kotlin"
+  | "markdown"
+  | "python"
+  | "ruby"
+  | "rust"
+  | "sql"
+  | "swift"
   | "text"
+  | "toml"
   | "tsx"
-  | "typescript";
+  | "typescript"
+  | "xml"
+  | "yaml";
 
 export interface AgentCodeToken {
   content: string;
@@ -46,11 +71,27 @@ const tokenCache = new Map<string, AgentCodeTokenLines>();
 function getAgentCodeHighlighter() {
   if (!agentCodeHighlighter) {
     agentCodeHighlighter = createHighlighter({
+      engine: createJavaScriptRegexEngine(),
       themes: [LIGHT_THEME, DARK_THEME],
       langs: ["bash", "diff", "json", "tsx", "typescript"],
     });
   }
   return agentCodeHighlighter;
+}
+
+// Core grammars load with the highlighter; the rest load on first use.
+async function resolveLanguage(
+  highlighter: Highlighter,
+  language: AgentCodeLanguage,
+): Promise<AgentCodeLanguage> {
+  if (language === "text") return language;
+  if (highlighter.getLoadedLanguages().includes(language)) return language;
+  try {
+    await highlighter.loadLanguage(language as BundledLanguage);
+    return language;
+  } catch {
+    return "text";
+  }
 }
 
 function tokenCacheKey(code: string, language: AgentCodeLanguage) {
@@ -78,24 +119,31 @@ export function useAgentCodeTokens(
     }
 
     let cancelled = false;
-    getAgentCodeHighlighter().then((highlighter) => {
+    getAgentCodeHighlighter().then(async (highlighter) => {
+      const lang = await resolveLanguage(highlighter, language);
       if (cancelled) return;
-      const lines = highlighter
-        .codeToTokensWithThemes(code, {
-          lang: language,
-          themes: {
-            light: LIGHT_THEME,
-            dark: DARK_THEME,
-          },
-        })
-        .map((line) =>
-          line.map((token) => ({
-            content: token.content,
-            offset: token.offset,
-            light: token.variants.light?.color,
-            dark: token.variants.dark?.color,
-          })),
-      );
+      let lines: AgentCodeTokenLines;
+      try {
+        lines = highlighter
+          .codeToTokensWithThemes(code, {
+            lang,
+            themes: {
+              light: LIGHT_THEME,
+              dark: DARK_THEME,
+            },
+          })
+          .map((line) =>
+            line.map((token) => ({
+              content: token.content,
+              offset: token.offset,
+              light: token.variants.light?.color,
+              dark: token.variants.dark?.color,
+            })),
+          );
+      } catch {
+        // A grammar the JavaScript regex engine cannot run renders unhighlighted.
+        return;
+      }
       tokenCache.set(key, lines);
       setResult({ key, code, language, lines });
     });

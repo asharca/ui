@@ -18,7 +18,12 @@ import { EASE_OUT, SPRING_PRESS } from "@/lib/ease";
 import { useHoverCapable } from "@/lib/hooks/use-hover-capable";
 import { cn } from "@/lib/utils";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "outline";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "outline"
+  | "destructive";
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export interface ButtonProps extends Omit<
@@ -47,10 +52,13 @@ type Ripple = { id: number; x: number; y: number; size: number };
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
   primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-  secondary: "border border-border bg-card text-foreground hover:border-border",
+  secondary:
+    "border border-border bg-card text-foreground hover:border-(--color-border-strong) hover:bg-muted/40",
   ghost: "text-muted-foreground hover:text-foreground hover:bg-muted/60",
   outline:
     "border border-border bg-transparent text-foreground hover:bg-muted/60",
+  destructive:
+    "bg-destructive text-destructive-foreground hover:bg-destructive/90",
 };
 
 const SIZE_CLASS: Record<ButtonSize, string> = {
@@ -113,6 +121,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "inline-flex items-center justify-center font-medium select-none",
           "transition-colors",
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           "disabled:pointer-events-none disabled:opacity-50",
           ripple && "relative overflow-hidden",
           VARIANT_CLASS[variant],
@@ -180,6 +189,7 @@ export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
         className={cn(
           "inline-flex items-center justify-center font-medium select-none",
           "transition-colors",
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           VARIANT_CLASS[variant],
           SIZE_CLASS[size],
           className,

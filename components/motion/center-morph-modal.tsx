@@ -151,6 +151,8 @@ export interface CenterMorphModalContentProps {
   /** Render the close control inside the panel's top-right corner. Default true. */
   showCloseButton?: boolean;
   closeButtonLabel?: string;
+  /** Accessible name of the backdrop dismiss control. */
+  dismissLabel?: string;
   /** Focus the panel itself or its first control when opening. Defaults to the first control. */
   initialFocus?: "first-control" | "panel";
   /** Surface and unfolding-clip corner radius in px. Defaults to 30. */
@@ -183,7 +185,11 @@ function getFocusableElements(root: HTMLElement | null) {
   if (!root) return [];
   return Array.from(
     root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-  ).filter((element) => element.tabIndex >= 0);
+  ).filter(
+    (element) =>
+      element.tabIndex >= 0 &&
+      !element.closest('[hidden], [inert], [aria-hidden="true"]'),
+  );
 }
 
 export function CenterMorphModalContent({
@@ -193,6 +199,7 @@ export function CenterMorphModalContent({
   dismissible = true,
   showCloseButton = true,
   closeButtonLabel = "Close modal",
+  dismissLabel,
   initialFocus = "first-control",
   radius = 30,
   shadow = true,
@@ -226,6 +233,10 @@ export function CenterMorphModalContent({
     if (!mounted || !context.open) return;
 
     setBackgroundScrollLocked(true);
+    const previousActive =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     const focusFrame = requestAnimationFrame(() => {
       const target = initialFocus === "panel" ? panelRef.current : getFocusableElements(panelRef.current)[0] ?? panelRef.current;
       target?.focus({ preventScroll: true });
@@ -233,7 +244,11 @@ export function CenterMorphModalContent({
 
     return () => {
       cancelAnimationFrame(focusFrame);
-      document.getElementById(context.triggerId)?.focus({ preventScroll: true });
+      // Controlled modals have no trigger, so fall back to where focus was.
+      const target =
+        document.getElementById(context.triggerId) ??
+        (previousActive?.isConnected ? previousActive : null);
+      target?.focus({ preventScroll: true });
     };
   }, [mounted, context.open, context.triggerId, initialFocus]);
 
@@ -241,8 +256,15 @@ export function CenterMorphModalContent({
     if (!context.open) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
+      // Only the topmost dialog reacts, so Escape closes one layer at a time.
+      const dialogs = document.querySelectorAll(
+        '[role="dialog"][aria-modal="true"]',
+      );
+      const topmost = dialogs[dialogs.length - 1];
+      if (topmost && panelRef.current && topmost !== panelRef.current) return;
       if (event.key === "Escape" && dismissible) {
         event.preventDefault();
+        event.stopImmediatePropagation();
         context.setOpen(false);
         return;
       }
@@ -286,7 +308,7 @@ export function CenterMorphModalContent({
                   exposing the pre-exit inline styles for one frame in Chrome. */}
               <motion.button
                 type="button"
-                aria-label="Dismiss modal"
+                aria-label={dismissLabel ?? "Dismiss modal"}
                 tabIndex={-1}
                 disabled={!dismissible}
                 initial={{ "--modal-opacity": 0 }}
@@ -299,7 +321,7 @@ export function CenterMorphModalContent({
                 }}
                 onClick={() => context.setOpen(false)}
                 className={cn(
-                  "pointer-events-auto fixed inset-0 z-[100] h-full w-full cursor-default bg-background/10 backdrop-blur-sm [opacity:var(--modal-opacity)]",
+                  "pointer-events-auto fixed inset-0 z-(--z-modal) h-full w-full cursor-default bg-background/10 backdrop-blur-sm [opacity:var(--modal-opacity)]",
                   backdropClassName,
                 )}
               />
@@ -310,7 +332,7 @@ export function CenterMorphModalContent({
                   tests/fixed-overlay-edge-sampling.test.tsx. */}
               <div
                 inert={!isPresent}
-                className="pointer-events-none fixed inset-4 z-[100] flex items-center justify-center overflow-y-auto"
+                className="pointer-events-none fixed inset-4 z-(--z-modal) flex items-center justify-center overflow-y-auto"
               >
                 <div className={cn("flex w-full flex-col items-center py-8", shadow && "drop-shadow-2xl")}>
                   <motion.div
@@ -348,7 +370,7 @@ export function CenterMorphModalContent({
                         : CENTER_UNFOLD_TRANSITION
                     }
                     className={cn(
-                      "pointer-events-auto relative w-full max-w-[26rem] origin-center overflow-hidden rounded-[30px] border border-border bg-background [opacity:var(--modal-opacity)] [clip-path:var(--modal-clip)]",
+                      "pointer-events-auto relative w-full max-w-[26rem] origin-center overflow-hidden rounded-[30px] border border-border bg-popover [opacity:var(--modal-opacity)] [clip-path:var(--modal-clip)]",
                       className,
                     )}
                     style={{ ...gate.style, borderRadius: radius }}

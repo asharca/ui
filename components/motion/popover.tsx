@@ -602,7 +602,7 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
   return createPortal(
     <div
       data-popover-portal=""
-      className="pointer-events-none fixed left-0 top-0 z-[9999] isolate size-0"
+      className="pointer-events-none fixed left-0 top-0 z-(--z-popover) isolate size-0"
       style={{
         visibility: layout && !closedAtRest ? "visible" : "hidden",
         transform: `translate3d(${layout?.trigger.left ?? 0}px, ${layout?.trigger.top ?? 0}px, 0)`,
