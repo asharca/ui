@@ -35,7 +35,7 @@ export function TooltipPositioner({
       exit={EXIT}
       inert={!present}
       aria-hidden={!present || undefined}
-      className="pointer-events-none fixed left-0 top-0 z-[9999] w-max"
+      className="pointer-events-none fixed left-0 top-0 z-(--z-tooltip) w-max"
       style={{ visibility: "hidden", maxWidth: "calc(100vw - 16px)" }}
     >
       {children(ready, present, side)}

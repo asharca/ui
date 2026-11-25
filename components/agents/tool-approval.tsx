@@ -59,9 +59,16 @@ export interface ToolApprovalProps {
   onAlwaysAllow?: () => void;
   onDeny?: () => void;
   className?: string;
+  /** Localized status text and fixed controls. */
+  labels?: Partial<Record<ToolApprovalStatus, ReactNode>> & {
+    viewDetails?: ReactNode;
+    allowOnce?: ReactNode;
+    alwaysAllow?: ReactNode;
+    deny?: ReactNode;
+  };
 }
 
-function getStatusCopy(status: ToolApprovalStatus) {
+function getStatusCopy(status: ToolApprovalStatus): ReactNode {
   if (status === "approving") return "Approving";
   if (status === "approved") return "Approved";
   if (status === "denied") return "Denied";
@@ -116,6 +123,7 @@ export function ToolApproval({
   onAlwaysAllow,
   onDeny,
   className,
+  labels,
 }: ToolApprovalProps) {
   const reduce = useReducedMotion() ?? false;
   const baseId = useId();
@@ -185,7 +193,7 @@ export function ToolApproval({
                 getStatusBadgeClass(status),
               )}
             >
-              {getStatusCopy(status)}
+              {labels?.[status] ?? getStatusCopy(status)}
             </span>
           </div>
           {description ? (
@@ -200,7 +208,7 @@ export function ToolApproval({
               onClick={() => setOpen(!currentOpen)}
               className="mt-2 inline-flex items-center gap-1 rounded-md text-xs font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             >
-              View details
+              {labels?.viewDetails ?? "View details"}
               <motion.span
                 aria-hidden="true"
                 animate={{ rotate: currentOpen ? 180 : 0 }}
@@ -248,7 +256,7 @@ export function ToolApproval({
               transition={SPRING_PRESS}
               className="rounded-xl bg-foreground px-3 py-1.5 text-xs font-medium text-background outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              Allow once
+              {labels?.allowOnce ?? "Allow once"}
             </motion.button>
             {onAlwaysAllow ? (
               <motion.button
@@ -258,7 +266,7 @@ export function ToolApproval({
                 transition={SPRING_PRESS}
                 className="rounded-xl border border-border/60 bg-background px-3 py-1.5 text-xs font-medium text-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Always allow
+                {labels?.alwaysAllow ?? "Always allow"}
               </motion.button>
             ) : null}
             <button
@@ -266,7 +274,7 @@ export function ToolApproval({
               onClick={onDeny}
               className="rounded-xl px-3 py-1.5 text-xs font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Deny
+              {labels?.deny ?? "Deny"}
             </button>
           </motion.div>
         ) : null}

@@ -529,7 +529,7 @@ function MorphPopoverSurface({
       // A drop-shadow follows the clipped surface; box-shadow would be cut
       // off by its own clip. Caller surface classes retain their old target.
       className={cn(
-        "fixed z-[9999]",
+        "fixed z-(--z-popover)",
         shadow && "[filter:drop-shadow(0_10px_18px_rgba(0,0,0,0.14))]",
       )}
     >
@@ -550,7 +550,7 @@ function MorphPopoverSurface({
         className={cn(
           // The panel holds focus when nothing inside it can. An inset ring
           // stays inside the clip that would cut off an outline.
-          "overflow-hidden border border-border bg-background outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+          "overflow-hidden border border-border bg-popover outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
           className,
         )}
       >
