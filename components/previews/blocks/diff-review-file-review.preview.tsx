@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { DiffReview, type ReviewFile } from "@/components/agents/diff-review";
 
 const files: ReviewFile[] = [
@@ -30,18 +29,15 @@ const files: ReviewFile[] = [
 ];
 
 export function DiffReviewFileReviewPreview() {
-  const [events, setEvents] = useState<{ id: number; label: string }[]>([]);
-  const eventId = useRef(0);
-  const [rejectNext, setRejectNext] = useState(false);
-  const [run, setRun] = useState(0);
-  async function save(label: string) {
-    if (rejectNext) { setRejectNext(false); throw new Error("Demo persistence rejected this action. Your decision was not changed; try again."); }
-    const event = { id: eventId.current, label };
-    eventId.current += 1;
-    setEvents((current) => [event, ...current].slice(0, 4));
-  }
-  return <div className="w-full py-6">
-    <DiffReview key={run} files={files} onDecision={(target, decision) => save(`${decision}: ${target.fileId}/${target.versionId}/${target.hunkId ?? "whole file"}`)} onComment={(target, body) => save(`Comment on ${target.hunkId}: ${body}`)} onCommit={(message, reviewed) => save(`Committed “${message}” with ${reviewed.reduce((sum, file) => sum + file.acceptedHunkIds.length, 0)} accepted hunks`)} />
-    <details className="mx-auto mt-4 max-w-md text-[10px] text-muted-foreground"><summary className="cursor-pointer">Local demo controls</summary><p className="mt-2">Decisions, comments and commits are recorded locally; no repository is changed.</p><div className="mt-2 flex gap-3"><button type="button" className="underline" aria-pressed={rejectNext} onClick={() => setRejectNext(!rejectNext)}>{rejectNext ? "Next save will fail" : "Fail next save"}</button><button type="button" className="underline" onClick={() => { setRun(run + 1); setEvents([]); setRejectNext(false); }}>Reset review</button></div><section aria-label="Demo callback log" className="mt-2">{events.length ? <ul className="space-y-1">{events.map((event) => <li key={event.id}>{event.label}</li>)}</ul> : <p>No actions recorded yet.</p>}</section></details>
-  </div>;
+  return (
+    <div className="w-full py-2">
+      <DiffReview
+        files={files}
+        subtitle="Atlas · Add rate limits to the API"
+        onDecision={async () => {}}
+        onComment={async () => {}}
+        onCommit={async () => {}}
+      />
+    </div>
+  );
 }

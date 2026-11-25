@@ -22,7 +22,7 @@ export const MOBILE_DOMAINS: readonly { id: MobileDomainId; label: string }[] = 
 export type MobileScreenVariant = {
   slug: string;
   name: string;
-  kind: "Screen" | "Block";
+  kind: "Screen" | "Block" | "Template";
   description: string;
   previewKey: string;
   filename: string;
@@ -1079,6 +1079,38 @@ export const MOBILE_SCREEN_GROUPS: readonly MobileScreenGroup[] = [
         previewKey: "mobile/headers-and-menus/action-menu",
         filename: "src/blocks/navigation/action-menu.tsx",
         libraries: ["react-native-reanimated", "expo-haptics", "lucide-react-native"],
+      },
+    ],
+  },
+  {
+    slug: "neobank-app",
+    title: "Neobank app",
+    description:
+      "Multi-screen fintech mobile template linking live wallet holdings, send/swap/deposit flows, virtual card flip and freeze controls, and transaction activity.",
+    domain: "finance",
+    badge: "new",
+    launchedAt: "2026-11-24",
+    libraries: [
+      "react-native-reanimated",
+      "react-native-gesture-handler",
+      "expo-haptics",
+      "lucide-react-native",
+    ],
+    variants: [
+      {
+        slug: "neobank-app",
+        name: "Neobank App",
+        kind: "Template",
+        description:
+          "Complete neobank flow with privacy balance masking, scrubbable performance chart, hold-to-confirm sends, 3D card flip and freeze toggle, and synchronized ledger activity.",
+        previewKey: "mobile/neobank-app",
+        filename: "src/screens/finance/neobank-app.tsx",
+        libraries: [
+          "react-native-reanimated",
+          "react-native-gesture-handler",
+          "expo-haptics",
+          "lucide-react-native",
+        ],
       },
     ],
   },

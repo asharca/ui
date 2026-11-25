@@ -221,6 +221,113 @@ const VARIANT_TEMPLATES: Record<string, DomainTemplateConfig> = {
     </SafeAreaView>
   );`,
   },
+  "neobank-app": {
+    imports: [
+      "Eye",
+      "EyeOff",
+      "ArrowUpRight",
+      "ArrowDownLeft",
+      "ArrowLeftRight",
+      "CreditCard",
+      "Lock",
+      "Activity",
+      "ShieldCheck",
+    ],
+    defaultProps: `{
+  holder = "Maya Lin",
+  initialBalance = 24860.42,
+  onTransfer,
+}: NeobankAppProps`,
+    body: `  const [tab, setTab] = useState<"home" | "card" | "activity">("home");
+  const [masked, setMasked] = useState(false);
+  const [frozen, setFrozen] = useState(false);
+  const [cardFlipped, setCardFlipped] = useState(false);
+  const [balance, setBalance] = useState(initialBalance);
+  const [range, setRange] = useState<"1D" | "1W" | "1M">("1W");
+
+  const handleToggleFreeze = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    setFrozen((prev) => !prev);
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-background px-4 pt-3">
+      <View className="flex-row items-center justify-between py-2">
+        <View>
+          <Text className="text-xs text-muted-foreground">Hi, Maya</Text>
+          <Text className="text-2xl font-semibold text-foreground">
+            {masked ? "••••••" : \`$\${balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}\`}
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => {
+            Haptics.selectionAsync().catch(() => {});
+            setMasked((prev) => !prev);
+          }}
+          className="h-9 w-9 items-center justify-center rounded-full border border-border bg-card"
+        >
+          {masked ? <EyeOff size={16} /> : <Eye size={16} />}
+        </Pressable>
+      </View>
+      <View className="mt-3 flex-row gap-2">
+        {(["home", "card", "activity"] as const).map((item) => (
+          <Pressable
+            key={item}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setTab(item);
+            }}
+            className={\`flex-1 items-center rounded-xl py-2 \${tab === item ? "bg-foreground" : "bg-card"}\`}
+          >
+            <Text className={\`text-xs font-medium capitalize \${tab === item ? "text-background" : "text-muted-foreground"}\`}>
+              {item}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <View className="mt-4 flex-1 rounded-2xl border border-border bg-card p-4">
+        {tab === "card" ? (
+          <View className="gap-3">
+            <Pressable
+              onPress={() => setCardFlipped((prev) => !prev)}
+              className="rounded-2xl border border-border bg-background p-4"
+            >
+              <Text className="text-xs uppercase text-muted-foreground">
+                {cardFlipped ? "Security CVV · 842" : "Virtual Metal •••• 4829"}
+              </Text>
+              <Text className="mt-2 text-sm font-medium text-foreground">
+                {frozen ? "Card frozen" : holder}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={handleToggleFreeze}
+              className="flex-row items-center justify-between rounded-xl border border-border px-3 py-2.5"
+            >
+              <Text className="text-sm font-medium text-foreground">Freeze card</Text>
+              <Lock size={15} />
+            </Pressable>
+          </View>
+        ) : (
+          <View className="gap-2">
+            <Text className="text-xs text-muted-foreground">Range: {range}</Text>
+            <Pressable
+              onPress={() => {
+                setRange((r) => (r === "1D" ? "1W" : r === "1W" ? "1M" : "1D"));
+                setBalance((b) => Number((b + 500).toFixed(2)));
+                onTransfer?.(500);
+              }}
+              className="rounded-xl bg-primary px-4 py-2.5"
+            >
+              <Text className="text-center text-xs font-medium text-primary-foreground">
+                Deposit $500 USDC
+              </Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
+  );`,
+  },
 };
 
 function buildGenericDomainBody(

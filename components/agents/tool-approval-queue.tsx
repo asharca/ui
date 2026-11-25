@@ -64,9 +64,9 @@ export function ToolApprovalQueue({ requests, resolved = [], onDecision, title, 
   return (
     <motion.section layout={!reduced} transition={SPRING_LAYOUT} aria-label="Tool approval queue" className={cn("mx-auto w-full max-w-md overflow-clip rounded-3xl border border-border bg-card p-1.5 pb-1 text-foreground", className)}>
       <motion.header layout={reduced ? false : "position"} className="flex items-center gap-2.5 px-3 pb-3 pt-2">
-        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-muted"><Bot className="size-3.5 text-muted-foreground" /></span>
+        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-foreground/[0.06]"><Bot className="size-3.5 text-muted-foreground" /></span>
         <div className="min-w-0 flex-1"><h2 className="truncate text-sm font-medium">Needs your approval</h2>{title && <p className="truncate text-xs text-muted-foreground">{title}</p>}</div>
-        <span className={cn("flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs", requests.length ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300" : "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300")}>
+        <span className={cn("flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs", requests.length ? "border-amber-500/25 bg-amber-500/10 text-amber-400" : "border-emerald-500/25 bg-emerald-500/10 text-emerald-400")}>
           <span className="relative size-1.5 rounded-full bg-current">{requests.length > 0 && !reduced && <span className="absolute inset-0 animate-ping rounded-full bg-current opacity-60" />}</span>
           <ActionSwapText value={String(requests.length)}><span className="tabular-nums">{requests.length ? `${requests.length} waiting` : "All clear"}</span></ActionSwapText>
         </span>
@@ -82,7 +82,7 @@ export function ToolApprovalQueue({ requests, resolved = [], onDecision, title, 
         </motion.div>}</PresenceGate>}
       </AnimatePresence>
       {requests.length > 1 && <ul className="mt-1.5 space-y-1.5">{requests.slice(1, 4).map((item) => <motion.li key={item.id} layout={reduced ? false : "position"} transition={SPRING_LAYOUT} className="flex h-[46px] items-center gap-2.5 rounded-2xl border border-border bg-background px-3 text-xs">
-        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground [&_svg]:size-3.5">{item.icon ?? (item.kind === "command" ? <SquareTerminal /> : item.kind === "message" ? <Mail /> : <FilePen />)}</span>
+        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-foreground/[0.06] text-muted-foreground [&_svg]:size-3.5">{item.icon ?? (item.kind === "command" ? <SquareTerminal /> : item.kind === "message" ? <Mail /> : <FilePen />)}</span>
         <span className="shrink-0">{item.tool}</span><span className="min-w-0 flex-1 truncate font-mono text-muted-foreground">{item.target}</span>
         <span className={cn("size-1.5 shrink-0 rounded-full", item.risk === "high" ? "bg-rose-500" : item.risk === "medium" ? "bg-amber-500" : "bg-emerald-500")}><span className="sr-only">{item.risk} risk</span></span>
       </motion.li>)}</ul>}
@@ -139,11 +139,36 @@ function QueueFront({ request, requests, onDecision, action }: { request: Queued
   const submit = (decision: ToolApprovalDecision["decision"], decisionNote = decision === "deny" ? note.trim() : "") => {
     void action.run("decision", () => onDecision({ requestId: request.id, decision, note: decisionNote, rule: request.rule, requestIds: decision === "always" ? requests.filter((item) => item.rule === request.rule).map((item) => item.id) : [request.id] }));
   };
-  return <motion.div layout={!reduced} transition={SPRING_LAYOUT} className="overflow-clip rounded-2xl border border-border bg-background" aria-busy={busy}>
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        if (event.key === "Escape" && denying) setDenying(false);
+        return;
+      }
+      if (busy) return;
+      if (!denying && (event.key === "a" || event.key === "A")) {
+        event.preventDefault();
+        void action.run("decision", () => onDecision({ requestId: request.id, decision: always && request.allowAlways ? "always" : "once", note: "", rule: request.rule, requestIds: always && request.allowAlways ? requests.filter((item) => item.rule === request.rule).map((item) => item.id) : [request.id] }));
+      } else if (!denying && (event.key === "d" || event.key === "D")) {
+        event.preventDefault();
+        setDenying(true);
+      } else if (denying && event.key === "Escape") {
+        event.preventDefault();
+        setDenying(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [denying, busy, always, request, requests, action, onDecision]);
+
+  return <motion.div layout={!reduced} animate={denying && !reduced ? { x: [0, -4, 4, -2, 0] } : undefined} transition={SPRING_LAYOUT} className="overflow-clip rounded-2xl border border-border bg-background" aria-busy={busy}>
     <motion.div layout={reduced ? false : "position"} className="flex items-center gap-3 px-4 pt-4">
-      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground [&_svg]:size-3.5">{request.icon ?? (request.kind === "command" ? <SquareTerminal /> : request.kind === "message" ? <Mail /> : <FilePen />)}</span>
+      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-foreground/[0.06] text-muted-foreground [&_svg]:size-3.5">{request.icon ?? (request.kind === "command" ? <SquareTerminal /> : request.kind === "message" ? <Mail /> : <FilePen />)}</span>
       <div className="min-w-0 flex-1"><h3 className="truncate text-sm font-medium">{request.tool}</h3><p className="truncate font-mono text-xs text-muted-foreground">{request.target}</p></div>
-      <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-xs", request.risk === "high" ? "border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300" : request.risk === "medium" ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300" : "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300")}>{request.kind !== "command" && request.risk !== "high" ? "Review" : `${request.risk.charAt(0).toUpperCase() + request.risk.slice(1)} risk`}</span>
+      <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-xs", request.risk === "high" ? "border-rose-500/25 bg-rose-500/10 text-rose-400" : request.risk === "medium" ? "border-amber-500/25 bg-amber-500/10 text-amber-400" : "border-emerald-500/25 bg-emerald-500/10 text-emerald-400")}>{request.kind !== "command" && request.risk !== "high" ? "Review" : `${request.risk.charAt(0).toUpperCase() + request.risk.slice(1)} risk`}</span>
     </motion.div>
     <motion.div layout={reduced ? false : "position"} className="space-y-2.5 px-4 py-3">
       <QueuePreview request={request} />
@@ -155,8 +180,8 @@ function QueueFront({ request, requests, onDecision, action }: { request: Queued
       <div className="flex items-center justify-between gap-2"><Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => submit("deny", "")} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Deny without a note</Button><Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => setDenying(false)} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Cancel</Button></div>
     </motion.form> : <motion.div layout={reduced ? false : "position"} className="flex items-center gap-2 px-4 pb-4 pt-1">
       {request.allowAlways && <div className="mr-auto flex min-w-0 items-center gap-2"><Checkbox id={ruleId} aria-label={`Always allow ${request.ruleDescription}`} checked={always} disabled={busy} onCheckedChange={setAlways} /><label htmlFor={ruleId} title={request.ruleDescription} className="min-w-0 cursor-pointer truncate text-xs text-muted-foreground">Always allow <code className="text-foreground">{request.ruleDescription}</code></label></div>}
-      <Button type="button" variant="secondary" size="sm" disabled={busy} className={cn("shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", !request.allowAlways && "ml-auto")} onClick={() => setDenying(true)}><X className="size-3" />Deny</Button>
-      <Button type="button" size="sm" disabled={busy} className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => submit(always && request.allowAlways ? "always" : "once")}><Check className="size-3" />{busy ? "Saving…" : "Approve"}</Button>
+      <button type="button" disabled={busy} className={cn("inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-foreground/[0.06] px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40", !request.allowAlways && "ml-auto")} onClick={() => setDenying(true)}><X className="size-3" /><span>Deny</span><span aria-hidden="true" className="rounded bg-foreground/[0.08] px-1 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">D</span></button>
+      <button type="button" disabled={busy} className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40" onClick={() => submit(always && request.allowAlways ? "always" : "once")}><Check className="size-3" /><span>{busy ? "Saving…" : "Approve"}</span><span aria-hidden="true" className="rounded bg-primary-foreground/20 px-1 py-0.5 font-mono text-[10px] leading-none">A</span></button>
     </motion.div>}
     {action.errors.decision && <div role="alert" className="mx-4 mb-4 rounded-lg border border-destructive/30 p-3 text-xs text-destructive">{action.errors.decision}<p>Your request remains in the queue. Choose a decision to retry.</p></div>}
   </motion.div>;
@@ -164,7 +189,7 @@ function QueueFront({ request, requests, onDecision, action }: { request: Queued
 
 function QueuePreview({ request, className }: { request: QueuedToolRequest; className?: string }) {
   let offset = 0;
-  return <div className={cn("overflow-hidden rounded-xl bg-muted/60 font-mono text-xs", className)}>
+  return <div className={cn("overflow-hidden rounded-xl border border-border/70 bg-foreground/[0.03] font-mono text-xs", className)}>
     {request.kind === "diff" && <div className="border-b border-border/50 px-3 py-1.5 text-muted-foreground">{request.target}</div>}
     <pre className="overflow-x-auto py-2 leading-5"><code>{request.preview.split("\n").map((line) => {
       const key = offset;

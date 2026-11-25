@@ -4,7 +4,13 @@ import { AgentOrgChart } from "@/components/agents/agent-org-chart";
 import { AgentPlanPill, AgentPlanRunner, type PlanStep } from "@/components/agents/agent-plan";
 import { AgentRunTimeline, type AgentRunStep } from "@/components/agents/agent-run-timeline";
 import { AgentTeam } from "@/components/agents/agent-team";
+import { AgentRunsList, TraceWaterfall, type AgentTraceRun } from "@/components/agents/agent-traces";
+import { BackgroundAgents } from "@/components/agents/background-agents";
+import { ContextMeter } from "@/components/agents/context-window";
+import { DiffReview } from "@/components/agents/diff-review";
 import { ModelPicker } from "@/components/agents/model-picker";
+import { ToolApprovalQueue } from "@/components/agents/tool-approval-queue";
+import { NeobankAppPreview } from "@/components/mobile/previews/neobank-app-screen";
 import {
   AnimatedSelect,
   AnimatedSelectContent,
@@ -403,5 +409,204 @@ describe("Web parity components", () => {
       />,
     );
     expect(view.getByRole("button", { name: "Hide plan" })).toBeTruthy();
+  });
+
+  test("DiffReview renders custom subtitle, accepts hunks, and enables commit", async () => {
+    const decided: string[] = [];
+    let committedMsg = "";
+    const view = render(
+      <DiffReview
+        subtitle="Atlas · Add rate limits to the API"
+        files={[
+          {
+            id: "f1",
+            path: "src/rate-limit.ts",
+            versions: [
+              {
+                id: "v1",
+                label: "v1",
+                hunks: [
+                  {
+                    id: "h1",
+                    label: "Limit middleware",
+                    lines: [
+                      { id: "l1", type: "removed", oldLine: 1, content: "const limit = 0;" },
+                      { id: "l2", type: "added", newLine: 1, content: "const limit = 60;" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+        onDecision={(target, decision) => {
+          decided.push(`${target.hunkId}:${decision}`);
+        }}
+        onCommit={(msg) => {
+          committedMsg = msg;
+        }}
+      />,
+    );
+
+    expect(view.getByText("Atlas · Add rate limits to the API")).toBeTruthy();
+    fireEvent.click(view.getByRole("button", { name: "Accept Limit middleware" }));
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    expect(decided).toEqual(["h1:accepted"]);
+
+    const commitInput = view.getByLabelText("Commit message");
+    fireEvent.change(commitInput, { target: { value: "feat: enforce limit" } });
+    fireEvent.click(view.getByRole("button", { name: "Commit" }));
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    expect(committedMsg).toBe("feat: enforce limit");
+  });
+
+  test("ContextMeter triggers compact action and toggles auto-compact", async () => {
+    let compacted = 0;
+    let autoToggled = false;
+    const view = render(
+      <ContextMeter
+        capacity={200000}
+        model="Claude Opus 4.5"
+        autoCompact={false}
+        onAutoCompactChange={() => {
+          autoToggled = true;
+        }}
+        onCompact={() => {
+          compacted += 1;
+        }}
+        categories={[
+          { id: "system", label: "System prompt", tokens: 12000 },
+          { id: "conversation", label: "Conversation", tokens: 84000 },
+        ]}
+      />,
+    );
+
+    expect(view.getByText("Context window")).toBeTruthy();
+    expect(view.getByText("Claude Opus 4.5")).toBeTruthy();
+    fireEvent.click(view.getByRole("button", { name: "Automatic context compaction" }));
+    expect(autoToggled).toBe(true);
+    fireEvent.click(view.getByRole("button", { name: "Compact now" }));
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    expect(compacted).toBe(1);
+  });
+
+  test("BackgroundAgents answers blocking prompts and queues new background tasks", async () => {
+    const answers: string[] = [];
+    const submitted: string[] = [];
+    const view = render(
+      <BackgroundAgents
+        agents={[
+          {
+            id: "a1",
+            title: "Migrate session store",
+            status: "needs-input",
+            branch: "feat/sessions",
+            question: "Should legacy cookies expire immediately?",
+            answerOptions: ["Keep 7d grace window"],
+          },
+        ]}
+        onAnswer={(id, ans) => {
+          answers.push(`${id}:${ans}`);
+        }}
+        onSubmit={(task) => {
+          submitted.push(task);
+        }}
+      />,
+    );
+
+    fireEvent.click(view.getByRole("button", { name: "Keep 7d grace window" }));
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    expect(answers).toEqual(["a1:Keep 7d grace window"]);
+
+    fireEvent.change(view.getByLabelText("New background task"), {
+      target: { value: "Audit webhook retries" },
+    });
+    fireEvent.click(view.getByRole("button", { name: "Start" }));
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    expect(submitted).toEqual(["Audit webhook retries"]);
+  });
+
+  test("TraceWaterfall and AgentRunsList render telemetry and allow run inspection", () => {
+    const sampleRuns: AgentTraceRun[] = [
+      {
+        id: "run-1",
+        name: "Triage ticket #402",
+        status: "completed",
+        startedAt: "10:04",
+        durationMs: 920,
+        cost: 0.012,
+        recentLatenciesMs: [400, 620, 920],
+        spans: [
+          { id: "s1", name: "Planner", kind: "agent", startMs: 0, durationMs: 920, status: "completed" },
+          { id: "s2", parentId: "s1", name: "Search docs", kind: "retrieval", startMs: 120, durationMs: 310, status: "completed" },
+        ],
+      },
+    ];
+    const pickedRuns: Array<string | null> = [];
+    const view = render(
+      <>
+        <TraceWaterfall run={sampleRuns[0]} />
+        <AgentRunsList runs={sampleRuns} onSelectedRunChange={(id) => { pickedRuns.push(id); }} />
+      </>,
+    );
+
+    expect(view.getByRole("region", { name: "Triage ticket #402 trace waterfall" })).toBeTruthy();
+    expect(view.getByLabelText("Trace playhead")).toBeTruthy();
+    fireEvent.click(view.getByRole("button", { name: /Triage ticket #402/i }));
+    expect(pickedRuns).toEqual(["run-1"]);
+  });
+
+  test("ToolApprovalQueue handles A and D keyboard shortcuts cleanly", async () => {
+    const decisions: string[] = [];
+    const view = render(
+      <ToolApprovalQueue
+        title="Atlas · Ship the pricing page fix"
+        requests={[
+          {
+            id: "req-1",
+            tool: "Terminal",
+            target: "bun run check",
+            risk: "low",
+            rule: "terminal:check",
+            ruleDescription: "check scripts",
+            kind: "command",
+            preview: "bun run check",
+          },
+        ]}
+        onDecision={(decision) => {
+          decisions.push(`${decision.requestId}:${decision.decision}`);
+        }}
+      />,
+    );
+
+    expect(view.getByText("Atlas · Ship the pricing page fix")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "d" });
+    expect(view.getByLabelText("Note to agent")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent.keyDown(window, { key: "a" });
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    expect(decisions).toEqual(["req-1:once"]);
+  });
+
+  test("NeobankAppPreview supports balance masking, quick deposit, card freeze, and activity tab", () => {
+    const view = render(<NeobankAppPreview />);
+
+    expect(view.getByText("Hi, Maya")).toBeTruthy();
+    fireEvent.click(view.getByRole("button", { name: "Hide total balance" }));
+    expect(view.getByRole("button", { name: "Show total balance" })).toBeTruthy();
+
+    fireEvent.click(view.getByRole("button", { name: "Deposit" }));
+    fireEvent.click(view.getByRole("button", { name: "+$500 USDC" }));
+
+    fireEvent.click(view.getByRole("button", { name: "Card" }));
+    expect(view.getByText("Virtual Card")).toBeTruthy();
+    fireEvent.click(view.getByRole("switch", { name: "Freeze card" }));
+    expect(view.getByText("Card Frozen")).toBeTruthy();
+
+    fireEvent.click(view.getByRole("button", { name: "Activity" }));
+    expect(view.getAllByText("Deposit USDC").length).toBeGreaterThanOrEqual(2);
+    expect(view.getByText("Just now")).toBeTruthy();
+    fireEvent.click(view.getByRole("button", { name: /Deposit USDC Just now/i }));
+    expect(view.getByText("Confirmed in vault")).toBeTruthy();
   });
 });
