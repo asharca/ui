@@ -115,13 +115,27 @@ const nextConfig = {
     ],
   },
   async rewrites() {
-    return [
-      { source: "/charts/:slug.md", destination: "/r/:slug.md?category=charts" },
-      {
-        source: "/components/:category/:slug.md",
-        destination: "/r/:slug.md?category=:category",
-      },
-    ];
+    const standalonePattern =
+      "workflow-studio|forecast-community|asset-workspace|assistant-workspace";
+    return {
+      beforeFiles: [
+        {
+          source: `/demos/:slug(${standalonePattern})`,
+          destination: "/demos/:slug/index.html",
+        },
+        {
+          source: `/demos/:slug(${standalonePattern})/:path((?!_next/|.*\\.[^/]+$).+)`,
+          destination: "/demos/:slug/:path/index.html",
+        },
+      ],
+      afterFiles: [
+        { source: "/charts/:slug.md", destination: "/r/:slug.md?category=charts" },
+        {
+          source: "/components/:category/:slug.md",
+          destination: "/r/:slug.md?category=:category",
+        },
+      ],
+    };
   },
   async redirects() {
     return [

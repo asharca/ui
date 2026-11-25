@@ -11,6 +11,7 @@
       "!.wrangler",
       "!build",
       "!out",
+      "!public/demos",
       "!coverage",
       "!next-env.d.ts",
       "!test-results",

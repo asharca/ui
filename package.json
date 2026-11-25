@@ -25,6 +25,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:demos": "bun scripts/build-template-demos.ts",
     "prepare:cloudflare": "bun scripts/prepare-cloudflare.ts",
     "check:cloudflare": "bun run prepare:cloudflare && BEUI_CLOUDFLARE=1 bun scripts/check-cloudflare.ts",
     "build:cloudflare": "opennextjs-cloudflare build",

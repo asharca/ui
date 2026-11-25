@@ -2,6 +2,7 @@ import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "n
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { buildTemplateDemos } from "./build-template-demos";
 import { pagesConfiguration } from "./pages/paths";
 import { transformSiteSource } from "./pages/transform";
 
@@ -16,6 +17,7 @@ export async function buildPages() {
   const stage = await mkdtemp(path.join(os.tmpdir(), "asharca-pages-"));
   const copyPaths = ["app", "components", "lib", "assets", "public", ".gitignore", "package.json", "bun.lock", "tsconfig.json", "postcss.config.mjs", "next.config.mjs"];
   for (const item of copyPaths) await cp(path.join(root, item), path.join(stage, item), { recursive: true });
+  await rm(path.join(stage, "public/demos"), { recursive: true, force: true });
   await symlink(path.join(root, "node_modules"), path.join(stage, "node_modules"), "dir");
   // These endpoints are materialized below as files with explicit MIME extensions.
   // Proxy, live analytics and request-dependent OG rendering require a server.
@@ -68,6 +70,7 @@ export default function robots(): MetadataRoute.Robots {
   const out = path.join(root, "out");
   await rm(out, { recursive: true, force: true });
   await cp(path.join(stage, "out"), out, { recursive: true });
+  await buildTemplateDemos(path.join(out, "demos"), basePath);
   // Materialize concrete historical redirects as HTML; patterns remain a 404.
   for (const redirect of redirects as { source: string; destination: string }[]) {
     if (redirect.source.includes(":") || redirect.destination.includes(":")) continue;

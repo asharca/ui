@@ -1,4 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { demoUrlFor, SITE_BASE_PATH } from "@/lib/site";
+import { standaloneTemplates } from "@/lib/standalone-templates";
+import { getTemplateShowcase, LANDING_SHOWCASE_SLUGS } from "@/lib/template-showcase";
+import { stripRootPreconnectHtml } from "@/scripts/build-template-demos";
 import { pagesConfiguration, staticResourcePath, withBasePath } from "@/scripts/pages/paths";
 import { transformSiteSource } from "@/scripts/pages/transform";
 
@@ -111,5 +115,38 @@ describe("GitHub Pages publication adapter", () => {
     const result = new Function(transformSiteSource(input, "/stage/components/app/chrome/sidebar.tsx", "https://asharca.github.io/ui", "/ui"))();
     expect(result.links[0].href).toBe("/charts");
     expect(result.image.src).toBe("/ui/beui-mark.png");
+  });
+  test("resolves template demo URLs cleanly and ships complete showcase metadata for all 11 templates", () => {
+    const forbidden = /pro\.beui\.dev|beui-pro|BEUI_PRO_TOKEN|beUI Pro|Buy for \$/i;
+    expect(demoUrlFor("workflow-studio")).toBe(`${SITE_BASE_PATH}/demos/workflow-studio/`);
+    expect(demoUrlFor("/ai-landing/")).toBe(`${SITE_BASE_PATH}/demos/ai-landing/`);
+    expect(withBasePath("/demos/workflow-studio/", pagesConfiguration("https://asharca.github.io/ui").basePath)).toBe("/ui/demos/workflow-studio/");
+
+    expect(standaloneTemplates.length).toBe(4);
+    for (const template of standaloneTemplates) {
+      expect(template.whatIsIt.length).toBeGreaterThan(20);
+      expect(template.whoIsItFor.length).toBeGreaterThan(20);
+      expect(template.highlights.length).toBeGreaterThanOrEqual(4);
+      expect(forbidden.test(`${template.whatIsIt} ${template.whoIsItFor}`)).toBe(false);
+    }
+
+    expect(LANDING_SHOWCASE_SLUGS.length).toBe(7);
+    for (const slug of LANDING_SHOWCASE_SLUGS) {
+      const showcase = getTemplateShowcase(slug);
+      expect(showcase).toBeDefined();
+      expect(showcase?.whatIsIt.length).toBeGreaterThan(20);
+      expect(showcase?.whoIsItFor.length).toBeGreaterThan(20);
+      expect(showcase?.highlights.length).toBeGreaterThanOrEqual(6);
+      expect(forbidden.test(`${showcase?.tagline} ${showcase?.whatIsIt} ${showcase?.whoIsItFor}`)).toBe(false);
+    }
+  });
+  test("strips redundant root preconnect links from exported template demo HTML without touching scoped links", () => {
+    const html =
+      '<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><link rel="preconnect" href="/" crossorigin=""/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link rel="stylesheet" href="/ui/demos/workflow-studio/_next/static/chunks/app.css"/></head><body><a href="/ui/demos/workflow-studio/editor/">Editor</a></body></html>';
+    const cleaned = stripRootPreconnectHtml(html);
+    expect(cleaned).not.toContain('href="/"');
+    expect(cleaned).toContain('href="https://fonts.gstatic.com"');
+    expect(cleaned).toContain('href="/ui/demos/workflow-studio/_next/static/chunks/app.css"');
+    expect(cleaned).toContain('href="/ui/demos/workflow-studio/editor/"');
   });
 });

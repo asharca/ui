@@ -15,6 +15,8 @@ export type StandaloneTemplate = {
   directory: string;
   tagline: string;
   description: string;
+  whatIsIt: string;
+  whoIsItFor: string;
   features: readonly string[];
   highlights: readonly TemplateHighlight[];
   integrations: string;
@@ -28,7 +30,11 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
     tagline:
       "Self-contained Next.js workspace — clone locally, wire your providers, and deploy.",
     description:
-      "An AI workflow studio with a visual node editor, multi-session agent builder, knowledge bases, connections, and inspectable run traces.",
+      "An AI workflow builder app with a React Flow canvas, an agent builder with multi-session chat, knowledge bases, connections, and run traces.",
+    whatIsIt:
+      "Workflow Studio is a complete automation application rather than an isolated widget. Teams can build directed multi-step pipelines on an interactive node canvas, configure agents with tools and guardrails, manage document chunks inside knowledge bases, authorize sample app connectors, and inspect per-step run traces and token usage—persisting demo state locally in the browser.",
+    whoIsItFor:
+      "Engineers and product teams shipping workflow automation suites, agent builders, internal AI orchestration consoles, or developer platforms that need a multi-route Next.js frontend starter they own end to end.",
     features: [
       "Connected workflow canvas and undo/redo",
       "Local step execution and input/output inspection",
@@ -38,34 +44,34 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
     ],
     highlights: [
       {
-        title: "Visual flow canvas",
+        title: "Workflow canvas",
         description:
-          "Connect triggers, knowledge steps, LLM agents, and webhook sinks on an interactive node graph with undo/redo.",
+          "Connect triggers, knowledge lookups, transform steps, agents, and outputs on an interactive React Flow graph with undo/redo, tidy layout, and test-run execution.",
       },
       {
-        title: "Agent builder sessions",
+        title: "Agent builder and chat",
         description:
-          "Configure system prompts, tools, and guardrails alongside persistent multi-turn test threads.",
+          "Configure agent personas, models, system instructions, tools, and blocked-word guardrails alongside a multi-session conversation workspace.",
       },
       {
-        title: "Knowledge indexing",
+        title: "Knowledge bases",
         description:
-          "Manage uploaded documents, chunk boundaries, and vector search relevance directly inside the studio.",
+          "Adjust chunk size and overlap, inspect parsed document slices, test local similarity search, and bind knowledge sources directly to workflows and agents.",
       },
       {
-        title: "Step-by-step traces",
+        title: "Runs and traces",
         description:
-          "Inspect node latency, payloads, and failure states on every local workflow run without leaving the canvas.",
+          "Review execution history across workflows with step-by-step waterfall timing, structured input/output inspection, error states, and retry visibility.",
       },
       {
-        title: "Workspace auth & onboarding",
+        title: "Complete app shell",
         description:
-          "Clean sign-in gate, provider buttons, and session scaffolding ready for OAuth or email magic links.",
+          "Collapsible navigation rail, command search, light/dark themes, app connection authorization flows, and workspace settings included out of the box.",
       },
       {
-        title: "Portable standalone app",
+        title: "Standalone source",
         description:
-          "Zero workspace coupling — copy the templates/workflow-studio directory into any standalone repo.",
+          "Static-export-ready Next.js 16 + React 19 + Tailwind CSS 4 codebase inside templates/workflow-studio with locally bundled UI controls and zero workspace coupling.",
       },
     ],
     integrations:
@@ -79,6 +85,10 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
       "Self-contained Next.js workspace — clone locally, connect your feeds, and deploy.",
     description:
       "A compact prediction community template with spotlight market hubs, interactive trading tickets, probability history, rewards, leaderboards, and wallet profiles.",
+    whatIsIt:
+      "Forecast Community is a multi-route prediction market web app covering featured market carousels, category filtering, binary and multi-outcome trading tickets, simulated portfolio accounting, forecaster leaderboards, reward programs, and user profile discussions.",
+    whoIsItFor:
+      "Teams building social forecasting communities, internal calibration trackers, research prediction hubs, or interactive market interfaces that need end-to-end trading ticket and portfolio flows.",
     features: [
       "Market discovery, topic filters and watchlists",
       "Buy/sell tickets and position accounting",
@@ -88,34 +98,24 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
     ],
     highlights: [
       {
-        title: "Spotlight market carousel",
+        title: "Discover and predict",
         description:
-          "Featured multi-outcome markets with live implied odds, volume stats, and quick slide navigation.",
+          "Spotlight market hub, trending movers, topic filtering, bookmark watchlists, and responsive binary or multi-choice outcome trade tickets.",
       },
       {
-        title: "Instant trade tickets",
+        title: "Rewards and rankings",
         description:
-          "Simulated buy/sell positions with stake presets, payout calculation, and real-time virtual balance updates.",
+          "Seasonal forecaster leaderboards paired with claimable quest rewards and progress tracking.",
       },
       {
-        title: "Seasonal leaderboards",
+        title: "Your calls in one place",
         description:
-          "Track top forecasters by hit rate, cumulative ROI, and active streaks across categories.",
+          "Portfolio positions, resolved outcomes, transaction ledgers, and custom draft market creation persisted locally.",
       },
       {
-        title: "Quests & reward claims",
+        title: "Standalone source",
         description:
-          "Engage forecasters with progress quests, liquidity boosts, and tiered rebate milestones.",
-      },
-      {
-        title: "Multi-outcome probability bars",
-        description:
-          "Animated distribution indicators compare outcomes side by side as simulated positions settle.",
-      },
-      {
-        title: "Ready for custom feeds",
-        description:
-          "Typed market stores and simulated balances let you swap in settlement APIs or on-chain adapters later.",
+          "Self-contained Next.js 16 project under templates/forecast-community with clean domain stores ready to swap in live settlement APIs.",
       },
     ],
     integrations:
@@ -128,7 +128,11 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
     tagline:
       "Self-contained Next.js workspace — clone locally, plug in market data, and deploy.",
     description:
-      "A portfolio dashboard workspace with asset routes, net-worth charts, multi-wallet tracking, swaps, staking, watchlists, and a built-in assistant.",
+      "A crypto portfolio dashboard workspace with asset routes, net-worth charts, multi-wallet tracking, swaps, staking, watchlists, and a built-in assistant.",
+    whatIsIt:
+      "Asset Workspace combines multi-chain portfolio analytics with simulated swaps, validator staking yields, tracked wallet addresses, customizable watchlists, activity ledgers, and a contextual assistant view inside a cohesive dark/light dashboard shell.",
+    whoIsItFor:
+      "Builders creating digital-asset dashboards, treasury consoles, fintech portfolio trackers, or multi-route web3 interfaces where users inspect balances across wallets and networks.",
     features: [
       "Portfolio, asset detail, wallet and activity routes",
       "Address tracking and network filters",
@@ -138,34 +142,29 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
     ],
     highlights: [
       {
-        title: "Unified portfolio overview",
+        title: "A complete workspace",
         description:
-          "Monitor net worth across timeframes with responsive charts, gain attribution, and per-asset deltas.",
+          "Includes Overview, Assets, Asset Detail, Wallets, Watchlist, Staking, Activity, Assistant, Settings, and Sign-in onboarding routes.",
       },
       {
-        title: "Instant swap ticket",
+        title: "Connected demo workflows",
         description:
-          "Preview token conversions, slippage settings, and simulated settlement across liquid pairs.",
+          "Simulated swaps, validator delegations, and watchlist toggles immediately update portfolio balances and transaction history.",
       },
       {
-        title: "Staking & validator yields",
+        title: "Your data, locally",
         description:
-          "Allocate positions across validators, inspect uptime metrics, and project annualized rewards.",
+          "Full local browser persistence with JSON state export, address filtering, and confirmed workspace reset.",
       },
       {
-        title: "Wallet connection flow",
+        title: "A reusable design system",
         description:
-          "Polished onboarding screen with OAuth, email, and hardware/browser wallet connect actions.",
+          "Shared motion dialogs, responsive charts, network badges, and clean surface hierarchy ready for light and dark themes.",
       },
       {
-        title: "Activity & address filters",
+        title: "Ready to make your own",
         description:
-          "Slice holdings and historical transactions by wallet address or network without full-page reloads.",
-      },
-      {
-        title: "Local persistence & export",
-        description:
-          "Demo state persists cleanly in browser storage with one-click JSON export and reset controls.",
+          "Typed portfolio providers isolate fixed sample prices so you can plug in live market feeds and wallet adapters.",
       },
     ],
     integrations:
@@ -178,7 +177,11 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
     tagline:
       "Self-contained Next.js workspace — clone locally, wire your model endpoint, and deploy.",
     description:
-      "A complete conversational AI workspace UI with collapsible navigation, projects, knowledge bases, integrations, credit meters, and model selection.",
+      "A complete conversational AI workspace UI with projects, knowledge bases, integrations, credit meters, archive management, and settings.",
+    whatIsIt:
+      "Assistant Workspace is a full multi-page conversational AI product shell with URL-addressable chat sessions, project grouping, reference knowledge management, local file attachment previews, integration toggles, command palette search, and workspace settings.",
+    whoIsItFor:
+      "Developers and startups launching dedicated ChatGPT/Claude-style SaaS workspaces, internal team assistants, or project-centric AI tools needing real multi-route state out of the box.",
     features: [
       "Conversation URLs and a model-aware composer",
       "Projects, chat rename, archive and restore",
@@ -188,34 +191,34 @@ export const standaloneTemplates: readonly StandaloneTemplate[] = [
     ],
     highlights: [
       {
-        title: "Focused prompt composer",
+        title: "Conversation workspace",
         description:
-          "Credit status header, web-search toggle, model switcher, and starter prompt chips in one distraction-free stage.",
+          "Model-aware prompt composer with credit allowance meter, starter prompt chips, inline attachment previews, and streaming local responses.",
       },
       {
-        title: "Collapsible workspace rail",
+        title: "Projects and archives",
         description:
-          "Switch seamlessly between New Chat, Projects, Knowledge, Integrations, and Workspace Settings.",
+          "Group threads into projects, rename or relocate chats, and archive/restore conversations without losing history.",
       },
       {
-        title: "Starter prompt templates",
+        title: "Knowledge and context",
         description:
-          "Kick off portfolio sites, analytics dashboards, landing pages, and task managers from interactive chips.",
+          "Attach notes and reference links to the library and selectively inject them into active conversation prompts.",
       },
       {
-        title: "Session & project URLs",
+        title: "Complete app screens",
         description:
-          "Bookmarkable conversation threads with rename, archive, restore, and full-text command filtering.",
+          "Dedicated routes for /chat, /projects, /knowledge, /integrations, /archive, /settings, and /help with keyboard command search.",
       },
       {
-        title: "Attachments & references",
+        title: "Responsive and themeable",
         description:
-          "Preview local file attachments, structured notes, and inline reference citations during threads.",
+          "Off-canvas mobile sidebar, light/dark preference sync, and keyboard-navigable modals built on Motion and Tailwind CSS.",
       },
       {
-        title: "Model-agnostic adapter layer",
+        title: "Modular source and deployment",
         description:
-          "Swap simulated streaming responses for OpenAI, Anthropic, or self-hosted endpoints with zero UI rewrites.",
+          "Swap localAdapter for any streaming AssistantAdapter endpoint and deploy statically or to Cloudflare Workers.",
       },
     ],
     integrations:
