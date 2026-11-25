@@ -20,10 +20,10 @@ const FORBIDDEN =
   /pro\.beui\.dev|beui-pro|BEUI_PRO_TOKEN|\b(?:FreeAndPro|ProCard)\b|(?:Get|Explore|beUI) Pro|SponsorCard|sponsorship/i;
 
 describe("mobile screens 1:1 catalog", () => {
-  test("defines all 35 mobile screen groups and 66 variants without forbidden copy or em dashes", () => {
-    expect(MOBILE_SCREEN_GROUP_COUNT).toBe(35);
-    expect(MOBILE_SCREEN_GROUPS.length).toBe(35);
-    expect(MOBILE_SCREEN_VARIANT_COUNT).toBe(66);
+  test("defines all 36 mobile screen groups and 67 variants without forbidden copy or em dashes", () => {
+    expect(MOBILE_SCREEN_GROUP_COUNT).toBe(36);
+    expect(MOBILE_SCREEN_GROUPS.length).toBe(36);
+    expect(MOBILE_SCREEN_VARIANT_COUNT).toBe(67);
 
     const groupSlugs = new Set<string>();
     const variantKeys = new Set<string>();
@@ -50,10 +50,10 @@ describe("mobile screens 1:1 catalog", () => {
       }
     }
 
-    expect(variantKeys.size).toBe(66);
+    expect(variantKeys.size).toBe(67);
   });
 
-  test("resolves and renders all 66 interactive previews inside PhoneFrame", () => {
+  test("resolves and renders all 67 interactive previews inside PhoneFrame", () => {
     for (const group of MOBILE_SCREEN_GROUPS) {
       for (const variant of group.variants) {
         const Preview = mobilePreviews[variant.previewKey];
@@ -71,7 +71,7 @@ describe("mobile screens 1:1 catalog", () => {
     }
   });
 
-  test("generates clean React Native source and usage for all 66 variants", () => {
+  test("generates clean React Native source and usage for all 67 variants", () => {
     for (const group of MOBILE_SCREEN_GROUPS) {
       for (const variant of group.variants) {
         const source = getMobileVariantSource(group, variant);
@@ -87,12 +87,12 @@ describe("mobile screens 1:1 catalog", () => {
     }
   });
 
-  test("wires all 35 groups into catalog taxonomy and static route params", () => {
+  test("wires all 36 groups into catalog taxonomy and static route params", () => {
     const mobileSection = getCatalogSection("mobile");
-    expect(mobileSection.items.length).toBe(35);
+    expect(mobileSection.items.length).toBe(36);
 
     const staticParams = mobileScreenStaticParams();
-    expect(staticParams.length).toBe(35);
+    expect(staticParams.length).toBe(36);
 
     for (const group of MOBILE_SCREEN_GROUPS) {
       const item = mobileSection.items.find((entry) => entry.slug === group.slug);

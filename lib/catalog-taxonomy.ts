@@ -135,10 +135,10 @@ const LANDING_TEMPLATE_SLUGS = new Set([
 ]);
 
 const STANDALONE_TEMPLATE_PREVIEWS: Record<string, string> = {
-  "workflow-studio": "AgentBuilderAgentWorkspacePreview",
-  "forecast-community": "blocks/prediction-market",
-  "asset-workspace": "blocks/crypto-wallet-portfolio-overview",
-  "assistant-workspace": "agents/chat-app",
+  "workflow-studio": "templates/workflow-studio",
+  "forecast-community": "templates/forecast-community",
+  "asset-workspace": "templates/asset-workspace",
+  "assistant-workspace": "templates/assistant-workspace",
 };
 
 const COMPACT_BLOCK_SLUGS = new Set([

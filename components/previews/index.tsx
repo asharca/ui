@@ -637,6 +637,26 @@ export const previews: Record<string, ComponentType> = {
   "motion/loader": dynamic(() =>
     import("./motion/loader.preview").then((m) => m.LoaderPreview),
   ),
+  "templates/workflow-studio": dynamic(() =>
+    import("@/components/app/templates/standalone-template-preview").then(
+      (m) => m.WorkflowStudioTemplatePreview,
+    ),
+  ),
+  "templates/forecast-community": dynamic(() =>
+    import("@/components/app/templates/standalone-template-preview").then(
+      (m) => m.ForecastCommunityTemplatePreview,
+    ),
+  ),
+  "templates/asset-workspace": dynamic(() =>
+    import("@/components/app/templates/standalone-template-preview").then(
+      (m) => m.AssetWorkspaceTemplatePreview,
+    ),
+  ),
+  "templates/assistant-workspace": dynamic(() =>
+    import("@/components/app/templates/standalone-template-preview").then(
+      (m) => m.AssistantWorkspaceTemplatePreview,
+    ),
+  ),
 };
 
 export function getPreview(category: string, slug: string) {

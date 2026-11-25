@@ -19,8 +19,7 @@ export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Mobile Screens for React Native",
-  description:
-    "Browse 35 mobile screen groups and 66 interactive React Native variants for Expo, covering finance, AI agents, auth, settings, social, and commerce.",
+  description: `Browse ${MOBILE_SCREEN_GROUPS.length} mobile screen groups and ${MOBILE_SCREEN_VARIANT_COUNT} interactive React Native variants for Expo, covering finance, AI agents, auth, settings, social, and commerce.`,
   alternates: { canonical: MOBILE_SCREENS_PATH },
 };
 

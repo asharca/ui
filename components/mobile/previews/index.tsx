@@ -77,6 +77,7 @@ import {
   SettingsScreenPreview,
   UpdateRequiredPreview,
 } from "@/components/mobile/previews/profile-states-screens";
+import { NeobankAppPreview } from "@/components/mobile/previews/neobank-app-screen";
 
 export const mobilePreviews: Record<string, ComponentType> = {
   "mobile/accounts-and-history/accounts-screen": AccountsScreenPreview,
@@ -145,6 +146,7 @@ export const mobilePreviews: Record<string, ComponentType> = {
   "mobile/tab-bars/scroll-tabs": ScrollTabsMobilePreview,
   "mobile/headers-and-menus/collapsing-header": CollapsingHeaderPreview,
   "mobile/headers-and-menus/action-menu": ActionMenuPreview,
+  "mobile/neobank-app": NeobankAppPreview,
 };
 
 export function getMobilePreview(key: string): ComponentType | undefined {
