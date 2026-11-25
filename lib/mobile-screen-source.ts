@@ -222,17 +222,7 @@ const VARIANT_TEMPLATES: Record<string, DomainTemplateConfig> = {
   );`,
   },
   "neobank-app": {
-    imports: [
-      "Eye",
-      "EyeOff",
-      "ArrowUpRight",
-      "ArrowDownLeft",
-      "ArrowLeftRight",
-      "CreditCard",
-      "Lock",
-      "Activity",
-      "ShieldCheck",
-    ],
+    imports: ["Eye", "EyeOff", "Lock"],
     defaultProps: `{
   holder = "Maya Lin",
   initialBalance = 24860.42,
@@ -668,6 +658,9 @@ export type ${componentName}Props = {
   initialState?: "listening" | "thinking" | "speaking";
   initialCycle?: "annual" | "monthly";
   balances?: Array<{ currency: string; symbol: string; amount: number }>;
+  holder?: string;
+  initialBalance?: number;
+  onTransfer?: (amount: number) => void;
   onAction?: (action: string, currency: string) => void;
   onSubmit?: (prompt: string, opts: { webEnabled: boolean }) => void;
   onConfirm?: (payload: { amount: string; currency: string }) => void;
