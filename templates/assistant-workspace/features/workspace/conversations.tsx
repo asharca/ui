@@ -1,7 +1,9 @@
 "use client";
+import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/motion/button";
 import { MorphingModal } from "@/components/motion/morphing-modal";
+import { withBase } from "./base-path";
 import { useWorkspace } from "./store";
 import type { Attachment, Session } from "./domain";
 const subscribeLocation = (listener: () => void) => { window.addEventListener("popstate", listener); return () => window.removeEventListener("popstate", listener); };
@@ -10,7 +12,7 @@ export function selectSession(id: string) {
   const query = new URLSearchParams({ session: id });
   const mode = new URLSearchParams(window.location.search).get("mode");
   if (mode === "agent" || mode === "design") query.set("mode", mode);
-  window.history.pushState(null, "", `/chat/?${query}`);
+  window.history.pushState(null, "", withBase(`/chat/?${query}`));
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 export function SessionActions({ session }: { session: Session }) {
@@ -33,4 +35,4 @@ export function AttachmentPreview({ attachment, onClose }: { attachment: Attachm
   if (attachment?.type === "text/plain") { try { const bytes = Uint8Array.from(atob(attachment.data.split(",")[1]), c => c.charCodeAt(0)); text = new TextDecoder().decode(bytes); } catch { text = "This text attachment could not be decoded."; } }
   return <MorphingModal viewId={attachment?.id || null} onClose={onClose} placement="center" ariaLabel="Local attachment preview" className="max-w-2xl"><div className="grid gap-4"><div className="flex items-center justify-between gap-4"><h2 className="truncate font-semibold">{attachment?.name}</h2><Button size="sm" variant="ghost" onClick={onClose}>Close</Button></div><p className="text-xs text-muted-foreground">Local preview · {Math.ceil((attachment?.size || 0) / 1024)} KB · never uploaded</p>{attachment?.type.startsWith("image/") ? <img src={attachment.data} alt={attachment.name} className="max-h-[60vh] w-full rounded-lg object-contain" /> : attachment?.type === "text/plain" ? <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm">{text}</pre> : <div className="rounded-lg border border-border p-6"><p className="text-sm leading-6">PDF inline rendering depends on your browser. Open or save this local copy to inspect it; no server receives the file.</p>{attachment && <a className="mt-4 inline-block underline" href={attachment.data} download={attachment.name}>Save PDF</a>}</div>}</div></MorphingModal>;
 }
-export function SessionList({ sessions, empty }: { sessions: Session[]; empty: string }) { return sessions.length ? <div className="grid gap-3">{[...sessions].reverse().map(session => <article key={session.id} className="panel flex flex-wrap items-center justify-between gap-3"><div className="min-w-0 flex-1"><a href={`/chat/?session=${encodeURIComponent(session.id)}`} className="font-medium hover:underline break-words">{session.title}</a><p className="mt-1 text-xs text-muted-foreground">{session.messages.length} messages · {new Date(session.createdAt).toLocaleDateString()}</p></div><SessionActions session={session} /></article>)}</div> : <div className="rounded-2xl border border-dashed border-border py-12 text-center"><p className="text-muted-foreground">{empty}</p><a href="/chat/" className="mt-4 inline-block text-sm underline">Start a conversation</a></div>; }
+export function SessionList({ sessions, empty }: { sessions: Session[]; empty: string }) { return sessions.length ? <div className="grid gap-3">{[...sessions].reverse().map(session => <article key={session.id} className="panel flex flex-wrap items-center justify-between gap-3"><div className="min-w-0 flex-1"><Link href={`/chat/?session=${encodeURIComponent(session.id)}`} className="font-medium hover:underline break-words">{session.title}</Link><p className="mt-1 text-xs text-muted-foreground">{session.messages.length} messages · {new Date(session.createdAt).toLocaleDateString()}</p></div><SessionActions session={session} /></article>)}</div> : <div className="rounded-2xl border border-dashed border-border py-12 text-center"><p className="text-muted-foreground">{empty}</p><Link href="/chat/" className="mt-4 inline-block text-sm underline">Start a conversation</Link></div>; }

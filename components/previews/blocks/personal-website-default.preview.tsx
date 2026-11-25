@@ -17,6 +17,6 @@ const profile: PersonalWebsiteProps = {
   writing: [{ title: "React v19", excerpt: "The React Team’s overview of Actions, new hooks, and the React 19 release.", href: "https://react.dev/blog/2024/12/05/react-19" }, { title: "You Might Not Need an Effect", excerpt: "The React documentation on keeping derived data and event logic out of unnecessary Effects.", href: "https://react.dev/learn/you-might-not-need-an-effect" }, { title: "Accessible animation", excerpt: "Motion’s guide to reduced-motion preferences and more considerate interface animation.", href: "https://motion.dev/docs/react-accessibility" }],
 };
 
-export function PersonalWebsitePreview() {
-  return <ThemeProvider attribute="class" defaultTheme="system" enableSystem><div data-landing-preview className="max-h-[1000px] w-full overflow-auto rounded-xl border border-border"><p className="bg-muted px-5 py-3 text-xs text-muted-foreground">Illustrative portfolio content · fictional person, work history and case studies, with original SVG replacement artwork. Writing links are real React and Motion articles by their respective authors, not claimed work by this fictional profile.</p><PersonalWebsite {...profile} /></div></ThemeProvider>;
+export function PersonalWebsitePreview({ fullPage = false }: { fullPage?: boolean } = {}) {
+  return <ThemeProvider attribute="class" defaultTheme="system" enableSystem><div data-landing-preview className={fullPage ? "min-h-screen w-full" : "max-h-[1000px] w-full overflow-auto rounded-xl border border-border"}><PersonalWebsite {...profile} /></div></ThemeProvider>;
 }

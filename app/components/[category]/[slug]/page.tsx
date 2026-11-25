@@ -6,7 +6,7 @@ import {
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, ChevronRight, Smartphone } from "lucide-react";
+import { ArrowRight, ChevronRight, Download, Play, Smartphone } from "lucide-react";
 import {
   findCategory,
   findComponent,
@@ -17,6 +17,8 @@ import { CodeBlock } from "@/components/app/docs/code-block";
 import { InstallBlock } from "@/components/app/docs/install-block";
 import { KeepInMind } from "@/components/app/docs/keep-in-mind";
 import { PropsTable } from "@/components/app/docs/props-table";
+import { TemplateEditorialSections } from "@/components/app/templates/template-editorial-sections";
+import { TemplateLiveStage } from "@/components/app/templates/template-live-stage";
 import {
   Tabs,
   TabsContent,
@@ -40,6 +42,8 @@ import { readSourceFile } from "@/lib/source-files";
 import { getComponentProps } from "@/lib/props-extractor";
 import { componentDates } from "@/lib/component-dates";
 import { findNativeComponent } from "@/lib/native";
+import { demoUrlFor } from "@/lib/site";
+import { getTemplateShowcase } from "@/lib/template-showcase";
 import { PlatformSwitch } from "@/components/app/docs/native/platform-switch";
 import { RelatedSection } from "@/components/app/docs/related-section";
 import { PagePager } from "@/components/app/docs/page-pager";
@@ -164,6 +168,10 @@ export default async function ComponentPage({
   creditUrl?.searchParams.set("ref", "beui");
 
   const nativeComponent = findNativeComponent(comp.slug);
+  const templateShowcase =
+    cat.slug === "blocks" ? getTemplateShowcase(comp.slug) : undefined;
+  const liveDemoUrl = templateShowcase ? demoUrlFor(comp.slug) : undefined;
+  const installSectionHref = `#${hasVariantInstallCommands && comp.examples?.[0] ? `${comp.examples[0].slug}-install` : "install"}`;
   const webContent = (
     <>
       {comp.examples?.length ? (
@@ -175,6 +183,7 @@ export default async function ComponentPage({
               pageSlug={comp.slug}
               example={ex}
               showApiReference={shouldShowExampleApi(index)}
+              liveDemoUrl={index === 0 ? liveDemoUrl : undefined}
             />
           ))}
         </div>
@@ -238,10 +247,10 @@ export default async function ComponentPage({
           className="flex items-center gap-1.5 text-sm"
         >
           <Link
-            href={categoryPath(cat.slug)}
+            href={templateShowcase ? "/templates" : categoryPath(cat.slug)}
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            {cat.name}
+            {templateShowcase ? "Templates" : cat.name}
           </Link>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="font-medium text-foreground">{comp.name}</span>
@@ -267,6 +276,36 @@ export default async function ComponentPage({
           />
         </div>
         <p className="mt-2 max-w-2xl text-muted-foreground">{comp.description}</p>
+        {templateShowcase && liveDemoUrl ? (
+          <div className="mt-6 flex flex-col justify-between gap-4 rounded-2xl border border-border bg-card/70 p-4 sm:flex-row sm:items-center sm:px-5">
+            <div className="space-y-0.5">
+              <p className="text-sm font-semibold text-foreground">
+                Get this template
+              </p>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {templateShowcase.tagline}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2.5">
+              <a
+                href={liveDemoUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06]"
+              >
+                <Play className="size-3.5" aria-hidden="true" />
+                Live preview
+              </a>
+              <a
+                href={installSectionHref}
+                className="inline-flex items-center gap-1.5 rounded-full bg-sky-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-sky-500"
+              >
+                <Download className="size-3.5" aria-hidden="true" />
+                Install component
+              </a>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {nativeComponent ? (
@@ -275,6 +314,16 @@ export default async function ComponentPage({
         </div>
       ) : null}
       {webContent}
+
+      {templateShowcase ? (
+        <div className="mt-12">
+          <TemplateEditorialSections
+            whatIsIt={templateShowcase.whatIsIt}
+            whoIsItFor={templateShowcase.whoIsItFor}
+            highlights={templateShowcase.highlights}
+          />
+        </div>
+      ) : null}
 
       {comp.guide ? <ComponentGuide guide={comp.guide} /> : null}
 
@@ -329,11 +378,13 @@ async function ExampleBlock({
   pageSlug,
   example,
   showApiReference,
+  liveDemoUrl,
 }: {
   category: string;
   pageSlug: string;
   example: ComponentExample;
   showApiReference: boolean;
+  liveDemoUrl?: string;
 }) {
   const Preview = previews[example.previewKey];
   const usageFile = example.usageFile ?? example.previewFile;
@@ -343,6 +394,70 @@ async function ExampleBlock({
   ]);
   const installSlug = example.installSlug ?? null;
   const propsDocs = showApiReference ? getComponentProps(example.file) : [];
+
+  const tabsNode = (
+    <Tabs defaultValue="preview" variant="pill">
+      <div className="flex items-center justify-between gap-3">
+        <TabsList>
+          <TabsTrigger
+            value="preview"
+            indicatorClassName="bg-background"
+            className="aria-[selected=true]:text-foreground [&_[data-tabs-label]]:text-foreground"
+          >
+            Preview
+          </TabsTrigger>
+          <TabsTrigger
+            value="usage"
+            indicatorClassName="bg-background"
+            className="aria-[selected=true]:text-foreground [&_[data-tabs-label]]:text-foreground"
+          >
+            Usage
+          </TabsTrigger>
+          <TabsTrigger
+            value="source"
+            indicatorClassName="bg-background"
+            className="aria-[selected=true]:text-foreground [&_[data-tabs-label]]:text-foreground"
+          >
+            Code
+          </TabsTrigger>
+        </TabsList>
+        {!liveDemoUrl ? (
+          <div className="flex items-center gap-2">
+            <PreviewViewportToggle />
+            <PreviewReplayToggle />
+            <PreviewExpandToggle />
+          </div>
+        ) : null}
+      </div>
+      <TabsContent value="preview" className="mt-4">
+        {liveDemoUrl ? (
+          <TemplateLiveStage
+            slug={pageSlug}
+            title={example.name}
+            demoUrl={liveDemoUrl}
+            embedded
+          />
+        ) : (
+          <PreviewExpandStage className="flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-background px-4 py-10 sm:px-6">
+            {Preview ? <Preview /> : null}
+          </PreviewExpandStage>
+        )}
+      </TabsContent>
+      <TabsContent value="usage" className="mt-4">
+        <CodeBlock code={usage} filename={usageFile} />
+      </TabsContent>
+      <TabsContent value="source" className="mt-4">
+        <CodeBlock
+          code={withSignature(
+            source,
+            example.file,
+            pageUrlFor(category, pageSlug),
+          )}
+          filename={example.file}
+        />
+      </TabsContent>
+    </Tabs>
+  );
 
   return (
     <section id={example.slug} className="scroll-mt-24">
@@ -367,58 +482,11 @@ async function ExampleBlock({
         ) : null}
       </div>
       <div id={`${example.slug}-preview`} className="scroll-mt-24">
-        <PreviewExpand stageId={`${example.slug}-stage`}>
-        <Tabs defaultValue="preview" variant="pill">
-          <div className="flex items-center justify-between gap-3">
-          <TabsList>
-            <TabsTrigger
-              value="preview"
-              indicatorClassName="bg-background"
-              className="aria-[selected=true]:text-foreground [&_[data-tabs-label]]:text-foreground"
-            >
-              Preview
-            </TabsTrigger>
-            <TabsTrigger
-              value="usage"
-              indicatorClassName="bg-background"
-              className="aria-[selected=true]:text-foreground [&_[data-tabs-label]]:text-foreground"
-            >
-              Usage
-            </TabsTrigger>
-            <TabsTrigger
-              value="source"
-              indicatorClassName="bg-background"
-              className="aria-[selected=true]:text-foreground [&_[data-tabs-label]]:text-foreground"
-            >
-              Code
-            </TabsTrigger>
-          </TabsList>
-            <div className="flex items-center gap-2">
-              <PreviewViewportToggle />
-              <PreviewReplayToggle />
-              <PreviewExpandToggle />
-            </div>
-          </div>
-          <TabsContent value="preview" className="mt-4">
-            <PreviewExpandStage className="flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-background px-4 py-10 sm:px-6">
-              {Preview ? <Preview /> : null}
-            </PreviewExpandStage>
-          </TabsContent>
-          <TabsContent value="usage" className="mt-4">
-            <CodeBlock code={usage} filename={usageFile} />
-          </TabsContent>
-          <TabsContent value="source" className="mt-4">
-            <CodeBlock
-              code={withSignature(
-                source,
-                example.file,
-                pageUrlFor(category, pageSlug),
-              )}
-              filename={example.file}
-            />
-          </TabsContent>
-        </Tabs>
-        </PreviewExpand>
+        {liveDemoUrl ? (
+          tabsNode
+        ) : (
+          <PreviewExpand stageId={`${example.slug}-stage`}>{tabsNode}</PreviewExpand>
+        )}
       </div>
       {installSlug ? (
         <div

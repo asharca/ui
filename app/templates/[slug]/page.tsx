@@ -5,9 +5,10 @@ import { notFound } from "next/navigation";
 import { CodeBlock } from "@/components/app/docs/code-block";
 import { CopyPage } from "@/components/app/docs/copy-page";
 import { PressLink } from "@/components/app/press-link";
-import { StandaloneTemplateStage } from "@/components/app/templates/standalone-template-preview";
+import { TemplateEditorialSections } from "@/components/app/templates/template-editorial-sections";
+import { TemplateLiveStage } from "@/components/app/templates/template-live-stage";
 import { GITHUB_REPOSITORY_URL } from "@/lib/repository";
-import { SITE_URL } from "@/lib/site";
+import { demoUrlFor, SITE_URL } from "@/lib/site";
 import {
   standaloneTemplates,
   standaloneTemplateSource,
@@ -37,6 +38,7 @@ export default async function TemplatePage({ params }: Props) {
   const template = standaloneTemplates.find((entry) => entry.slug === slug);
   if (!template) notFound();
 
+  const demoUrl = demoUrlFor(template.slug);
   const command = `git clone ${GITHUB_REPOSITORY_URL}.git asharca-ui\ncd asharca-ui/${template.directory}\nbun install\nbun run dev`;
 
   return (
@@ -89,7 +91,9 @@ export default async function TemplatePage({ params }: Props) {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2.5">
             <a
-              href="#live-preview"
+              href={demoUrl}
+              target="_blank"
+              rel="noreferrer noopener"
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-foreground/[0.06]"
             >
               <Play className="size-3.5" aria-hidden="true" />
@@ -106,43 +110,25 @@ export default async function TemplatePage({ params }: Props) {
         </div>
       </header>
 
-      <section id="live-preview" aria-label={`${template.name} interactive preview`} className="scroll-mt-24">
-        <StandaloneTemplateStage slug={template.slug} title={template.name} />
+      <section
+        id="live-preview"
+        aria-label={`${template.name} live preview`}
+        className="scroll-mt-24"
+      >
+        <TemplateLiveStage
+          slug={template.slug}
+          title={template.name}
+          demoUrl={demoUrl}
+          fallbackSlug={template.slug}
+        />
       </section>
 
-      <section aria-labelledby="highlights-heading" className="space-y-5">
-        <div className="space-y-1">
-          <h2
-            id="highlights-heading"
-            className="text-xl font-semibold tracking-tight text-foreground"
-          >
-            Built for a real launch.
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Every route, workflow, and state stays modular inside{" "}
-            <code className="rounded bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-xs text-foreground">
-              {template.directory}
-            </code>
-            .
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {template.highlights.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-border bg-card/60 p-4"
-            >
-              <h3 className="text-sm font-semibold text-foreground">
-                {item.title}
-              </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                {item.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <TemplateEditorialSections
+        whatIsIt={template.whatIsIt}
+        whoIsItFor={template.whoIsItFor}
+        highlights={template.highlights}
+        directory={template.directory}
+      />
 
       <div className="grid gap-8 lg:grid-cols-[1fr_1.15fr]">
         <section aria-labelledby="included" className="space-y-4">

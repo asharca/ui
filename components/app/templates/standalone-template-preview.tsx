@@ -1213,6 +1213,16 @@ export function AssistantWorkspaceTemplatePreview() {
   );
 }
 
+export type { StandaloneSlug };
+
+export function StandaloneTemplateFallback({
+  slug,
+}: {
+  slug: StandaloneSlug;
+}) {
+  return renderTemplateBySlug(slug);
+}
+
 function renderTemplateBySlug(slug: StandaloneSlug) {
   switch (slug) {
     case "workflow-studio":

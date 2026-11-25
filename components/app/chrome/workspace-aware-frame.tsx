@@ -14,7 +14,9 @@ export function WorkspaceAwareFrame({ children }: { children: ReactNode }) {
     pathname === "/workspace" ||
     pathname.startsWith("/workspace/") ||
     pathname === "/studio" ||
-    pathname.startsWith("/studio/")
+    pathname.startsWith("/studio/") ||
+    pathname === "/demos" ||
+    pathname.startsWith("/demos/")
   ) {
     return <main>{children}</main>;
   }
